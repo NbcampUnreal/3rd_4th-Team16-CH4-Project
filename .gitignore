@@ -11,6 +11,8 @@ Saved/
 *.xcworkspace
 *.VC.db
 *.VC.VC.opendb
+*.vsconfig
+/OnlyOne/Config/DefaultEditor.ini
 
 *.log
 *.tmp
