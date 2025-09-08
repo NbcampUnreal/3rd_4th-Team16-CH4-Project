@@ -1,2 +1,3 @@
 *.vsconfig
 /OnlyOne/Config/DefaultEditor.ini
+/OnlyOne/Config/DefaultEngine.ini
