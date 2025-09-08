@@ -9,7 +9,7 @@
 struct FGameplayTag;
 class UPOAbilitySystemComponent;
 /**
- * 
+ * 프로젝트 전반에 걸쳐 블루프린트에서 사용할 수 있는 다양한 전역 유틸리티 함수를 담고 있는 CustomBlueprintFunctionLibrary입니다.
  */
 UCLASS()
 class ONLYONE_API UPOFunctionLibrary : public UBlueprintFunctionLibrary
