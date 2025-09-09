@@ -17,9 +17,8 @@ class ONLYONE_API APOPlayerController : public APOCharacterControllerBase
 public:
 	APOPlayerController();
 	virtual UPawnUIComponent* GetPawnUIComponent() const override;
-	virtual UPlayerUIComponent* GetPlayerUIComponent() const override;
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI", meta = (AllowPrivateAccess = "true"))
-	UPlayerUIComponent* PlayerUIComponent;
+	TObjectPtr<UPlayerUIComponent> PlayerUIComponent;
 };

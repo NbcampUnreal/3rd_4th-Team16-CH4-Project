@@ -2,13 +2,3 @@
 
 
 #include "Interfaces/PawnUIInterface.h"
-
-UPlayerUIComponent* IPawnUIInterface::GetPlayerUIComponent() const
-{
-	return nullptr;
-}
-
-UNpcUIComponent* IPawnUIInterface::GetNpcUIComponent() const
-{
-	return nullptr;
-}

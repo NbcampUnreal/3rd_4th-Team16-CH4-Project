@@ -24,6 +24,4 @@ class ONLYONE_API IPawnUIInterface
 
 public:
 	virtual UPawnUIComponent* GetPawnUIComponent() const = 0;
-	virtual UPlayerUIComponent* GetPlayerUIComponent() const;
-	virtual UNpcUIComponent* GetNpcUIComponent() const;
 };

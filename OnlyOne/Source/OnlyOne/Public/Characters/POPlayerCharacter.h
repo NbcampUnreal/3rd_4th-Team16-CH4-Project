@@ -28,15 +28,15 @@ public:
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera | SpringArm", meta = (AllowPrivateAccess = "true"))
-	USpringArmComponent* CameraBoom;
+	TObjectPtr<USpringArmComponent> CameraBoom;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
-	UCameraComponent* ViewCamera;
+	TObjectPtr<UCameraComponent> ViewCamera;
 
 #pragma region Player Movement
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "CharacterData | Input", meta = (AllowPrivateAccess = "true"))
-	UPODataAsset_InputConfig* InputConfigDataAsset;
+	TObjectPtr<UPODataAsset_InputConfig> InputConfigDataAsset;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Movement | walk", meta = (AllowPrivateAccess = "true"))
 	float WalkSpeed = 200.f;
@@ -67,7 +67,7 @@ private:
 #pragma region Component
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
-	UPlayerCombatComponent* PlayerCombatComponent;
+	TObjectPtr<UPlayerCombatComponent> PlayerCombatComponent;
 #pragma endregion
 
 public:

@@ -33,10 +33,10 @@ protected:
 	virtual void PossessedBy(AController* NewController) override;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AbilitySystem")
-	UPOAbilitySystemComponent* POAbilitySystemComponent;
+	TObjectPtr<UPOAbilitySystemComponent> POAbilitySystemComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AbilitySystem")
-	UPOAttributeSet* POAttributeSet;
+	TObjectPtr<UPOAttributeSet> POAttributeSet;
 
 private:
 	void ServerSideInit();

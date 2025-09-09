@@ -16,15 +16,9 @@ class ONLYONE_API APONPCController : public APOCharacterControllerBase
 
 public:
 	APONPCController();
-	
-#pragma region Interface
-	
 	virtual UPawnUIComponent* GetPawnUIComponent() const override;
-	virtual UNpcUIComponent* GetNpcUIComponent() const override;
-	
-#pragma endregion 
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI", meta = (AllowPrivateAccess = "true"))
-	UNpcUIComponent* NpcUIComponent;
+	TObjectPtr<UNpcUIComponent> NpcUIComponent;
 };

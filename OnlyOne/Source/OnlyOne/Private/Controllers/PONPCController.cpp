@@ -13,8 +13,3 @@ UPawnUIComponent* APONPCController::GetPawnUIComponent() const
 {
 	return NpcUIComponent;
 }
-
-UNpcUIComponent* APONPCController::GetNpcUIComponent() const
-{
-	return NpcUIComponent;
-}

@@ -23,6 +23,6 @@ public:
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
-	UNpcCombatComponent* NpcCombatComponent;
+	TObjectPtr<UNpcCombatComponent> NpcCombatComponent;
 
 };

@@ -13,8 +13,3 @@ UPawnUIComponent* APOPlayerController::GetPawnUIComponent() const
 {
 	return PlayerUIComponent;
 }
-
-UPlayerUIComponent* APOPlayerController::GetPlayerUIComponent() const
-{
-	return PlayerUIComponent;
-}
