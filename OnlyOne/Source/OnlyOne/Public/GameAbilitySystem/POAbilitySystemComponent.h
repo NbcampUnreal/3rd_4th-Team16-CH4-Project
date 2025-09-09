@@ -17,4 +17,7 @@ class ONLYONE_API UPOAbilitySystemComponent : public UAbilitySystemComponent
 public:
 	UFUNCTION(Server, Reliable)
 	void ServerAddLooseGameplayTag(FGameplayTag TagToAdd);
+	
+	void OnAbilityInputPressed(const FGameplayTag& InputTag);
+	void OnAbilityInputReleased(const FGameplayTag& InputTag);
 };
