@@ -2,7 +2,6 @@
 
 #include "OnlyOne.h"
 #include "Modules/ModuleManager.h"
-#include "Core/POGameplayTags.h"
 
 class FOnlyOneModule : public FDefaultGameModuleImpl
 {
@@ -11,9 +10,6 @@ public:
 	{
 		// 부모 클래스의 StartupModule 호출
 		FDefaultGameModuleImpl::StartupModule();
-		
-		// GameplayTags 초기화
-		FPOGameplayTags::InitializeNativeTags();
 	}
 	
 	virtual void ShutdownModule() override
