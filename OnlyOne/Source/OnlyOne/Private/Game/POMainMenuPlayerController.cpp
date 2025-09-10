@@ -17,8 +17,11 @@ APOMainMenuPlayerController::APOMainMenuPlayerController()
 void APOMainMenuPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	ShowMainMenu();
+
+	if (IsLocalController())
+	{
+		ShowMainMenu();
+	}
 }
 
 void APOMainMenuPlayerController::ShowMainMenu()
