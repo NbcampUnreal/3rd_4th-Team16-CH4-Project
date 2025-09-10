@@ -43,7 +43,9 @@ void UPOCustomButton::SetButtonText(const FText& InText)
 void UPOCustomButton::OnButtonClicked()
 {
 	if (!bIsEnabled)
+	{
 		return;
+	}
         
 	if (OnCustomButtonClicked.IsBound())
 	{
