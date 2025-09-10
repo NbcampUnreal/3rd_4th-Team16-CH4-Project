@@ -2,6 +2,8 @@
 
 
 #include "Characters/POPlayerCharacter.h"
+
+#include "DebugHelper.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -10,6 +12,7 @@
 #include "POGameplayTags.h"
 #include "Components/Combat/PlayerCombatComponent.h"
 #include "GameAbilitySystem/POAbilitySystemComponent.h"
+#include "Net/UnrealNetwork.h"
 
 APOPlayerCharacter::APOPlayerCharacter()
 {
@@ -62,16 +65,26 @@ void APOPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	POInputComponent->BindNativeInputAction(InputConfigDataAsset, POGameplayTags::InputTag_Sprint, ETriggerEvent::Triggered, this, &ThisClass::Input_Sprint);
 }
 
+void APOPlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(APOPlayerCharacter, bIsWalking);
+}
+
 UPawnCombatComponent* APOPlayerCharacter::GetPawnCombatComponent() const
 {
 	ensure(PlayerCombatComponent != nullptr);
 	return GetPlayerCombatComponent();
 }
 
+void APOPlayerCharacter::Server_SetWalking_Implementation(bool bNewIsWalking)
+{
+	UpdateMovementSpeedBasedOnWalkingState(bNewIsWalking);
+}
+
 void APOPlayerCharacter::Input_Move(const FInputActionValue& InputActionValue)
 {
 	const FVector2D MovementVector = InputActionValue.Get<FVector2D>();
-
 	const FRotator MovementRotation = FRotator(0.f, Controller->GetControlRotation().Yaw, 0.f);
 	
 	if (MovementVector.Y != 0.f)
@@ -109,16 +122,10 @@ void APOPlayerCharacter::Input_Walk(const FInputActionValue& InputActionValue)
 {
 	if (IsInputPressed(InputActionValue))
 	{
-		bIsWalking = !bIsWalking;
-
-		if (bIsWalking)
-		{
-			SetMaxWalkSpeed(WalkSpeed); // 걷기
-		}
-		else
-		{
-			SetMaxWalkSpeed(RunSpeed); // 달리기
-		}
+		const bool bNewIsWalking = !bIsWalking;
+		
+		UpdateMovementSpeedBasedOnWalkingState(bNewIsWalking);
+		Server_SetWalking(bNewIsWalking);
 	}
 }
 
@@ -130,23 +137,20 @@ void APOPlayerCharacter::Input_Sprint(const FInputActionValue& InputActionValue)
 
 		if (bIsSprint && SprintSpeed >= 0.f)
 		{
-			SetMaxWalkSpeed(SprintSpeed); // 스프린트
+			SetMovementSpeed(SprintSpeed);
 		}
 		else
 		{
-			// 스프린트를 끄거나 SprintSpeed가 유효하지 않은 경우,
-			// bIsWalking 상태에 따라 걷기 또는 달리기로 복귀
 			if (bIsWalking && WalkSpeed >= 0.f)
 			{
-				SetMaxWalkSpeed(WalkSpeed); // 걷기 속도로 복귀
+				SetMovementSpeed(WalkSpeed);
 			}
 			else if (RunSpeed >= 0.f)
 			{
-				SetMaxWalkSpeed(RunSpeed); // 달리기 속도로 복귀
+				SetMovementSpeed(RunSpeed);
 			}
 		}
 	}
-
 }
 
 void APOPlayerCharacter::Input_AbilityInputPressed(const FGameplayTag InInputTag)
@@ -164,10 +168,24 @@ bool APOPlayerCharacter::IsInputPressed(const FInputActionValue& InputActionValu
 	return InputActionValue.Get<bool>();
 }
 
-void APOPlayerCharacter::SetMaxWalkSpeed(const float NewMaxWalkSpeed)
+void APOPlayerCharacter::SetMovementSpeed(const float NewMaxWalkSpeed)
 {
 	if (NewMaxWalkSpeed >= 0.f)
 	{
 		GetCharacterMovement()->MaxWalkSpeed = NewMaxWalkSpeed;
+	}
+}
+
+void APOPlayerCharacter::UpdateMovementSpeedBasedOnWalkingState(bool bNewIsWalking)
+{
+	bIsWalking = bNewIsWalking;
+	
+	if (bIsWalking)
+	{
+		SetMovementSpeed(WalkSpeed);
+	}
+	else
+	{
+		SetMovementSpeed(RunSpeed);
 	}
 }

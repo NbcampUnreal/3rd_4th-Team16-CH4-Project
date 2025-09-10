@@ -3,17 +3,54 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AnimationInstances/POAnimInstanceBase.h"
 #include "POCharacterAnimInstance.generated.h"
 
-/**
- * @class UPOCharacterAnimInstance
- * @brief 플레이어, NPC 등 모든 '캐릭터' 타입의 애니메이션을 위한 중간 베이스 클래스.
- * UPOAnimInstanceBase를 상속하며, 캐릭터라면 공통적으로 가지는 이동, 점프 등의 상태 관련 로직을 처리.
- */
+class APOCharacterBase;
+class UCharacterMovementComponent;
+
 UCLASS()
-class ONLYONE_API UPOCharacterAnimInstance : public UPOAnimInstanceBase
+class ONLYONE_API UPOCharacterAnimInstance : public UAnimInstance
 {
 	GENERATED_BODY()
+
+public:
+	virtual void NativeInitializeAnimation() override;
+	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
+	virtual void NativeThreadSafeUpdateAnimation(float DeltaSeconds) override;
 	
+	UFUNCTION(BlueprintCallable, meta=(BlueprintThreadSafe))
+	FORCEINLINE float GetSpeed() const { return Speed; }
+
+	UFUNCTION(BlueprintCallable, meta = (BlueprintThreadSafe))
+	FORCEINLINE float GetAngle() const { return Angle; }
+
+	UFUNCTION(BlueprintCallable, meta = (BlueprintThreadSafe))
+	FORCEINLINE bool IsMoving() const { return Speed != 0.f; }
+
+	UFUNCTION(BlueprintCallable, meta = (BlueprintThreadSafe))
+	FORCEINLINE bool IsNotMoving() const { return Speed == 0.f; }
+
+	UFUNCTION(BlueprintCallable, meta = (BlueprintThreadSafe))
+	FORCEINLINE bool GetIsJumping() const { return bIsJumping; }
+	
+	UFUNCTION(BlueprintCallable, meta = (BlueprintThreadSafe))
+	FORCEINLINE bool GetIsOnGround() const { return !bIsJumping; }
+
+
+private:
+	UPROPERTY()
+	TObjectPtr<ACharacter> OwnerPlayerCharacter;
+
+	UPROPERTY()
+	TObjectPtr<UCharacterMovementComponent> OwnerMovementComponent;
+
+	UPROPERTY(EditAnywhere, Category=Animation)
+	float YawSpeedSmoothedLerpSpeed = 1.f;
+
+	float Angle;
+	float Speed;
+	bool bIsJumping;
+	
+	FRotator BodyPrevRotation;
+	FRotator LookRotationOffset;
 };
