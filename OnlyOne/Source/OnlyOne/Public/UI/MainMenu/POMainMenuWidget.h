@@ -6,6 +6,7 @@
 #include "UI/Common/POBaseWidget.h"
 #include "POMainMenuWidget.generated.h"
 
+class UPOCustomButton;
 class UButton;
 /**
  * 
@@ -20,21 +21,21 @@ public:
 
 protected:
     UPROPERTY(meta = (BindWidget))
-    UButton* JoinServerButton;
+    TObjectPtr<UPOCustomButton> JoinServerButton;
     
     UPROPERTY(meta = (BindWidget))
-    UButton* SettingsButton;
+    TObjectPtr<UPOCustomButton> SettingsButton;
     
     UPROPERTY(meta = (BindWidget))
-    UButton* QuitButton;
+    TObjectPtr<UPOCustomButton> QuitButton;
 
 private:
     UFUNCTION()
-    void OnJoinServerClicked();
+    void OnJoinServerClicked(UPOCustomButton* ClickedButton);
     
     UFUNCTION()
-    void OnSettingsClicked();
+    void OnSettingsClicked(UPOCustomButton* ClickedButton);
     
     UFUNCTION()
-    void OnQuitClicked();
+    void OnQuitClicked(UPOCustomButton* ClickedButton);
 };
