@@ -27,8 +27,8 @@ void UPOCharacterAnimInstance::NativeThreadSafeUpdateAnimation(float DeltaSecond
 	const FRotator ControlRotation = OwnerPlayerCharacter->GetBaseAimRotation();
 	
 	const FVector Velocity = OwnerPlayerCharacter->GetVelocity();
-	const FRotator MovementRotator = Velocity.ToOrientationRotator(); // 이동 방향
-	const FRotator ActorRotator = OwnerPlayerCharacter->GetActorRotation(); // 캐릭터가 보고 있는 방향
+	const FRotator MovementRotator = Velocity.ToOrientationRotator();
+	const FRotator ActorRotator = OwnerPlayerCharacter->GetActorRotation();
 	const float YawDiff = FMath::FindDeltaAngleDegrees(ActorRotator.Yaw, MovementRotator.Yaw);
 	
 	BodyPrevRotation = BodyRotation;
