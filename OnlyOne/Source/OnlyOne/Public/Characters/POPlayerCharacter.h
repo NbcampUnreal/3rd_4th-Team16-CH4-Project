@@ -24,6 +24,7 @@ public:
 	APOPlayerCharacter();
 	virtual void PawnClientRestart() override;
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual UPawnCombatComponent* GetPawnCombatComponent() const override;
 
 private:
@@ -46,22 +47,26 @@ private:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Movement | Run", meta = (AllowPrivateAccess = "true"))
 	float SprintSpeed = 600.f;
+
+	UFUNCTION(Server, Reliable)
+	void Server_SetWalking(bool bNewIsWalking);
+
+	UPROPERTY(Replicated)
+	bool bIsWalking = false;
 	
 	void Input_Move(const FInputActionValue& InputActionValue);
 	void Input_Look(const FInputActionValue& InputActionValue);
 	void Input_Walk(const FInputActionValue& InputActionValue);
 	void Input_Sprint(const FInputActionValue& InputActionValue);
-
 	void Input_AbilityInputPressed(const FGameplayTag InInputTag);
 	void Input_AbilityInputReleased(const FGameplayTag InInputTag);
+	void SetMovementSpeed(const float NewMaxWalkSpeed);
+	void UpdateMovementSpeedBasedOnWalkingState(bool bNewIsWalking);
 
 	bool IsInputPressed(const FInputActionValue& InputActionValue);
-
-	bool bIsWalking = false;
 	bool bIsSprint = false;
 	bool bIsJump = false;
-
-	void SetMaxWalkSpeed(const float NewMaxWalkSpeed);
+	
 #pragma endregion
 
 #pragma region Component
@@ -73,3 +78,4 @@ private:
 public:
 	FORCEINLINE UPlayerCombatComponent* GetPlayerCombatComponent() const { return PlayerCombatComponent; }
 };
+
