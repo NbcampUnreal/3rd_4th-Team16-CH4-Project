@@ -19,7 +19,10 @@ public class OnlyOne : ModuleRules
 			"GameplayTasks",
 			"GameplayAbilities",
 			"AnimGraphRuntime", 
-			"AIModule"
+			"AIModule",
+			"UMG",
+			"Slate",
+			"SlateCore"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
