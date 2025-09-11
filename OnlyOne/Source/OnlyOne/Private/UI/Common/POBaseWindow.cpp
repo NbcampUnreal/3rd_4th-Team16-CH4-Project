@@ -14,7 +14,14 @@ void UPOBaseWindow::NativeConstruct()
 	}
 }
 
+void UPOBaseWindow::BeginDestroy()
+{
+	OnCloseWindow.Clear();
+	
+	Super::BeginDestroy();
+}
+
 void UPOBaseWindow::OnExitButtonClicked()
 {
-	SetVisibility(ESlateVisibility::Collapsed);
+	OnCloseWindow.Broadcast();
 }

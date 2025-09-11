@@ -10,6 +10,9 @@ class UButton;
 /**
  * 
  */
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCloseWindow);
+
 UCLASS()
 class ONLYONE_API UPOBaseWindow : public UPOBaseWidget
 {
@@ -17,7 +20,11 @@ class ONLYONE_API UPOBaseWindow : public UPOBaseWidget
 
 public:
 	virtual void NativeConstruct() override;
+	virtual void BeginDestroy() override;
 
+	UPROPERTY(BlueprintAssignable)
+	FOnCloseWindow OnCloseWindow;
+	
 protected:
 	UPROPERTY(meta = (BindWidget))
 	UButton* ExitButton;
