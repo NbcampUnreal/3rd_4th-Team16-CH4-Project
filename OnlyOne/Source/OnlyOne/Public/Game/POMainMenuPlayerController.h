@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "POMainMenuPlayerController.generated.h"
 
+class UPOJoinServerWidget;
 class UPOMainMenuWidget;
 
 /**
@@ -18,21 +19,30 @@ class ONLYONE_API APOMainMenuPlayerController : public APlayerController
 
 public:
 	APOMainMenuPlayerController();
-
+	
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	void ShowJoinServer();
+	
 protected:
 	virtual void BeginPlay() override;
 
-	// MainMenu Widget Blueprint Class
+	// MainMenu Widget 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
 	TSubclassOf<UPOMainMenuWidget> MainMenuWidgetClass;
-
-	// MainMenu Widget Instance
+	
 	UPROPERTY()
 	TObjectPtr<UPOMainMenuWidget> MainMenuWidget;
 
+	// Join Server Widget
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
+	TSubclassOf<UPOJoinServerWidget> JoinServerWidgetClass;
+	
+	UPROPERTY()
+	TObjectPtr<UPOJoinServerWidget> JoinServerWidget;
+	
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void ShowMainMenu();
-
+	
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void HideMainMenu();
 };

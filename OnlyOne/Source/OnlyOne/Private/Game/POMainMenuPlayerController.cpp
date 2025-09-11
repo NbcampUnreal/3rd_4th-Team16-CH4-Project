@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Engine/Engine.h"
 #include "Framework/Application/SlateApplication.h"
+#include "UI/MainMenu/POJoinServerWidget.h"
 
 APOMainMenuPlayerController::APOMainMenuPlayerController()
 {
@@ -47,5 +48,23 @@ void APOMainMenuPlayerController::HideMainMenu()
 	{
 		MainMenuWidget->RemoveFromParent();
 		SetInputMode(FInputModeGameOnly());
+	}
+}
+
+void APOMainMenuPlayerController::ShowJoinServer()
+{
+	
+	if (JoinServerWidgetClass)
+	{
+		if (!JoinServerWidget)
+		{
+			JoinServerWidget = CreateWidget<UPOJoinServerWidget>(this, JoinServerWidgetClass);
+		}
+		
+		if (JoinServerWidget)
+		{
+			JoinServerWidget->AddToViewport();
+			SetInputMode(FInputModeGameOnly());
+		}
 	}
 }
