@@ -5,7 +5,7 @@
 #include "Components/Button.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Engine/World.h"
-#include "Game/POMainMenuPlayerController.h"
+#include "Controllers/POMainMenuPlayerController.h"
 #include "UI/Common/POCustomButton.h"
 #include "UI/MainMenu/POJoinServerWidget.h"
 

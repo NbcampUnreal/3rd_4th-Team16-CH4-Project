@@ -5,7 +5,7 @@
 
 #include "Components/Button.h"
 #include "Components/EditableTextBox.h"
-#include "Game/POMainMenuPlayerController.h"
+#include "Controllers/POMainMenuPlayerController.h"
 #include "OnlyOne/OnlyOne.h"
 #include "UI/Common/POBaseWindow.h"
 

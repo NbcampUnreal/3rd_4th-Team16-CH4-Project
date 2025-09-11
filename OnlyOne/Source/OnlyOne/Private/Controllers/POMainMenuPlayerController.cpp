@@ -1,6 +1,6 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
-#include "Game/POMainMenuPlayerController.h"
+#include "Controllers/POMainMenuPlayerController.h"
 #include "UI/MainMenu/POMainMenuWidget.h"
 #include "Components/Widget.h"
 #include "Blueprint/UserWidget.h"
