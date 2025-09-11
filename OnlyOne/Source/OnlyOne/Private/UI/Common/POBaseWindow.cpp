@@ -17,7 +17,6 @@ void UPOBaseWindow::NativeConstruct()
 void UPOBaseWindow::BeginDestroy()
 {
 	OnCloseWindow.Clear();
-	//ExitButton->OnClicked.Clear();
 	
 	Super::BeginDestroy();
 }

@@ -19,6 +19,7 @@ UCLASS()
 class ONLYONE_API UPOCustomButton : public UUserWidget
 {
 	GENERATED_BODY()
+	
 public:
 	UPOCustomButton(const FObjectInitializer& ObjectInitializer);
 
