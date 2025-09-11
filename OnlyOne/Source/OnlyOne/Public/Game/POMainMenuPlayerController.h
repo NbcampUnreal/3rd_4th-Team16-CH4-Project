@@ -12,6 +12,16 @@ class UPOMainMenuWidget;
 /**
  * 
  */
+
+USTRUCT()
+struct FJoinServerData
+{
+	GENERATED_BODY()
+
+	FString Name = TEXT("Player");
+	FString IPAddress = TEXT("127.0.0.1");
+};
+
 UCLASS()
 class ONLYONE_API APOMainMenuPlayerController : public APlayerController
 {
@@ -22,6 +32,9 @@ public:
 	
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void ShowJoinServer();
+
+	UFUNCTION()
+	void OnJoinServer(const FJoinServerData& JoinServerData);
 	
 protected:
 	virtual void BeginPlay() override;

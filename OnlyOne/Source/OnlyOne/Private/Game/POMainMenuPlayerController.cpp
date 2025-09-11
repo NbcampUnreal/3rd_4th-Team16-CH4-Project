@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Engine/Engine.h"
 #include "Framework/Application/SlateApplication.h"
+#include "OnlyOne/OnlyOne.h"
 #include "UI/MainMenu/POJoinServerWidget.h"
 
 APOMainMenuPlayerController::APOMainMenuPlayerController()
@@ -33,7 +34,7 @@ void APOMainMenuPlayerController::ShowMainMenu()
 		{
 			MainMenuWidget = CreateWidget<UPOMainMenuWidget>(this, MainMenuWidgetClass);
 		}
-		
+
 		if (MainMenuWidget)
 		{
 			MainMenuWidget->AddToViewport();
@@ -53,18 +54,23 @@ void APOMainMenuPlayerController::HideMainMenu()
 
 void APOMainMenuPlayerController::ShowJoinServer()
 {
-	
 	if (JoinServerWidgetClass)
 	{
 		if (!JoinServerWidget)
 		{
 			JoinServerWidget = CreateWidget<UPOJoinServerWidget>(this, JoinServerWidgetClass);
+			JoinServerWidget->AddToViewport();
+			SetInputMode(FInputModeUIOnly());
 		}
-		
+
 		if (JoinServerWidget)
 		{
-			JoinServerWidget->AddToViewport();
-			SetInputMode(FInputModeGameOnly());
+			JoinServerWidget->SetVisibility(ESlateVisibility::Visible);
 		}
 	}
+}
+
+void APOMainMenuPlayerController::OnJoinServer(const FJoinServerData& JoinServerData)
+{
+	UE_LOG(POLog, Log, TEXT("OnJoinServer : Name=%s, IPAddress=%s"), *JoinServerData.Name, *JoinServerData.IPAddress);
 }

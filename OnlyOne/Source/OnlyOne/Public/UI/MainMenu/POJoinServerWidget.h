@@ -36,4 +36,7 @@ protected:
 private:
 	UFUNCTION()
 	void OnJoinButtonClicked();
+
+	UFUNCTION()
+	void OnCloseWindow();
 };
