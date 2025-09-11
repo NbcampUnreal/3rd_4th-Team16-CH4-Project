@@ -3,7 +3,7 @@
 
 #include "Game/POMainMenuGameMode.h"
 
-#include "Game/POMainMenuPlayerController.h"
+#include "Controllers/POMainMenuPlayerController.h"
 
 APOMainMenuGameMode::APOMainMenuGameMode()
 {

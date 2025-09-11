@@ -5,7 +5,9 @@
 #include "Components/Button.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Engine/World.h"
+#include "Controllers/POMainMenuPlayerController.h"
 #include "UI/Common/POCustomButton.h"
+#include "UI/MainMenu/POJoinServerWidget.h"
 
 void UPOMainMenuWidget::NativeConstruct()
 {
@@ -35,6 +37,10 @@ void UPOMainMenuWidget::OnJoinServerClicked(UPOCustomButton* ClickedButton)
 {
 	// TODO: 서버 접속 로직 구현
 	UE_LOG(LogTemp, Warning, TEXT("Join Server Clicked"));
+	if (APOMainMenuPlayerController* PC = Cast<APOMainMenuPlayerController>(GetOwningPlayer()))
+	{
+		PC->ShowJoinServer();
+	}
 }
 
 void UPOMainMenuWidget::OnSettingsClicked(UPOCustomButton* ClickedButton)

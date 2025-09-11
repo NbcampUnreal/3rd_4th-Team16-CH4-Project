@@ -19,6 +19,7 @@ UCLASS()
 class ONLYONE_API UPOCustomButton : public UUserWidget
 {
 	GENERATED_BODY()
+	
 public:
 	UPOCustomButton(const FObjectInitializer& ObjectInitializer);
 
@@ -33,6 +34,7 @@ public:
 
 protected:
 	virtual void NativeConstruct() override;
+	virtual void BeginDestroy() override;
     
 	UPROPERTY(meta = (BindWidget))
 	UButton* MainButton;

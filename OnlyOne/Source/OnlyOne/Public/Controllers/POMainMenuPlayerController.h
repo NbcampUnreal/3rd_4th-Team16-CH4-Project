@@ -6,11 +6,22 @@
 #include "GameFramework/PlayerController.h"
 #include "POMainMenuPlayerController.generated.h"
 
+class UPOJoinServerWidget;
 class UPOMainMenuWidget;
 
 /**
  * 
  */
+
+USTRUCT()
+struct FJoinServerData
+{
+	GENERATED_BODY()
+
+	FString Name = TEXT("Player");
+	FString IPAddress = TEXT("127.0.0.1");
+};
+
 UCLASS()
 class ONLYONE_API APOMainMenuPlayerController : public APlayerController
 {
@@ -18,21 +29,33 @@ class ONLYONE_API APOMainMenuPlayerController : public APlayerController
 
 public:
 	APOMainMenuPlayerController();
+	
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	void ShowJoinServer();
 
+	UFUNCTION()
+	void OnJoinServer(const FJoinServerData& JoinServerData);
+	
 protected:
 	virtual void BeginPlay() override;
 
-	// MainMenu Widget Blueprint Class
+	// MainMenu Widget 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
 	TSubclassOf<UPOMainMenuWidget> MainMenuWidgetClass;
-
-	// MainMenu Widget Instance
+	
 	UPROPERTY()
 	TObjectPtr<UPOMainMenuWidget> MainMenuWidget;
 
+	// Join Server Widget
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
+	TSubclassOf<UPOJoinServerWidget> JoinServerWidgetClass;
+	
+	UPROPERTY()
+	TObjectPtr<UPOJoinServerWidget> JoinServerWidget;
+	
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void ShowMainMenu();
-
+	
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void HideMainMenu();
 };
