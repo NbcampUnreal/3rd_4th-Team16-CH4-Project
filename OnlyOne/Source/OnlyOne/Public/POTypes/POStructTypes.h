@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
 #include "InputAction.h"
+#include "GameAbilitySystem/Abilities/Player/POPlayerGameplayAbility.h"
 #include "POStructTypes.generated.h"
 
 USTRUCT(BlueprintType)
@@ -18,6 +19,20 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UInputAction* InputAction;
+
+	bool IsValid() const;
+};
+
+USTRUCT(BlueprintType)
+struct FPOPlayerAbilitySet
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (Categories = "InputTag"))
+	FGameplayTag InputTag;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<UPOPlayerGameplayAbility> AbilityToGrant;
 
 	bool IsValid() const;
 };

@@ -7,3 +7,8 @@ bool FPOInputActionConfig::IsValid() const
 {
 	return InputTag.IsValid() && InputAction;
 }
+
+bool FPOPlayerAbilitySet::IsValid() const
+{
+	return InputTag.IsValid() && AbilityToGrant;
+}

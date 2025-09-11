@@ -27,6 +27,9 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual UPawnCombatComponent* GetPawnCombatComponent() const override;
 
+protected:
+	virtual void PossessedBy(AController* NewController) override;
+
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera | SpringArm", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<USpringArmComponent> CameraBoom;
@@ -36,7 +39,7 @@ private:
 
 #pragma region Player Movement
 private:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "CharacterData | Input", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "CharacterData | DataAsset", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UPODataAsset_InputConfig> InputConfigDataAsset;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Movement | walk", meta = (AllowPrivateAccess = "true"))
@@ -48,11 +51,23 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Movement | Run", meta = (AllowPrivateAccess = "true"))
 	float SprintSpeed = 600.f;
 
+	UPROPERTY(ReplicatedUsing=OnRep_IsWalking)
+	bool bIsWalking = false;
+
+	UPROPERTY(ReplicatedUsing=OnRep_IsWalking)
+	bool bIsSprinting = false;
+
 	UFUNCTION(Server, Reliable)
 	void Server_SetWalking(bool bNewIsWalking);
 
-	UPROPERTY(Replicated)
-	bool bIsWalking = false;
+	UFUNCTION(Server, Reliable)
+	void Server_SetSprinting(bool bNewIsSprinting);
+
+	UFUNCTION()
+	void OnRep_IsWalking();
+
+	UFUNCTION()
+	void OnRep_IsSprinting();
 	
 	void Input_Move(const FInputActionValue& InputActionValue);
 	void Input_Look(const FInputActionValue& InputActionValue);
@@ -61,10 +76,10 @@ private:
 	void Input_AbilityInputPressed(const FGameplayTag InInputTag);
 	void Input_AbilityInputReleased(const FGameplayTag InInputTag);
 	void SetMovementSpeed(const float NewMaxWalkSpeed);
-	void UpdateMovementSpeedBasedOnWalkingState(bool bNewIsWalking);
+	void UpdateMovementSpeed();
 
 	bool IsInputPressed(const FInputActionValue& InputActionValue);
-	bool bIsSprint = false;
+
 	bool bIsJump = false;
 	
 #pragma endregion

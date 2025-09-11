@@ -11,6 +11,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "POGameplayTags.h"
 #include "Components/Combat/PlayerCombatComponent.h"
+#include "DataAssets/Startup/PODataAsset_StartupDataBase.h"
 #include "GameAbilitySystem/POAbilitySystemComponent.h"
 #include "Net/UnrealNetwork.h"
 
@@ -74,12 +75,55 @@ void APOPlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 UPawnCombatComponent* APOPlayerCharacter::GetPawnCombatComponent() const
 {
 	ensure(PlayerCombatComponent != nullptr);
-	return GetPlayerCombatComponent();
+	return PlayerCombatComponent;
+}
+
+void APOPlayerCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+	if (!CharacterStartUpData.IsNull())
+	{
+		if (UPODataAsset_StartupDataBase* LoadedData = CharacterStartUpData.LoadSynchronous())
+		{
+			constexpr int32 AbilityApplyLevel = 1;
+
+			LoadedData->GiveToAbilitySystemComponent(POAbilitySystemComponent, AbilityApplyLevel);
+		}
+	}
 }
 
 void APOPlayerCharacter::Server_SetWalking_Implementation(bool bNewIsWalking)
 {
-	UpdateMovementSpeedBasedOnWalkingState(bNewIsWalking);
+	bIsWalking = bNewIsWalking;
+	
+	if (bIsSprinting)
+	{
+		bIsSprinting = false;
+	}
+	UpdateMovementSpeed();
+	
+}
+
+void APOPlayerCharacter::Server_SetSprinting_Implementation(bool bNewIsSprinting)
+{
+	if (bNewIsSprinting)
+	{
+		bIsWalking = false;
+	}
+
+	bIsSprinting = bNewIsSprinting;
+	UpdateMovementSpeed();
+}
+
+void APOPlayerCharacter::OnRep_IsWalking()
+{
+	UpdateMovementSpeed();
+}
+
+void APOPlayerCharacter::OnRep_IsSprinting()
+{
+	UpdateMovementSpeed();
 }
 
 void APOPlayerCharacter::Input_Move(const FInputActionValue& InputActionValue)
@@ -120,12 +164,15 @@ void APOPlayerCharacter::Input_Look(const FInputActionValue& InputActionValue)
 
 void APOPlayerCharacter::Input_Walk(const FInputActionValue& InputActionValue)
 {
-	if (IsInputPressed(InputActionValue))
+	if (!IsInputPressed(InputActionValue))
 	{
-		const bool bNewIsWalking = !bIsWalking;
-		
-		UpdateMovementSpeedBasedOnWalkingState(bNewIsWalking);
-		Server_SetWalking(bNewIsWalking);
+		return;
+	}
+
+	// 걷기 토글: 한 번 눌렀을 때만 걷기 상태로 진입, 이미 걷기 중이면 유지
+	if (!bIsWalking)
+	{
+		Server_SetWalking(true);
 	}
 }
 
@@ -133,34 +180,24 @@ void APOPlayerCharacter::Input_Sprint(const FInputActionValue& InputActionValue)
 {
 	if (IsInputPressed(InputActionValue))
 	{
-		bIsSprint = !bIsSprint;
-
-		if (bIsSprint && SprintSpeed >= 0.f)
-		{
-			SetMovementSpeed(SprintSpeed);
-		}
-		else
-		{
-			if (bIsWalking && WalkSpeed >= 0.f)
-			{
-				SetMovementSpeed(WalkSpeed);
-			}
-			else if (RunSpeed >= 0.f)
-			{
-				SetMovementSpeed(RunSpeed);
-			}
-		}
+		Server_SetSprinting(!bIsSprinting);
 	}
 }
 
 void APOPlayerCharacter::Input_AbilityInputPressed(const FGameplayTag InInputTag)
 {
-	POAbilitySystemComponent->OnAbilityInputPressed(InInputTag);
+	if (POAbilitySystemComponent)
+	{
+		POAbilitySystemComponent->OnAbilityInputPressed(InInputTag);
+	}
 }
 
 void APOPlayerCharacter::Input_AbilityInputReleased(const FGameplayTag InInputTag)
 {
-	POAbilitySystemComponent->OnAbilityInputReleased(InInputTag);
+	if (POAbilitySystemComponent)
+	{
+		POAbilitySystemComponent->OnAbilityInputReleased(InInputTag);
+	}
 }
 
 bool APOPlayerCharacter::IsInputPressed(const FInputActionValue& InputActionValue)
@@ -176,11 +213,13 @@ void APOPlayerCharacter::SetMovementSpeed(const float NewMaxWalkSpeed)
 	}
 }
 
-void APOPlayerCharacter::UpdateMovementSpeedBasedOnWalkingState(bool bNewIsWalking)
+void APOPlayerCharacter::UpdateMovementSpeed()
 {
-	bIsWalking = bNewIsWalking;
-	
-	if (bIsWalking)
+	if (bIsSprinting)
+	{
+		SetMovementSpeed(SprintSpeed);
+	}
+	else if (bIsWalking)
 	{
 		SetMovementSpeed(WalkSpeed);
 	}
