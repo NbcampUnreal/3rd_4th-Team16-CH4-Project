@@ -5,6 +5,7 @@
 #include "game/POLobbyPlayerState.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
+#include "GameFramework/GameSession.h"
 
 APOLobbyGameMode::APOLobbyGameMode()
 {
@@ -12,6 +13,35 @@ APOLobbyGameMode::APOLobbyGameMode()
 	PlayerStateClass = APOLobbyPlayerState::StaticClass();
 	
 	bUseSeamlessTravel = false;
+
+	MaxPlayersInLobby = 8;
+	
+}
+
+void APOLobbyGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
+{
+	Super::InitGame(MapName, Options, ErrorMessage);
+
+	if (GameSession)
+	{
+		GameSession->MaxPlayers = MaxPlayersInLobby;
+	}
+}
+
+void APOLobbyGameMode::PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)
+{
+	Super::PreLogin(Options, Address, UniqueId, ErrorMessage);
+	if (!ErrorMessage.IsEmpty())
+	{
+		return;
+	}
+	
+	const int32 CurrentPlayers = GetNumPlayers() + NumTravellingPlayers;
+	if (CurrentPlayers >= MaxPlayersInLobby)
+	{
+		ErrorMessage = TEXT("Server is full (max players reached).");
+		return;
+	}
 }
 
 void APOLobbyGameMode::PostLogin(APlayerController* NewPlayer)
