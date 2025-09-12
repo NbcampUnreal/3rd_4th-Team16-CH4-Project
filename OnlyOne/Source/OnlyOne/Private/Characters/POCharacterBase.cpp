@@ -34,6 +34,13 @@ UPawnCombatComponent* APOCharacterBase::GetPawnCombatComponent() const
 	return nullptr;
 }
 
+void APOCharacterBase::InitializeAbilitySystemFromDataAsset()
+{
+	POAbilitySystemComponent->InitAbilityActorInfo(this, this);
+	
+	ensureMsgf(!CharacterStartUpData.IsNull(), TEXT("start up 데이터를 character에 할당하는 것을 잊었습니다 %s!"), *GetName());
+}
+
 void APOCharacterBase::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
@@ -43,17 +50,26 @@ void APOCharacterBase::PossessedBy(AController* NewController)
 	{
 		ServerSideInit();
 	}
+	
 }
 
 void APOCharacterBase::ServerSideInit()
 {
 	// TODO: 서버사이드에 추가 로직 추가 예정
-	POAbilitySystemComponent->InitAbilityActorInfo(this, this);
+	if (POAbilitySystemComponent)
+	{
+		POAbilitySystemComponent->InitAbilityActorInfo(this, this);
+		InitializeAbilitySystemFromDataAsset();		
+	}
 }
 
 void APOCharacterBase::ClientSideInit()
 {
-	POAbilitySystemComponent->InitAbilityActorInfo(this, this);
+	if (POAbilitySystemComponent)
+	{
+		POAbilitySystemComponent->InitAbilityActorInfo(this, this);
+		InitializeAbilitySystemFromDataAsset();
+	}
 }
 
 void APOCharacterBase::OnRep_TeamID()
