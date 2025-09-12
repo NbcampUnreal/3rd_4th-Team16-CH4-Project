@@ -6,6 +6,7 @@
 #include "Characters/POCharacterBase.h"
 #include "POPlayerCharacter.generated.h"
 
+class UBoxComponent;
 class UPlayerCombatComponent;
 struct FGameplayTag;
 struct FInputActionValue;
@@ -37,7 +38,6 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UCameraComponent> ViewCamera;
 
-#pragma region Player Movement
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "CharacterData | DataAsset", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UPODataAsset_InputConfig> InputConfigDataAsset;
@@ -54,7 +54,7 @@ private:
 	UPROPERTY(ReplicatedUsing=OnRep_IsWalking)
 	bool bIsWalking = false;
 
-	UPROPERTY(ReplicatedUsing=OnRep_IsWalking)
+	UPROPERTY(ReplicatedUsing=OnRep_IsSprinting)
 	bool bIsSprinting = false;
 
 	UFUNCTION(Server, Reliable)
@@ -81,14 +81,26 @@ private:
 	bool IsInputPressed(const FInputActionValue& InputActionValue);
 
 	bool bIsJump = false;
-	
-#pragma endregion
 
-#pragma region Component
+
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UPlayerCombatComponent> PlayerCombatComponent;
-#pragma endregion
+
+private:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UBoxComponent> AttackHitCollisionBox;
+
+	
+	UFUNCTION()
+	void OnAttackHitBoxOverlap(
+		UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex,
+		bool bFromSweep,
+		const FHitResult& SweepResult
+	);
 
 public:
 	FORCEINLINE UPlayerCombatComponent* GetPlayerCombatComponent() const { return PlayerCombatComponent; }

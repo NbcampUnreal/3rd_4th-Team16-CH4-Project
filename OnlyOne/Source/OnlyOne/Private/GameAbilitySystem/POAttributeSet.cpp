@@ -10,6 +10,7 @@ UPOAttributeSet::UPOAttributeSet()
 	InitCurrentHealth(1.f);
 	InitMaxHealth(1.f);
 	InitBaseDamage(1.f);
+	InitDamageTaken(0.f);
 }
 
 void UPOAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -34,10 +35,21 @@ void UPOAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute, fl
 void UPOAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data)
 {
 	Super::PostGameplayEffectExecute(Data);
-
-	if (Data.EvaluatedData.Attribute == GetCurrentHealthAttribute())
+	
+	if (Data.EvaluatedData.Attribute == GetDamageTakenAttribute())
 	{
-		SetCurrentHealth(FMath::Clamp(GetCurrentHealth(), 0, GetMaxHealth()));
+		const float LocalDamageDone = GetDamageTaken();
+
+		if (LocalDamageDone > 0.f)
+		{
+			const float OldHealth = GetCurrentHealth();
+			// 최종적으로 체력을 감소시킵니다.
+			SetCurrentHealth(FMath::Clamp(OldHealth - LocalDamageDone, 0.f, GetMaxHealth()));
+		}
+	}
+	else if (Data.EvaluatedData.Attribute == GetCurrentHealthAttribute())
+	{
+		SetCurrentHealth(FMath::Clamp(GetCurrentHealth(), 0.f, GetMaxHealth()));
 	}
 }
 

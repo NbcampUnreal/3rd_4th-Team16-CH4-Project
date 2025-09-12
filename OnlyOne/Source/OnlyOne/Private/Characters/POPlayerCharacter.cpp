@@ -3,17 +3,18 @@
 
 #include "Characters/POPlayerCharacter.h"
 
-#include "DebugHelper.h"
-#include "Camera/CameraComponent.h"
+#include "AbilitySystemBlueprintLibrary.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Components/Input/POInputComponent.h"
+#include "Components/BoxComponent.h"
+#include "Components/Combat/PlayerCombatComponent.h"
+#include "Camera/CameraComponent.h"
+#include "GameAbilitySystem/POAbilitySystemComponent.h"
+#include "DataAssets/Startup/PODataAsset_StartupDataBase.h"
+#include "Net/UnrealNetwork.h"
 #include "EnhancedInputSubsystems.h"
 #include "POGameplayTags.h"
-#include "Components/Combat/PlayerCombatComponent.h"
-#include "DataAssets/Startup/PODataAsset_StartupDataBase.h"
-#include "GameAbilitySystem/POAbilitySystemComponent.h"
-#include "Net/UnrealNetwork.h"
 
 APOPlayerCharacter::APOPlayerCharacter()
 {
@@ -35,6 +36,10 @@ APOPlayerCharacter::APOPlayerCharacter()
 	GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
 
 	PlayerCombatComponent = CreateDefaultSubobject<UPlayerCombatComponent>(TEXT("Player Combat Component"));
+
+	AttackHitCollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("Attack Hit Collision Box"));
+	AttackHitCollisionBox->SetupAttachment(GetRootComponent());
+	AttackHitCollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void APOPlayerCharacter::PawnClientRestart()
@@ -64,6 +69,8 @@ void APOPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	POInputComponent->BindNativeInputAction(InputConfigDataAsset, POGameplayTags::InputTag_Jump, ETriggerEvent::Triggered, this, &ThisClass::Jump);
 	POInputComponent->BindNativeInputAction(InputConfigDataAsset, POGameplayTags::InputTag_Walk, ETriggerEvent::Triggered, this, &ThisClass::Input_Walk);
 	POInputComponent->BindNativeInputAction(InputConfigDataAsset, POGameplayTags::InputTag_Sprint, ETriggerEvent::Triggered, this, &ThisClass::Input_Sprint);
+	
+	POInputComponent->BindAbilityInputAction(InputConfigDataAsset, this, &ThisClass::Input_AbilityInputPressed, &ThisClass::Input_AbilityInputReleased);
 }
 
 void APOPlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -203,6 +210,21 @@ void APOPlayerCharacter::Input_AbilityInputReleased(const FGameplayTag InInputTa
 bool APOPlayerCharacter::IsInputPressed(const FInputActionValue& InputActionValue)
 {
 	return InputActionValue.Get<bool>();
+}
+
+void APOPlayerCharacter::OnAttackHitBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	// 자기 자신이나, 이미 죽은 대상은 무시
+	if (!OtherActor || OtherActor == this)
+	{
+		return;
+	}
+
+	// 어빌리티 시스템에 Gameplay Event 전송
+	FGameplayEventData EventPayload;
+	EventPayload.Target = OtherActor; // 충돌한 액터를 Target으로 지정
+
+	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, POGameplayTags::Event_Attack_Hit, EventPayload);
 }
 
 void APOPlayerCharacter::SetMovementSpeed(const float NewMaxWalkSpeed)
