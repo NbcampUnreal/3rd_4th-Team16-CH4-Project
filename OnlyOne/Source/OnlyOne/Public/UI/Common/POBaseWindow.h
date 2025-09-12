@@ -20,7 +20,7 @@ class ONLYONE_API UPOBaseWindow : public UPOBaseWidget
 
 public:
 	virtual void NativeConstruct() override;
-	virtual void BeginDestroy() override;
+	virtual void NativeDestruct() override;
 
 	UPROPERTY(BlueprintAssignable)
 	FOnCloseWindow OnCloseWindow;

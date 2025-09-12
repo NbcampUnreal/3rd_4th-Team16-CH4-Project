@@ -34,7 +34,7 @@ public:
 
 protected:
 	virtual void NativeConstruct() override;
-	virtual void BeginDestroy() override;
+	virtual void NativeDestruct() override;
     
 	UPROPERTY(meta = (BindWidget))
 	UButton* MainButton;

@@ -1,0 +1,34 @@
+﻿// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "Controllers/POServerLobbyPlayerController.h"
+
+#include "Blueprint/UserWidget.h"
+#include "UI/ServerLobbyMenu/POServerLobbyWidget.h"
+
+void APOServerLobbyPlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (IsLocalPlayerController())
+	{
+		ShowLobbyWidget();
+	}
+}
+
+void APOServerLobbyPlayerController::ShowLobbyWidget()
+{
+	if (ServerLobbyWidgetClass)
+	{
+		if (!ServerLobbyWidget)
+		{
+			ServerLobbyWidget = CreateWidget<UPOServerLobbyWidget>(this, ServerLobbyWidgetClass);
+		}
+
+		if (ServerLobbyWidget)
+		{
+			ServerLobbyWidget->AddToViewport();
+			SetInputMode(FInputModeUIOnly());
+		}
+	}
+}
