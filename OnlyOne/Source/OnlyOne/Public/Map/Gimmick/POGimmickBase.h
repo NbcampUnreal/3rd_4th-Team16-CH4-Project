@@ -21,19 +21,14 @@ public:
 protected:
 #pragma region Components
 	UPROPERTY(VisibleAnywhere)
-	USceneComponent* Root;
+	TObjectPtr<USceneComponent> Root;
 	UPROPERTY(VisibleAnywhere)
-	UBoxComponent* Box;
-	UPROPERTY(VisibleAnywhere)
-	UAudioComponent* Audio;
+	TObjectPtr<UBoxComponent> BoxCollision;
 
 	#pragma endregion 
 
 #pragma region config
-	UPROPERTY(EditAnywhere, Category="GAS")
-	FGameplayTag CueTag = FGameplayTag::RequestGameplayTag(FName("Cue.Gimmick.Sound"));
-
-
+	
 	UPROPERTY(EditAnywhere, Category="Net")
 	bool bServerOnly = true;
 
@@ -57,9 +52,7 @@ protected:
 	void OnGimmickComplete(AActor* Target);
 
 	static class UAbilitySystemComponent* GetASC(AActor* Actor);
-	
-	UFUNCTION(NetMulticast, Unreliable)
-	void Multicast_PlayLocalAudio();
+
 
 #pragma region Network
 	UPROPERTY(VisibleAnywhere, Replicated)

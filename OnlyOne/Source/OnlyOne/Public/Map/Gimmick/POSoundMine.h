@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "POGameplayTags.h"
 #include "Map/Gimmick/POGimmickBase.h"
 #include "POSoundMine.generated.h"
 
@@ -20,4 +21,7 @@ protected:
 
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* StaticMesh;
+	
+	virtual void ActivateGimmick_Implementation(AActor* Target) override;
+	
 };
