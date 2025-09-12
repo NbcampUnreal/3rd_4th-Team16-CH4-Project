@@ -20,7 +20,7 @@ APOGimmickBase::APOGimmickBase()
     BoxCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
     BoxCollision->SetCollisionResponseToAllChannels(ECR_Ignore);
     BoxCollision->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
-    BoxCollision->SetGenerateOverlapEvents(true);     //  겹침 이벤트 보장
+    BoxCollision->SetGenerateOverlapEvents(true);   
 
 }
 
