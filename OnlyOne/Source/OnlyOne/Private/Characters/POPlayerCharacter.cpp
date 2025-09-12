@@ -95,14 +95,13 @@ void APOPlayerCharacter::PossessedBy(AController* NewController)
 
 void APOPlayerCharacter::Server_SetWalking_Implementation(bool bNewIsWalking)
 {
-	bIsWalking = bNewIsWalking;
-	
 	if (bIsSprinting)
 	{
 		bIsSprinting = false;
 	}
+
+	bIsWalking = bNewIsWalking;
 	UpdateMovementSpeed();
-	
 }
 
 void APOPlayerCharacter::Server_SetSprinting_Implementation(bool bNewIsSprinting)
@@ -166,13 +165,7 @@ void APOPlayerCharacter::Input_Walk(const FInputActionValue& InputActionValue)
 {
 	if (!IsInputPressed(InputActionValue))
 	{
-		return;
-	}
-
-	// 걷기 토글: 한 번 눌렀을 때만 걷기 상태로 진입, 이미 걷기 중이면 유지
-	if (!bIsWalking)
-	{
-		Server_SetWalking(true);
+		Server_SetWalking(!bIsWalking);
 	}
 }
 

@@ -54,7 +54,7 @@ private:
 	UPROPERTY(ReplicatedUsing=OnRep_IsWalking)
 	bool bIsWalking = false;
 
-	UPROPERTY(ReplicatedUsing=OnRep_IsWalking)
+	UPROPERTY(ReplicatedUsing=OnRep_IsSprinting)
 	bool bIsSprinting = false;
 
 	UFUNCTION(Server, Reliable)
