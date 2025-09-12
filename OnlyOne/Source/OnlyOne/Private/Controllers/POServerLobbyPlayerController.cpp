@@ -5,6 +5,7 @@
 
 #include "Blueprint/UserWidget.h"
 #include "UI/ServerLobbyMenu/POServerLobbyWidget.h"
+#include "game/POLobbyPlayerState.h"
 
 void APOServerLobbyPlayerController::BeginPlay()
 {
@@ -13,6 +14,19 @@ void APOServerLobbyPlayerController::BeginPlay()
 	if (IsLocalPlayerController())
 	{
 		ShowLobbyWidget();
+	}
+}
+
+void APOServerLobbyPlayerController::OnRep_PlayerState()
+{
+	Super::OnRep_PlayerState();
+
+	if (IsLocalPlayerController())
+	{
+		if (APOLobbyPlayerState* PS = GetPlayerState<APOLobbyPlayerState>())
+		{
+			PS->InitNicknameFromGameInstanceOnce();
+		}
 	}
 }
 

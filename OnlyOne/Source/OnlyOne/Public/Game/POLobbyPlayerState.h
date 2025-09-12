@@ -7,7 +7,6 @@
 #include "POLobbyPlayerState.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPOOnReadyChanged, bool, bNowReady);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPOOnNicknameReady, const FString&, DisplayNickname);
 
 /**
  * 
@@ -39,9 +38,6 @@ public:
 	UPROPERTY(BlueprintAssignable, Category="PO|Lobby")
 	FPOOnReadyChanged OnReadyChanged;
 
-	UPROPERTY(BlueprintAssignable, Category="PO|Lobby")
-	FPOOnNicknameReady OnNicknameReady;
-
 public:
 	UFUNCTION(Server, Reliable)
 	void ServerSetNicknameOnce(const FString& InNickname);
@@ -53,9 +49,6 @@ public:
 	UFUNCTION()
 	void OnRep_IsReady();
 
-	UFUNCTION()
-	void OnRep_DisplayNickname();
-
 protected:
 	UPROPERTY(ReplicatedUsing=OnRep_IsReady)
 	bool bIsReady;
@@ -63,7 +56,7 @@ protected:
 	UPROPERTY(Replicated)
 	FString BaseNickname;
 	
-	UPROPERTY(ReplicatedUsing=OnRep_DisplayNickname)
+	UPROPERTY(Replicated)
 	FString DisplayNickname;
 
 protected:

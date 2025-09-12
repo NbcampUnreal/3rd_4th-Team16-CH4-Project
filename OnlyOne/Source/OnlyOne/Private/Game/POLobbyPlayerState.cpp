@@ -13,7 +13,6 @@ APOLobbyPlayerState::APOLobbyPlayerState()
 void APOLobbyPlayerState::BeginDestroy()
 {
 	OnReadyChanged.Clear();
-	OnNicknameReady.Clear();
 	Super::BeginDestroy();
 }
 
@@ -50,7 +49,6 @@ void APOLobbyPlayerState::ServerSetNicknameOnce_Implementation(const FString& In
 	BaseNickname    = Base;
 	DisplayNickname = FString::Printf(TEXT("%s%s"), *Base, *TagStr);
 
-	OnRep_DisplayNickname();
 }
 
 void APOLobbyPlayerState::ServerSetReady_Implementation(bool bInReady)
@@ -65,11 +63,6 @@ void APOLobbyPlayerState::ServerSetReady_Implementation(bool bInReady)
 void APOLobbyPlayerState::OnRep_IsReady()
 {
 	OnReadyChanged.Broadcast(bIsReady);
-}
-
-void APOLobbyPlayerState::OnRep_DisplayNickname()
-{
-	OnNicknameReady.Broadcast(DisplayNickname);
 }
 
 void APOLobbyPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

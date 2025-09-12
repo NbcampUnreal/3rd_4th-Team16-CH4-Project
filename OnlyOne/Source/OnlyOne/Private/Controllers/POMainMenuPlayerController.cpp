@@ -8,6 +8,7 @@
 #include "Framework/Application/SlateApplication.h"
 #include "OnlyOne/OnlyOne.h"
 #include "UI/MainMenu/POJoinServerWidget.h"
+#include "Game/POGameInstance.h"
 
 APOMainMenuPlayerController::APOMainMenuPlayerController()
 {
@@ -73,4 +74,9 @@ void APOMainMenuPlayerController::ShowJoinServer()
 void APOMainMenuPlayerController::OnJoinServer(const FJoinServerData& JoinServerData)
 {
 	UE_LOG(POLog, Log, TEXT("OnJoinServer : Name=%s, IPAddress=%s"), *JoinServerData.Name, *JoinServerData.IPAddress);
+
+	if (UPOGameInstance* GI = GetGameInstance<UPOGameInstance>())
+	{
+		GI->SetPendingProfile(JoinServerData.Name, JoinServerData.IPAddress);
+	}
 }

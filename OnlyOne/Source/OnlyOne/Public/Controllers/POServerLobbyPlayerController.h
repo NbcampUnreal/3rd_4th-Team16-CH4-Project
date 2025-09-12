@@ -30,6 +30,8 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	virtual void OnRep_PlayerState() override;
+
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UPOServerLobbyWidget> ServerLobbyWidgetClass;
 
