@@ -20,6 +20,11 @@ void UPOServerLobbyWidget::NativeConstruct()
 		TestJoinButton->OnClicked.AddDynamic(this, &UPOServerLobbyWidget::TestJoinButtonClicked);
 	}
 
+	if (TestExitButton)
+	{
+		TestExitButton->OnClicked.AddDynamic(this, &UPOServerLobbyWidget::TestExitButtonClicked);
+	}
+	
 	if (APOServerLobbyPlayerController* PC = Cast<APOServerLobbyPlayerController>(GetOwningPlayer()))
 	{
 		PC->OnReadyStateChanged.AddDynamic(this, &UPOServerLobbyWidget::OnReadyPlayer);
@@ -112,4 +117,13 @@ void UPOServerLobbyWidget::TestJoinButtonClicked()
 	TestPlayer.IPAddress = TEXT("123456");
 
 	OnJoinPlayer(TestPlayer);
+}
+
+void UPOServerLobbyWidget::TestExitButtonClicked()
+{
+	FJoinServerData TestPlayer;
+	TestPlayer.Name = TEXT("Test player" + FString::FromInt(PlayerSlots.Num()));
+	TestPlayer.IPAddress = TEXT("123456");
+
+	OnExitPlayer(TestPlayer);
 }

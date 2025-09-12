@@ -54,6 +54,9 @@ private:
 	void TestJoinButtonClicked();
 
 	UFUNCTION()
+	void TestExitButtonClicked();
+
+	UFUNCTION()
 	void OnJoinPlayer(FJoinServerData& InNewPlayer);
 
 	UFUNCTION()
