@@ -11,7 +11,9 @@
  */
 
 class UPOServerLobbyWidget;
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlayerReadyStateChanged);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlayerReady);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPlayerReadyStateChanged, const FJoinServerData&, PlayerData, bool, bIsReady);
+
 
 UCLASS()
 class ONLYONE_API APOServerLobbyPlayerController : public APlayerController
@@ -19,6 +21,9 @@ class ONLYONE_API APOServerLobbyPlayerController : public APlayerController
 	GENERATED_BODY()
 
 public:
+	UPROPERTY()
+	FOnPlayerReady OnPlayerReady;
+	
 	UPROPERTY()
 	FOnPlayerReadyStateChanged OnReadyStateChanged;
 

@@ -52,7 +52,13 @@ private:
 
 	UFUNCTION()
 	void TestJoinButtonClicked();
-	
+
+	UFUNCTION()
 	void OnJoinPlayer(FJoinServerData& InNewPlayer);
+
+	UFUNCTION()
 	void OnExitPlayer(FJoinServerData& InExitPlayer);
+
+	UFUNCTION()
+	void OnReadyPlayer(const FJoinServerData& InReadyPlayer, bool bIsReady);
 };

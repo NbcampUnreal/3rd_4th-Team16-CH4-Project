@@ -14,7 +14,6 @@ void APOLobbyPlayerState::BeginDestroy()
 {
 	OnReadyChanged.Clear();
 	OnNicknameReady.Clear();
-
 	Super::BeginDestroy();
 }
 
