@@ -10,6 +10,14 @@ APOLobbyPlayerState::APOLobbyPlayerState()
 	bIsReady = false;
 }
 
+void APOLobbyPlayerState::BeginDestroy()
+{
+	OnReadyChanged.Clear();
+	OnNicknameReady.Clear();
+
+	Super::BeginDestroy();
+}
+
 void APOLobbyPlayerState::InitNicknameFromGameInstanceOnce()
 {
 	if (UPOGameInstance* GI = GetGameInstance<UPOGameInstance>())

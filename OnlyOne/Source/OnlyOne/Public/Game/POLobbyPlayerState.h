@@ -19,6 +19,7 @@ class ONLYONE_API APOLobbyPlayerState : public APlayerState
 
 public:
 	APOLobbyPlayerState();
+	virtual void BeginDestroy() override;
 	
 	UFUNCTION(BlueprintCallable, Category="PO|Lobby")
 	void InitNicknameFromGameInstanceOnce();
