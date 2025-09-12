@@ -10,6 +10,7 @@
  * 
  */
 
+class UPOServerLobbyWidget;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlayerReadyStateChanged);
 
 UCLASS()
@@ -20,5 +21,16 @@ class ONLYONE_API APOServerLobbyPlayerController : public APlayerController
 public:
 	UPROPERTY()
 	FOnPlayerReadyStateChanged OnReadyStateChanged;
-	
+
+protected:
+	virtual void BeginPlay() override;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UPOServerLobbyWidget> ServerLobbyWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UPOServerLobbyWidget> ServerLobbyWidget;
+
+	UFUNCTION()
+	void ShowLobbyWidget();
 };

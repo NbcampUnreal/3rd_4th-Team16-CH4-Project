@@ -22,6 +22,7 @@ public:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
 
+protected:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UPOServerLobbyPlayerElementWidget> PlayerSlotClass;
 
@@ -46,7 +47,12 @@ public:
 	TObjectPtr<UButton> TestJoinButton;
 
 private:
+	UFUNCTION()
 	void OnReadyButtonClicked();
+
+	UFUNCTION()
+	void TestJoinButtonClicked();
+	
 	void OnJoinPlayer(FJoinServerData& InNewPlayer);
 	void OnExitPlayer(FJoinServerData& InExitPlayer);
 };
