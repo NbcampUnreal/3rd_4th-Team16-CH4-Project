@@ -85,7 +85,7 @@ void APOGimmickBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
     DOREPLIFETIME(APOGimmickBase, bConsumed);
 }
 
-//Gimmick발동 이후 처리 
+//Gimmick발동 이후 처리
 void APOGimmickBase::OnGimmickComplete_Implementation(AActor* Target)
 {
     if (!HasAuthority())
