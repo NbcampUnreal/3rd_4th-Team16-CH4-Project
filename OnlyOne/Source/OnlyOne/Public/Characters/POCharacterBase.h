@@ -9,6 +9,7 @@
 #include "Interfaces/PawnCombatInterface.h"
 #include "POCharacterBase.generated.h"
 
+class UPODataAsset_StartupDataBase;
 class UPOAttributeSet;
 class UInputComponent;
 class UPOAbilitySystemComponent;
@@ -28,6 +29,7 @@ public:
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual UPawnCombatComponent* GetPawnCombatComponent() const override;
+	void InitializeAbilitySystemFromDataAsset();
 
 protected:
 	virtual void PossessedBy(AController* NewController) override;
@@ -37,6 +39,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AbilitySystem")
 	TObjectPtr<UPOAttributeSet> POAttributeSet;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "CharacterData | DataAsset")
+	TSoftObjectPtr<UPODataAsset_StartupDataBase> CharacterStartUpData;
 
 private:
 	void ServerSideInit();

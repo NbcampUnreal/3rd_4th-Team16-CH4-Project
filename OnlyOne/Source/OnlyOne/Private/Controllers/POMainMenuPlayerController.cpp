@@ -1,11 +1,13 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
-#include "Game/POMainMenuPlayerController.h"
+#include "Controllers/POMainMenuPlayerController.h"
 #include "UI/MainMenu/POMainMenuWidget.h"
 #include "Components/Widget.h"
 #include "Blueprint/UserWidget.h"
 #include "Engine/Engine.h"
 #include "Framework/Application/SlateApplication.h"
+#include "OnlyOne/OnlyOne.h"
+#include "UI/MainMenu/POJoinServerWidget.h"
 
 APOMainMenuPlayerController::APOMainMenuPlayerController()
 {
@@ -32,7 +34,7 @@ void APOMainMenuPlayerController::ShowMainMenu()
 		{
 			MainMenuWidget = CreateWidget<UPOMainMenuWidget>(this, MainMenuWidgetClass);
 		}
-		
+
 		if (MainMenuWidget)
 		{
 			MainMenuWidget->AddToViewport();
@@ -48,4 +50,27 @@ void APOMainMenuPlayerController::HideMainMenu()
 		MainMenuWidget->RemoveFromParent();
 		SetInputMode(FInputModeGameOnly());
 	}
+}
+
+void APOMainMenuPlayerController::ShowJoinServer()
+{
+	if (JoinServerWidgetClass)
+	{
+		if (!JoinServerWidget)
+		{
+			JoinServerWidget = CreateWidget<UPOJoinServerWidget>(this, JoinServerWidgetClass);
+			JoinServerWidget->AddToViewport();
+			SetInputMode(FInputModeUIOnly());
+		}
+
+		if (JoinServerWidget)
+		{
+			JoinServerWidget->SetVisibility(ESlateVisibility::Visible);
+		}
+	}
+}
+
+void APOMainMenuPlayerController::OnJoinServer(const FJoinServerData& JoinServerData)
+{
+	UE_LOG(POLog, Log, TEXT("OnJoinServer : Name=%s, IPAddress=%s"), *JoinServerData.Name, *JoinServerData.IPAddress);
 }
