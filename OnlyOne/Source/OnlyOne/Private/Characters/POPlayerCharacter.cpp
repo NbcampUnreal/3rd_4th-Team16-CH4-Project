@@ -70,6 +70,7 @@ void APOPlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(APOPlayerCharacter, bIsWalking);
+	DOREPLIFETIME(APOPlayerCharacter, bIsSprinting);
 }
 
 UPawnCombatComponent* APOPlayerCharacter::GetPawnCombatComponent() const
