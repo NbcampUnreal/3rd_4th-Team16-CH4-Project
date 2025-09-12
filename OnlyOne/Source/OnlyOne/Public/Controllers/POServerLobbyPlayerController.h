@@ -9,8 +9,16 @@
 /**
  * 
  */
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlayerReadyStateChanged);
+
 UCLASS()
 class ONLYONE_API APOServerLobbyPlayerController : public APlayerController
 {
 	GENERATED_BODY()
+
+public:
+	UPROPERTY()
+	FOnPlayerReadyStateChanged OnReadyStateChanged;
+	
 };

@@ -6,6 +6,7 @@
 #include "UI/Common/POBaseWidget.h"
 #include "POServerLobbyWidget.generated.h"
 
+class UScrollBox;
 struct FJoinServerData;
 class UButton;
 class UPOServerLobbyPlayerElementWidget;
@@ -27,6 +28,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	TMap<FString, TObjectPtr<UPOServerLobbyPlayerElementWidget>> PlayerSlots;
 
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UScrollBox> PlayerListScrollBox;
+	
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> ReadyButton;
 
