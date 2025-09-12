@@ -24,9 +24,19 @@ void UPOJoinServerWidget::NativeConstruct()
 	}
 }
 
-void UPOJoinServerWidget::BeginDestroy()
+void UPOJoinServerWidget::NativeDestruct()
 {
-	Super::BeginDestroy();
+	if (WindowUI && WindowUI->OnCloseWindow.IsBound())
+	{
+		WindowUI->OnCloseWindow.RemoveDynamic(this, &UPOJoinServerWidget::OnCloseWindow);
+	}
+
+	if (JoinButton && JoinButton->OnClicked.IsBound())
+	{
+		JoinButton->OnClicked.RemoveDynamic(this, &UPOJoinServerWidget::OnJoinButtonClicked);
+	}
+	
+	Super::NativeDestruct();
 }
 
 void UPOJoinServerWidget::OnJoinButtonClicked()

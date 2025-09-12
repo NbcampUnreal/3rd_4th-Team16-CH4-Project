@@ -18,7 +18,7 @@ class ONLYONE_API UPOJoinServerWidget : public UPOBaseWidget
 	GENERATED_BODY()
 public:
 	virtual void NativeConstruct() override;
-	virtual void BeginDestroy() override;
+	virtual void NativeDestruct() override;
 	
 protected:
 	UPROPERTY(meta = (BindWidget))
