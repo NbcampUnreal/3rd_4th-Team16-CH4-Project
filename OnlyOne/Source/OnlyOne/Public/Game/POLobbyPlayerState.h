@@ -18,10 +18,18 @@ class ONLYONE_API APOLobbyPlayerState : public APlayerState
 {
 	GENERATED_BODY()
 
+	/* Lifecycle 섹션 */
+
 public:
 	APOLobbyPlayerState();
-	virtual void BeginDestroy() override;
 	
+protected:
+	virtual void BeginPlay() override;
+	virtual void BeginDestroy() override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	/* Lobby 관련 섹션 */
+public:
 	UFUNCTION(BlueprintCallable, Category="PO|Lobby")
 	void InitNicknameFromGameInstanceOnce();
 	
@@ -29,7 +37,7 @@ public:
 	bool IsReady() const { return bIsReady; }
 
 	UFUNCTION(BlueprintPure, Category="PO|Lobby")
-	const FString& GetBaseNickname() const { return BaseNickname; }
+	const FString& GetBaseNickname() const { return BaseNickname; } //NOTE: Getter는 FORCEINLINE을 붙이는게 좋음
 
 	UFUNCTION(BlueprintPure, Category="PO|Lobby")
 	const FString& GetDisplayNickname() const { return DisplayNickname; }
@@ -43,6 +51,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category="PO|Lobby")
 	void ToggleReady();
 
+	void InitializeExistingPlayers();
+
 public:
 	UFUNCTION(Server, Reliable)
 	void ServerSetNicknameOnce(const FString& InNickname);
@@ -50,7 +60,6 @@ public:
 	UFUNCTION(Server, Reliable)
 	void ServerSetReady();
 
-public:
 	UFUNCTION()
 	void OnRep_IsReady();
 
@@ -69,10 +78,4 @@ protected:
 
 protected:
 	FString SanitizeNickname_Server(const FString& InRaw) const;
-
-protected:
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	virtual void BeginPlay() override;
-	
-
 };

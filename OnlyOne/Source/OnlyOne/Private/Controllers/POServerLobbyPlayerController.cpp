@@ -21,7 +21,6 @@ void APOServerLobbyPlayerController::BeginPlay()
 
 void APOServerLobbyPlayerController::BeginDestroy()
 {
-	// OnPlayerReady 델리게이트에서 바인딩된 모든 함수를 제거하여 잠재적인 메모리 누수를 방지합니다.
 	OnPlayerReady.Clear();
 	OnPlayerJoinLobby.Clear();
 	OnPlayerLeaveLobby.Clear();

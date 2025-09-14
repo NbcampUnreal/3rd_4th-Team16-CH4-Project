@@ -6,6 +6,7 @@
 #include "Net/UnrealNetwork.h"
 #include "game/POGameInstance.h"
 #include "game/POBadWords.h"
+#include "GameFramework/GameStateBase.h"
 #include "Kismet/GameplayStatics.h"
 #include "OnlyOne/OnlyOne.h"
 
@@ -14,12 +15,64 @@ APOLobbyPlayerState::APOLobbyPlayerState()
 	bIsReady = false;
 }
 
+void APOLobbyPlayerState::BeginPlay()
+{
+	Super::BeginPlay();
+
+	/*
+	 *	NOTE: 지연호출을 하는 이유는 네트워크 동기화가 완료된 후에 실행되도록 하기 위함입니다.
+	 *		하지만 지연호출을 하는 것이 완벽한 해결책은 아니며, 더 나은 방법이 있을 수 있습니다.
+	 *		예를 들어, PlayerState가 초기화 됐을 때, 플래그를 설정하고, 그 플래그를 체크하는 방법 등이 있습니다.
+	 */
+	if (GetNetMode() == NM_Client)
+	{
+		FTimerHandle TimerHandle;
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle, 
+			[this]()
+			{
+				InitializeExistingPlayers();
+				InitNicknameFromGameInstanceOnce();
+			}, 
+			1.0f, false);
+	}
+
+	
+}
 void APOLobbyPlayerState::BeginDestroy()
 {
+	UE_LOG(POLog, Warning, TEXT("APOLobbyPlayerState::BeginDestroy() - Player %d (%s) is being destroyed"), GetPlayerId(), *GetBaseNickname());
+
+	
+	FJoinServerData PlayerData;
+	PlayerData.Name = BaseNickname;
+	PlayerData.DisplayNickname = DisplayNickname;
+	if (APOServerLobbyPlayerController* PC = Cast<APOServerLobbyPlayerController>(UGameplayStatics::GetPlayerController(this, 0)))
+	{
+		UE_LOG(POLog, Warning, TEXT("Broadcasting OnPlayerLeaveLobby for %s"), *BaseNickname);
+		PC->OnPlayerLeaveLobby.Broadcast(PlayerData);
+	}
+	/*
+	// 서버에서만 플레이어 퇴장 알림을 전송
+	if (HasAuthority() && !BaseNickname.IsEmpty())
+	{
+		UE_LOG(POLog, Warning, TEXT("Broadcasting player left: %s"), *BaseNickname);
+		MulticastPlayerLeftLobby(BaseNickname);
+	}
+	*/
+	
 	OnReadyChanged.Clear();
 	
 	Super::BeginDestroy();
 }
+
+void APOLobbyPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(APOLobbyPlayerState, bIsReady);
+	DOREPLIFETIME(APOLobbyPlayerState, BaseNickname);
+	DOREPLIFETIME(APOLobbyPlayerState, DisplayNickname);
+}
+
 
 void APOLobbyPlayerState::InitNicknameFromGameInstanceOnce()
 {
@@ -42,6 +95,12 @@ void APOLobbyPlayerState::ToggleReady()
 
 void APOLobbyPlayerState::ServerSetNicknameOnce_Implementation(const FString& InNickname)
 {
+	/*
+	 * NOTE: 아직 검증되지 않은 코드나, 현재 단계에서 계획되지 않은 기능이 포함되면
+	 *			테스트 시 혼란을 야기할 수 있습니다. 필요시 주석을 해제하고 사용하세요.
+	 */
+	
+	
 	/*
 	UE_LOG(POLog, Warning, TEXT("Player %d ServerSetNicknameOnce_Implementation: InNickname = '%s'"), GetPlayerId(), *InNickname);
 	
@@ -74,7 +133,10 @@ void APOLobbyPlayerState::ServerSetNicknameOnce_Implementation(const FString& In
 void APOLobbyPlayerState::ServerSetReady_Implementation() //NOTE: 매개변수 제거, Toggle에서는 매개변수가 필요 없음
 {
 	bIsReady = !bIsReady;
-	OnRep_IsReady();
+	if (GetNetMode() == NM_ListenServer)
+	{
+		OnRep_IsReady();
+	}
 }
 
 void APOLobbyPlayerState::OnRep_IsReady()
@@ -99,26 +161,6 @@ void APOLobbyPlayerState::MulticastPlayerJoinedLobby_Implementation(const FStrin
 		PlayerData.DisplayNickname = InName;
 		PC->OnPlayerJoinLobby.Broadcast(PlayerData);
 	} 
-}
-
-void APOLobbyPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME(APOLobbyPlayerState, bIsReady);
-	DOREPLIFETIME(APOLobbyPlayerState, BaseNickname);
-	DOREPLIFETIME(APOLobbyPlayerState, DisplayNickname);
-}
-
-void APOLobbyPlayerState::BeginPlay()
-{
-	Super::BeginPlay();
-
-	if (GetNetMode() == NM_Client)
-	{
-		InitNicknameFromGameInstanceOnce();
-	}
-
-	
 }
 
 //TODO: Server RPC가 아닌데 _Server가 붙어있음. 이름 변경 필요
@@ -211,4 +253,45 @@ FString APOLobbyPlayerState::SanitizeNickname_Server(const FString& InRaw) const
 	}
 
 	return S;
+}
+
+void APOLobbyPlayerState::InitializeExistingPlayers()
+{
+	if (GetNetMode() != NM_Client)
+	{
+		return;
+	}
+
+	/*
+	 *	NOTE: 아래 소스코드는, 이벤트 구조나, 순회 효율 등 여러가지 측면에서 개선의 여지가 있습니다.
+	 */
+	if (AGameStateBase* GameState = GetWorld()->GetGameState())
+	{
+		if (APOServerLobbyPlayerController* PC = Cast<APOServerLobbyPlayerController>(UGameplayStatics::GetPlayerController(this, 0)))
+		{
+			for (APlayerState* PS : GameState->PlayerArray)
+			{
+				if (APOLobbyPlayerState* LobbyPlayerState = Cast<APOLobbyPlayerState>(PS))
+				{
+					// 자기 자신은 제외하고, 닉네임이 설정된 플레이어만 추가
+					if (LobbyPlayerState != this && !LobbyPlayerState->GetBaseNickname().IsEmpty())
+					{
+						FJoinServerData PlayerData;
+						PlayerData.Name = LobbyPlayerState->GetBaseNickname();
+						PlayerData.DisplayNickname = LobbyPlayerState->GetDisplayNickname();
+						
+						PC->OnPlayerJoinLobby.Broadcast(PlayerData);
+						if (LobbyPlayerState->IsReady())
+						{
+							PC->OnReadyStateChanged.Broadcast(PlayerData, true);
+						}
+						
+						UE_LOG(POLog, Log, TEXT("InitializeExistingPlayers: Added existing player %s (Ready: %s)"), 
+							*LobbyPlayerState->GetBaseNickname(), 
+							LobbyPlayerState->IsReady() ? TEXT("true") : TEXT("false"));
+					}
+				}
+			}
+		}
+	}
 }
