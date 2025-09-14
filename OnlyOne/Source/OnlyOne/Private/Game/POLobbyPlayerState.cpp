@@ -38,28 +38,9 @@ void APOLobbyPlayerState::BeginPlay()
 
 	
 }
+
 void APOLobbyPlayerState::BeginDestroy()
 {
-	UE_LOG(POLog, Warning, TEXT("APOLobbyPlayerState::BeginDestroy() - Player %d (%s) is being destroyed"), GetPlayerId(), *GetBaseNickname());
-
-	
-	FJoinServerData PlayerData;
-	PlayerData.Name = BaseNickname;
-	PlayerData.DisplayNickname = DisplayNickname;
-	if (APOServerLobbyPlayerController* PC = Cast<APOServerLobbyPlayerController>(UGameplayStatics::GetPlayerController(this, 0)))
-	{
-		UE_LOG(POLog, Warning, TEXT("Broadcasting OnPlayerLeaveLobby for %s"), *BaseNickname);
-		PC->OnPlayerLeaveLobby.Broadcast(PlayerData);
-	}
-	/*
-	// 서버에서만 플레이어 퇴장 알림을 전송
-	if (HasAuthority() && !BaseNickname.IsEmpty())
-	{
-		UE_LOG(POLog, Warning, TEXT("Broadcasting player left: %s"), *BaseNickname);
-		MulticastPlayerLeftLobby(BaseNickname);
-	}
-	*/
-	
 	OnReadyChanged.Clear();
 	
 	Super::BeginDestroy();
@@ -91,6 +72,18 @@ void APOLobbyPlayerState::InitNicknameFromGameInstanceOnce()
 void APOLobbyPlayerState::ToggleReady()
 {
 	ServerSetReady();
+}
+
+void APOLobbyPlayerState::MulticastPlayerLeftLobby_Implementation(const FString& InName)
+{
+	FJoinServerData PlayerData;
+	PlayerData.Name = BaseNickname;
+	PlayerData.DisplayNickname = DisplayNickname;
+	if (APOServerLobbyPlayerController* PC = Cast<APOServerLobbyPlayerController>(UGameplayStatics::GetPlayerController(this, 0)))
+	{
+		UE_LOG(POLog, Warning, TEXT("Broadcasting OnPlayerLeaveLobby for %s"), *BaseNickname);
+		PC->OnPlayerLeaveLobby.Broadcast(PlayerData);
+	}
 }
 
 void APOLobbyPlayerState::ServerSetNicknameOnce_Implementation(const FString& InNickname)
@@ -163,7 +156,6 @@ void APOLobbyPlayerState::MulticastPlayerJoinedLobby_Implementation(const FStrin
 	} 
 }
 
-//TODO: Server RPC가 아닌데 _Server가 붙어있음. 이름 변경 필요
 FString APOLobbyPlayerState::SanitizeNickname_Server(const FString& InRaw) const 
 {
 	FString S = InRaw;

@@ -51,6 +51,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category="PO|Lobby")
 	void ToggleReady();
 
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastPlayerLeftLobby(const FString& InName);
+	
 	void InitializeExistingPlayers();
 
 public:

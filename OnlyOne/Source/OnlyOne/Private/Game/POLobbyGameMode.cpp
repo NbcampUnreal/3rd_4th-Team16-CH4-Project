@@ -57,5 +57,10 @@ void APOLobbyGameMode::PostLogin(APlayerController* NewPlayer)
 
 void APOLobbyGameMode::Logout(AController* Exiting)
 {
+	if (APOLobbyPlayerState* PS = Exiting ? Exiting->GetPlayerState<APOLobbyPlayerState>() : nullptr)
+	{
+		PS->MulticastPlayerLeftLobby(PS->GetBaseNickname());
+	}
+	
 	Super::Logout(Exiting);
 }
