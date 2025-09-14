@@ -15,6 +15,19 @@ void APOServerLobbyPlayerController::BeginPlay()
 	{
 		ShowLobbyWidget();
 	}
+
+	OnPlayerReady.AddDynamic(this, &APOServerLobbyPlayerController::OnClickedReadyButton);
+}
+
+void APOServerLobbyPlayerController::BeginDestroy()
+{
+	// OnPlayerReady 델리게이트에서 바인딩된 모든 함수를 제거하여 잠재적인 메모리 누수를 방지합니다.
+	OnPlayerReady.Clear();
+	OnPlayerJoinLobby.Clear();
+	OnPlayerLeaveLobby.Clear();
+	OnReadyStateChanged.Clear();
+	
+	Super::BeginDestroy();
 }
 
 void APOServerLobbyPlayerController::OnRep_PlayerState()
@@ -45,5 +58,13 @@ void APOServerLobbyPlayerController::ShowLobbyWidget()
 			ServerLobbyWidget->AddToViewport();
 			SetInputMode(FInputModeUIOnly());
 		}
+	}
+}
+
+void APOServerLobbyPlayerController::OnClickedReadyButton()
+{
+	if (APOLobbyPlayerState* PS = GetPlayerState<APOLobbyPlayerState>())
+	{
+		PS->ToggleReady();
 	}
 }

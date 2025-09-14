@@ -8,6 +8,7 @@
 #include "POLobbyPlayerState.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPOOnReadyChanged, bool, bNowReady);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInitalizedPlayerData, const FJoinServerData&, PlayerData);
 
 /**
  * 
@@ -36,6 +37,9 @@ public:
 	UPROPERTY(BlueprintAssignable, Category="PO|Lobby")
 	FPOOnReadyChanged OnReadyChanged;
 
+	UPROPERTY(BlueprintAssignable, Category="PO|Lobby")
+	FOnInitalizedPlayerData OnInitalizedPlayerData;
+
 	UFUNCTION(BlueprintCallable, Category="PO|Lobby")
 	void ToggleReady();
 
@@ -50,19 +54,18 @@ public:
 	UFUNCTION()
 	void OnRep_IsReady();
 
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastPlayerJoinedLobby(const FString& InName);
+
 protected:
 	UPROPERTY(ReplicatedUsing=OnRep_IsReady)
 	bool bIsReady;
 
-	//TODO: BaseNickname과 DisplayNickname을 FJoinServerData와 통합하도록 변경해주세요.
 	UPROPERTY(Replicated)
 	FString BaseNickname;
 	
 	UPROPERTY(Replicated)
 	FString DisplayNickname;
-
-	UPROPERTY(Replicated)
-	FJoinServerData PlayerData;
 
 protected:
 	FString SanitizeNickname_Server(const FString& InRaw) const;

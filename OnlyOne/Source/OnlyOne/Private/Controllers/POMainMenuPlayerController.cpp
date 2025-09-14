@@ -91,7 +91,7 @@ void APOMainMenuPlayerController::OnJoinServer(FJoinServerData& JoinServerData)
 	{
 		TravelURL += ":7777";
 	}
-    
+
 	// 플레이어 이름을 URL 옵션으로 추가
 	TravelURL += FString::Printf(TEXT("?Name=%s"), *JoinServerData.Name);
 

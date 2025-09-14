@@ -37,6 +37,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void BeginDestroy() override;
 
 	virtual void OnRep_PlayerState() override;
 
@@ -48,4 +49,8 @@ protected:
 
 	UFUNCTION()
 	void ShowLobbyWidget();
+
+private:
+	UFUNCTION()
+	void OnClickedReadyButton();
 };
