@@ -6,6 +6,7 @@
 #include "Net/UnrealNetwork.h"
 #include "game/POGameInstance.h"
 #include "game/POBadWords.h"
+#include "OnlyOne/OnlyOne.h"
 
 APOLobbyPlayerState::APOLobbyPlayerState()
 {
@@ -15,6 +16,15 @@ APOLobbyPlayerState::APOLobbyPlayerState()
 void APOLobbyPlayerState::BeginDestroy()
 {
 	OnReadyChanged.Clear();
+
+	if (APOServerLobbyPlayerController* PC = Cast<APOServerLobbyPlayerController>(GetOwner()))
+	{
+		if (PC->OnPlayerReady.IsBound())
+		{
+			PC->OnPlayerReady.RemoveDynamic(this, &APOLobbyPlayerState::ToggleReady);
+		}
+	}
+	
 	Super::BeginDestroy();
 }
 
@@ -24,6 +34,12 @@ void APOLobbyPlayerState::InitNicknameFromGameInstanceOnce()
 	{
 		const FString NickFromGI = GI->GetPendingNickname();
 		ServerSetNicknameOnce(NickFromGI);
+		LOG_NET(POLog, Warning, TEXT("Player %d nickname initialized from GI: %s"), GetPlayerId(), *BaseNickname);
+	}
+
+	if (APOServerLobbyPlayerController* PC = Cast<APOServerLobbyPlayerController>(GetOwner()))
+	{
+		PC->OnPlayerJoinLobby.Broadcast(PlayerData);
 	}
 }
 
@@ -47,10 +63,11 @@ void APOLobbyPlayerState::ServerSetNicknameOnce_Implementation(const FString& In
 
 	const int32 Tag = GetPlayerId() % 10000;
 	const FString TagStr = FString::Printf(TEXT("#%04d"), Tag);
-	
+
+	//NOTE: 이 부분도 FJoinServerData에 통합되면 변경되야 합니다.
 	BaseNickname    = Base;
 	DisplayNickname = FString::Printf(TEXT("%s%s"), *Base, *TagStr);
-
+	LOG_NET(POLog, Warning, TEXT("Player %d set nickname: %s"), GetPlayerId(), *DisplayNickname);
 }
 
 void APOLobbyPlayerState::ServerSetReady_Implementation() //NOTE: 매개변수 제거, Toggle에서는 매개변수가 필요 없음
@@ -85,9 +102,17 @@ void APOLobbyPlayerState::BeginPlay()
 	{
 		PC->OnPlayerReady.AddDynamic(this, &APOLobbyPlayerState::ToggleReady);
 	}
+
+	if (GetNetMode() == NM_Client)
+	{
+		InitNicknameFromGameInstanceOnce();
+	}
+
+	
 }
 
-FString APOLobbyPlayerState::SanitizeNickname_Server(const FString& InRaw) const
+//TODO: Server RPC가 아닌데 _Server가 붙어있음. 이름 변경 필요
+FString APOLobbyPlayerState::SanitizeNickname_Server(const FString& InRaw) const 
 {
 	FString S = InRaw;
 	

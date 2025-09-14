@@ -21,13 +21,14 @@ void APOServerLobbyPlayerController::OnRep_PlayerState()
 {
 	Super::OnRep_PlayerState();
 
-	if (IsLocalPlayerController())
+	// 해당 코드는 어떤 시점에서 실행되는지 명확하지 않아 주석 처리함.
+	/*if (IsLocalPlayerController())
 	{
 		if (APOLobbyPlayerState* PS = GetPlayerState<APOLobbyPlayerState>())
 		{
 			PS->InitNicknameFromGameInstanceOnce();
 		}
-	}
+	}*/
 }
 
 void APOServerLobbyPlayerController::ShowLobbyWidget()

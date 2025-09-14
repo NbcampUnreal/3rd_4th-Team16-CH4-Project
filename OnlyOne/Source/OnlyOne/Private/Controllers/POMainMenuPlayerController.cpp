@@ -71,7 +71,7 @@ void APOMainMenuPlayerController::ShowJoinServer()
 	}
 }
 
-void APOMainMenuPlayerController::OnJoinServer(const FJoinServerData& JoinServerData)
+void APOMainMenuPlayerController::OnJoinServer(FJoinServerData& JoinServerData)
 {
 	UE_LOG(POLog, Log, TEXT("OnJoinServer : Name=%s, IPAddress=%s"), *JoinServerData.Name, *JoinServerData.IPAddress);
 
@@ -86,7 +86,6 @@ void APOMainMenuPlayerController::OnJoinServer(const FJoinServerData& JoinServer
 		GI->SetPendingProfile(JoinServerData.Name, JoinServerData.IPAddress);
 	}
 	
-	// 서버 접속
 	FString TravelURL = JoinServerData.IPAddress;
 	if (!TravelURL.Contains(":"))
 	{

@@ -35,7 +35,7 @@ public:
 	void ShowJoinServer();
 
 	UFUNCTION()
-	void OnJoinServer(const FJoinServerData& JoinServerData);
+	void OnJoinServer(FJoinServerData& JoinServerData);
 	
 protected:
 	virtual void BeginPlay() override;

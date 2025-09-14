@@ -81,8 +81,6 @@ void UPOServerLobbyWidget::NativeDestruct()
 	}
 	
 	Super::NativeDestruct();
-
-	
 }
 
 void UPOServerLobbyWidget::OnReadyButtonClicked()
