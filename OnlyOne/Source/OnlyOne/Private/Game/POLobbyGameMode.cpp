@@ -50,7 +50,8 @@ void APOLobbyGameMode::PostLogin(APlayerController* NewPlayer)
 
 	if (APOLobbyPlayerState* PS = NewPlayer ? NewPlayer->GetPlayerState<APOLobbyPlayerState>() : nullptr)
 	{
-		PS->ServerSetReady();
+		// NOTE: 플레이어가 레디를 눌러야 준비 완료가 되야 합니다.
+		//PS->ServerSetReady();
 	}
 }
 
