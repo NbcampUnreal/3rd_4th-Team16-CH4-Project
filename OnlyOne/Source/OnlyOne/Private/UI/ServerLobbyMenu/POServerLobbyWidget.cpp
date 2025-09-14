@@ -10,6 +10,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Components/Button.h"
 #include "Components/ScrollBox.h"
+#include "Game/POLobbyPlayerState.h"
 
 void UPOServerLobbyWidget::NativeConstruct()
 {
@@ -29,6 +30,12 @@ void UPOServerLobbyWidget::NativeConstruct()
 	{
 		PC->OnReadyStateChanged.AddDynamic(this, &UPOServerLobbyWidget::OnReadyPlayer);
 	}
+
+	if (APOServerLobbyPlayerController* PC = Cast<APOServerLobbyPlayerController>(GetOwningPlayer()))
+	{
+		PC->OnPlayerReady.AddDynamic(this , &UPOServerLobbyWidget::OnReadyButtonClicked);
+	}
+
 }
 
 void UPOServerLobbyWidget::NativeDestruct()

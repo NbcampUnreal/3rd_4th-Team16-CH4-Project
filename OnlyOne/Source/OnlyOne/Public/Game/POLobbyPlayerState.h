@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Controllers/POMainMenuPlayerController.h"
 #include "GameFramework/PlayerState.h"
 #include "POLobbyPlayerState.generated.h"
 
@@ -23,9 +24,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category="PO|Lobby")
 	void InitNicknameFromGameInstanceOnce();
 	
-	UFUNCTION(BlueprintCallable, Category="PO|Lobby")
-	void ToggleReady();
-	
 	UFUNCTION(BlueprintPure, Category="PO|Lobby")
 	bool IsReady() const { return bIsReady; }
 
@@ -38,12 +36,15 @@ public:
 	UPROPERTY(BlueprintAssignable, Category="PO|Lobby")
 	FPOOnReadyChanged OnReadyChanged;
 
+	UFUNCTION(BlueprintCallable, Category="PO|Lobby")
+	void ToggleReady();
+
 public:
 	UFUNCTION(Server, Reliable)
 	void ServerSetNicknameOnce(const FString& InNickname);
 	
 	UFUNCTION(Server, Reliable)
-	void ServerSetReady(bool bInReady);
+	void ServerSetReady();
 
 public:
 	UFUNCTION()
@@ -52,16 +53,22 @@ public:
 protected:
 	UPROPERTY(ReplicatedUsing=OnRep_IsReady)
 	bool bIsReady;
-	
+
+	//TODO: BaseNickname과 DisplayNickname을 FJoinServerData와 통합하도록 변경해주세요.
 	UPROPERTY(Replicated)
 	FString BaseNickname;
 	
 	UPROPERTY(Replicated)
 	FString DisplayNickname;
 
+	UPROPERTY(Replicated)
+	FJoinServerData PlayerData;
+
 protected:
 	FString SanitizeNickname_Server(const FString& InRaw) const;
 
 protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void BeginPlay() override;
+
 };

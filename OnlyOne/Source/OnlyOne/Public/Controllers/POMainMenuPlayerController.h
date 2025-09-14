@@ -19,6 +19,7 @@ struct FJoinServerData
 	GENERATED_BODY()
 
 	FString Name = TEXT("Player");
+	FString DisplayNickname = TEXT("");
 	FString IPAddress = TEXT("127.0.0.1");
 };
 

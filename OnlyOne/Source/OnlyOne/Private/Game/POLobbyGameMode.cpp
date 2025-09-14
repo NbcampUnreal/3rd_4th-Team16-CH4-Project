@@ -50,7 +50,7 @@ void APOLobbyGameMode::PostLogin(APlayerController* NewPlayer)
 
 	if (APOLobbyPlayerState* PS = NewPlayer ? NewPlayer->GetPlayerState<APOLobbyPlayerState>() : nullptr)
 	{
-		PS->ServerSetReady(false);
+		PS->ServerSetReady();
 	}
 }
 

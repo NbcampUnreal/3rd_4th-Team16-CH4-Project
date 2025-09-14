@@ -1,6 +1,8 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "game/POLobbyPlayerState.h"
+
+#include "Controllers/POServerLobbyPlayerController.h"
 #include "Net/UnrealNetwork.h"
 #include "game/POGameInstance.h"
 #include "game/POBadWords.h"
@@ -25,9 +27,9 @@ void APOLobbyPlayerState::InitNicknameFromGameInstanceOnce()
 	}
 }
 
-void APOLobbyPlayerState::ToggleReady()
+void APOLobbyPlayerState::ToggleReady() //NOTE: OnToggleReady() 같은 이름이 더 좋아보임
 {
-	ServerSetReady(!bIsReady);
+	ServerSetReady();
 }
 
 void APOLobbyPlayerState::ServerSetNicknameOnce_Implementation(const FString& InNickname)
@@ -51,18 +53,20 @@ void APOLobbyPlayerState::ServerSetNicknameOnce_Implementation(const FString& In
 
 }
 
-void APOLobbyPlayerState::ServerSetReady_Implementation(bool bInReady)
+void APOLobbyPlayerState::ServerSetReady_Implementation() //NOTE: 매개변수 제거, Toggle에서는 매개변수가 필요 없음
 {
-	if (bIsReady != bInReady)
-	{
-		bIsReady = bInReady;
-		OnRep_IsReady();
-	}
+	bIsReady = !bIsReady;
+	OnRep_IsReady();
 }
 
 void APOLobbyPlayerState::OnRep_IsReady()
 {
-	OnReadyChanged.Broadcast(bIsReady);
+	if (APOServerLobbyPlayerController* PC = Cast<APOServerLobbyPlayerController>(GetOwner()))
+	{
+		//TODO: FJoinServerData에 통합되면 이 부분도 변경되야 합니다.
+		PlayerData.Name = BaseNickname;
+		PC->OnReadyStateChanged.Broadcast(PlayerData, bIsReady);
+	}
 }
 
 void APOLobbyPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -71,6 +75,16 @@ void APOLobbyPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	DOREPLIFETIME(APOLobbyPlayerState, bIsReady);
 	DOREPLIFETIME(APOLobbyPlayerState, BaseNickname);
 	DOREPLIFETIME(APOLobbyPlayerState, DisplayNickname);
+}
+
+void APOLobbyPlayerState::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	if (APOServerLobbyPlayerController* PC = Cast<APOServerLobbyPlayerController>(GetOwner()))
+	{
+		PC->OnPlayerReady.AddDynamic(this, &APOLobbyPlayerState::ToggleReady);
+	}
 }
 
 FString APOLobbyPlayerState::SanitizeNickname_Server(const FString& InRaw) const
