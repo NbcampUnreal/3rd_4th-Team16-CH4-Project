@@ -25,17 +25,17 @@ void UPOServerLobbyWidget::NativeConstruct()
 	{
 		TestExitButton->OnClicked.AddDynamic(this, &UPOServerLobbyWidget::TestExitButtonClicked);
 	}
+
+	if (ReadyButton)
+	{
+		ReadyButton->OnClicked.AddDynamic(this, &UPOServerLobbyWidget::OnReadyButtonClicked);
+	}
 	
 	if (APOServerLobbyPlayerController* PC = Cast<APOServerLobbyPlayerController>(GetOwningPlayer()))
 	{
 		PC->OnReadyStateChanged.AddDynamic(this, &UPOServerLobbyWidget::OnReadyPlayer);
 	}
 
-	if (APOServerLobbyPlayerController* PC = Cast<APOServerLobbyPlayerController>(GetOwningPlayer()))
-	{
-		PC->OnPlayerReady.AddDynamic(this , &UPOServerLobbyWidget::OnReadyButtonClicked);
-	}
-	
 	if (APOServerLobbyPlayerController* PC = Cast<APOServerLobbyPlayerController>(GetOwningPlayer()))
 	{
 		PC->OnPlayerJoinLobby.AddDynamic(this, &UPOServerLobbyWidget::OnJoinPlayer);
@@ -63,11 +63,6 @@ void UPOServerLobbyWidget::NativeDestruct()
 	if (APOServerLobbyPlayerController* PC = Cast<APOServerLobbyPlayerController>(GetOwningPlayer()))
 	{
 		PC->OnReadyStateChanged.RemoveDynamic(this, &UPOServerLobbyWidget::OnReadyPlayer);
-	}
-	
-	if (APOServerLobbyPlayerController* PC = Cast<APOServerLobbyPlayerController>(GetOwningPlayer()))
-	{
-		PC->OnPlayerReady.RemoveDynamic(this , &UPOServerLobbyWidget::OnReadyButtonClicked);
 	}
 	
 	if (APOServerLobbyPlayerController* PC = Cast<APOServerLobbyPlayerController>(GetOwningPlayer()))
