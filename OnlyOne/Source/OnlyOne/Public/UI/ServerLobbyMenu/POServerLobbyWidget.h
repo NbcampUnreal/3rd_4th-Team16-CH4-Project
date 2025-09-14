@@ -57,10 +57,10 @@ private:
 	void TestExitButtonClicked();
 
 	UFUNCTION()
-	void OnJoinPlayer(FJoinServerData& InNewPlayer);
+	void OnJoinPlayer(const FJoinServerData& InNewPlayer);
 
 	UFUNCTION()
-	void OnExitPlayer(FJoinServerData& InExitPlayer);
+	void OnExitPlayer(const FJoinServerData& InExitPlayer);
 
 	UFUNCTION()
 	void OnReadyPlayer(const FJoinServerData& InReadyPlayer, bool bIsReady);

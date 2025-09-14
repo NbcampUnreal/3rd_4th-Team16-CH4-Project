@@ -35,6 +35,16 @@ void UPOServerLobbyWidget::NativeConstruct()
 	{
 		PC->OnPlayerReady.AddDynamic(this , &UPOServerLobbyWidget::OnReadyButtonClicked);
 	}
+	
+	if (APOServerLobbyPlayerController* PC = Cast<APOServerLobbyPlayerController>(GetOwningPlayer()))
+	{
+		PC->OnPlayerJoinLobby.AddDynamic(this, &UPOServerLobbyWidget::OnJoinPlayer);
+	}
+	
+	if (APOServerLobbyPlayerController* PC = Cast<APOServerLobbyPlayerController>(GetOwningPlayer()))
+	{
+		PC->OnPlayerLeaveLobby.AddDynamic(this, &UPOServerLobbyWidget::OnExitPlayer);
+	}
 
 }
 
@@ -52,7 +62,7 @@ void UPOServerLobbyWidget::OnReadyButtonClicked()
 	}
 }
 
-void UPOServerLobbyWidget::OnJoinPlayer(FJoinServerData& InNewPlayer)
+void UPOServerLobbyWidget::OnJoinPlayer(const FJoinServerData& InNewPlayer)
 {
 	if (!PlayerSlotClass)
 	{
@@ -84,7 +94,7 @@ void UPOServerLobbyWidget::OnJoinPlayer(FJoinServerData& InNewPlayer)
 	}
 }
 
-void UPOServerLobbyWidget::OnExitPlayer(FJoinServerData& InExitPlayer)
+void UPOServerLobbyWidget::OnExitPlayer(const FJoinServerData& InExitPlayer)
 {
 	if (PlayerSlots.Contains(InExitPlayer.Name))
 	{

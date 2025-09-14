@@ -13,6 +13,8 @@
 class UPOServerLobbyWidget;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlayerReady);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPlayerReadyStateChanged, const FJoinServerData&, PlayerData, bool, bIsReady);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerJoinLobby, const FJoinServerData&, NewPlayer);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerLeaveLobby, const FJoinServerData&, LeftPlayer);
 
 
 UCLASS()
@@ -26,6 +28,12 @@ public:
 	
 	UPROPERTY()
 	FOnPlayerReadyStateChanged OnReadyStateChanged;
+
+	UPROPERTY()
+	FOnPlayerJoinLobby OnPlayerJoinLobby;
+
+	UPROPERTY()
+	FOnPlayerLeaveLobby OnPlayerLeaveLobby;
 
 protected:
 	virtual void BeginPlay() override;
