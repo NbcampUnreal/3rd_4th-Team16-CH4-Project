@@ -50,7 +50,39 @@ void UPOServerLobbyWidget::NativeConstruct()
 
 void UPOServerLobbyWidget::NativeDestruct()
 {
+	if (TestJoinButton)
+	{
+		TestJoinButton->OnClicked.RemoveDynamic(this, &UPOServerLobbyWidget::TestJoinButtonClicked);
+	}
+	
+	if (TestExitButton)
+	{
+		TestExitButton->OnClicked.RemoveDynamic(this, &UPOServerLobbyWidget::TestExitButtonClicked);
+	}
+	
+	if (APOServerLobbyPlayerController* PC = Cast<APOServerLobbyPlayerController>(GetOwningPlayer()))
+	{
+		PC->OnReadyStateChanged.RemoveDynamic(this, &UPOServerLobbyWidget::OnReadyPlayer);
+	}
+	
+	if (APOServerLobbyPlayerController* PC = Cast<APOServerLobbyPlayerController>(GetOwningPlayer()))
+	{
+		PC->OnPlayerReady.RemoveDynamic(this , &UPOServerLobbyWidget::OnReadyButtonClicked);
+	}
+	
+	if (APOServerLobbyPlayerController* PC = Cast<APOServerLobbyPlayerController>(GetOwningPlayer()))
+	{
+		PC->OnPlayerJoinLobby.RemoveDynamic(this, &UPOServerLobbyWidget::OnJoinPlayer);
+	}
+	
+	if (APOServerLobbyPlayerController* PC = Cast<APOServerLobbyPlayerController>(GetOwningPlayer()))
+	{
+		PC->OnPlayerLeaveLobby.RemoveDynamic(this, &UPOServerLobbyWidget::OnExitPlayer);
+	}
+	
 	Super::NativeDestruct();
+
+	
 }
 
 void UPOServerLobbyWidget::OnReadyButtonClicked()
