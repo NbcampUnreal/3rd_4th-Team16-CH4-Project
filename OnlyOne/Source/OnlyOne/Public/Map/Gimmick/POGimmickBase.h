@@ -39,7 +39,8 @@ protected:
 
 	virtual void BeginPlay() override;
 	
-
+	virtual void Tick(float DeltaTime) override;
+	
 	UFUNCTION()
 	void OnBeginOverlap(UPrimitiveComponent* comp, AActor* other, UPrimitiveComponent* otherComp
 		, int32 BoxIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -57,12 +58,14 @@ protected:
 
 #pragma region Network
 public:
-	
+	virtual bool IsNetRelevantFor(const AActor* RealViewer, const AActor* ViewTarget, const FVector& SrcLocation) const override;
 protected:
 	UPROPERTY(VisibleAnywhere, Replicated)
 	bool bConsumed =false;
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	float NetCullDistance;
 
 #pragma endregion
 

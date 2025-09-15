@@ -5,12 +5,12 @@
 #include "Components/StaticMeshComponent.h"  
 #include "POGameplayTags.h"
 
-APOSoundMine::APOSoundMine() 
+APOSoundMine::APOSoundMine()
 {
 	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
 	StaticMesh->SetupAttachment(Root);
+	
 }
-
 
 
 

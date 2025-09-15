@@ -24,4 +24,5 @@ protected:
 	
 	virtual void ActivateGimmick_Implementation(AActor* Target) override;
 	
+	
 };
