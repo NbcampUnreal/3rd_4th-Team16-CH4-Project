@@ -8,6 +8,7 @@
 #include "Framework/Application/SlateApplication.h"
 #include "OnlyOne/OnlyOne.h"
 #include "UI/MainMenu/POJoinServerWidget.h"
+#include "Game/POGameInstance.h"
 
 APOMainMenuPlayerController::APOMainMenuPlayerController()
 {
@@ -70,7 +71,37 @@ void APOMainMenuPlayerController::ShowJoinServer()
 	}
 }
 
-void APOMainMenuPlayerController::OnJoinServer(const FJoinServerData& JoinServerData)
+void APOMainMenuPlayerController::OnJoinServer(FJoinServerData& JoinServerData)
 {
 	UE_LOG(POLog, Log, TEXT("OnJoinServer : Name=%s, IPAddress=%s"), *JoinServerData.Name, *JoinServerData.IPAddress);
+
+	if (JoinServerData.IPAddress.IsEmpty())
+	{
+		UE_LOG(POLog, Warning, TEXT("IP Address cannot be empty"));
+		return;
+	}
+	
+	if (UPOGameInstance* GI = GetGameInstance<UPOGameInstance>())
+	{
+		GI->SetPendingProfile(JoinServerData.Name, JoinServerData.IPAddress);
+	}
+	
+	FString TravelURL = JoinServerData.IPAddress;
+	if (!TravelURL.Contains(":"))
+	{
+		TravelURL += ":7777";
+	}
+
+	// 플레이어 이름을 URL 옵션으로 추가
+	TravelURL += FString::Printf(TEXT("?Name=%s"), *JoinServerData.Name);
+
+	// UI 정리
+	HideMainMenu();
+	if (JoinServerWidget)
+	{
+		JoinServerWidget->RemoveFromParent();
+	}
+
+	// 서버 접속
+	ClientTravel(TravelURL, ETravelType::TRAVEL_Absolute);
 }

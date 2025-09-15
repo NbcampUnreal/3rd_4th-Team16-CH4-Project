@@ -22,11 +22,11 @@ void UPOCustomButton::NativeConstruct()
 	}
 }
 
-void UPOCustomButton::BeginDestroy()
+void UPOCustomButton::NativeDestruct()
 {
 	OnCustomButtonClicked.Clear();
 	
-	Super::BeginDestroy();
+	Super::NativeDestruct();
 }
 
 void UPOCustomButton::SetButtonEnabled(bool bEnabled)

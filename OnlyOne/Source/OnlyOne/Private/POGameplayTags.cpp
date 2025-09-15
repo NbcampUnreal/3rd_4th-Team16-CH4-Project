@@ -19,4 +19,7 @@ namespace POGameplayTags
 	/* Shard Tags*/
 	UE_DEFINE_GAMEPLAY_TAG(Shared_SetByCaller_BaseDamage, "Shared.SetByCaller.BaseDamage")
 	UE_DEFINE_GAMEPLAY_TAG(Shared_Event_MeleeHit, "Shared.Event.MeleeHit")
+
+	/* GameplayCue Tags*/
+	UE_DEFINE_GAMEPLAY_TAG(GimmickTag_Sound, "GameplayCue.Gimmick.Sound")
 }

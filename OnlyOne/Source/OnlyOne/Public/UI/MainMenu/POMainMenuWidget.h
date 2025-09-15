@@ -18,6 +18,7 @@ class ONLYONE_API UPOMainMenuWidget : public UPOBaseWidget
 
 public:
     virtual void NativeConstruct() override;
+    virtual void NativeDestruct() override;
 
 protected:
     UPROPERTY(meta = (BindWidget))

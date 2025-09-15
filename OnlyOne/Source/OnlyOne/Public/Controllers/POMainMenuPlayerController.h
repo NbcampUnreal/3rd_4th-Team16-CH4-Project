@@ -19,6 +19,7 @@ struct FJoinServerData
 	GENERATED_BODY()
 
 	FString Name = TEXT("Player");
+	FString DisplayNickname = TEXT("");
 	FString IPAddress = TEXT("127.0.0.1");
 };
 
@@ -34,7 +35,7 @@ public:
 	void ShowJoinServer();
 
 	UFUNCTION()
-	void OnJoinServer(const FJoinServerData& JoinServerData);
+	void OnJoinServer(FJoinServerData& JoinServerData);
 	
 protected:
 	virtual void BeginPlay() override;

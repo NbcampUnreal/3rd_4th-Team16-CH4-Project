@@ -14,11 +14,11 @@ void UPOBaseWindow::NativeConstruct()
 	}
 }
 
-void UPOBaseWindow::BeginDestroy()
+void UPOBaseWindow::NativeDestruct()
 {
 	OnCloseWindow.Clear();
 	
-	Super::BeginDestroy();
+	Super::NativeDestruct();
 }
 
 void UPOBaseWindow::OnExitButtonClicked()

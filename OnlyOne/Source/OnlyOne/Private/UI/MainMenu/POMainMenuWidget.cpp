@@ -33,6 +33,26 @@ void UPOMainMenuWidget::NativeConstruct()
 	}
 }
 
+void UPOMainMenuWidget::NativeDestruct()
+{
+	if (JoinServerButton)
+	{
+		JoinServerButton->OnCustomButtonClicked.RemoveDynamic(this, &UPOMainMenuWidget::OnJoinServerClicked);
+	}
+	
+	if (SettingsButton)
+	{
+		SettingsButton->OnCustomButtonClicked.RemoveDynamic(this, &UPOMainMenuWidget::OnSettingsClicked);
+	}
+	
+	if (QuitButton)
+	{
+		QuitButton->OnCustomButtonClicked.RemoveDynamic(this, &UPOMainMenuWidget::OnQuitClicked);
+	}
+	
+	Super::NativeDestruct();
+}
+
 void UPOMainMenuWidget::OnJoinServerClicked(UPOCustomButton* ClickedButton)
 {
 	// TODO: 서버 접속 로직 구현
