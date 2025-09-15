@@ -10,33 +10,62 @@
 #include "Blueprint/UserWidget.h"
 #include "Components/Button.h"
 #include "Components/ScrollBox.h"
+#include "Game/POLobbyPlayerState.h"
+#include "Engine/World.h"
+#include "Kismet/GameplayStatics.h"
 
 void UPOServerLobbyWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	if (TestJoinButton)
+	if (ReadyButton)
 	{
-		TestJoinButton->OnClicked.AddDynamic(this, &UPOServerLobbyWidget::TestJoinButtonClicked);
+		ReadyButton->OnClicked.AddDynamic(this, &UPOServerLobbyWidget::OnClickedReadyButton);
 	}
-
-	if (TestExitButton)
+	
+	if (ExitButton)
 	{
-		TestExitButton->OnClicked.AddDynamic(this, &UPOServerLobbyWidget::TestExitButtonClicked);
+		ExitButton->OnClicked.AddDynamic(this, &UPOServerLobbyWidget::OnClickedExitButton);
 	}
 	
 	if (APOServerLobbyPlayerController* PC = Cast<APOServerLobbyPlayerController>(GetOwningPlayer()))
 	{
 		PC->OnReadyStateChanged.AddDynamic(this, &UPOServerLobbyWidget::OnReadyPlayer);
 	}
+
+	if (APOServerLobbyPlayerController* PC = Cast<APOServerLobbyPlayerController>(GetOwningPlayer()))
+	{
+		PC->OnPlayerJoinLobby.AddDynamic(this, &UPOServerLobbyWidget::OnJoinPlayer);
+	}
+	
+	if (APOServerLobbyPlayerController* PC = Cast<APOServerLobbyPlayerController>(GetOwningPlayer()))
+	{
+		PC->OnPlayerLeaveLobby.AddDynamic(this, &UPOServerLobbyWidget::OnExitPlayer);
+	}
+
 }
 
 void UPOServerLobbyWidget::NativeDestruct()
 {
+	if (APOServerLobbyPlayerController* PC = Cast<APOServerLobbyPlayerController>(GetOwningPlayer()))
+	{
+		PC->OnReadyStateChanged.RemoveDynamic(this, &UPOServerLobbyWidget::OnReadyPlayer);
+	}
+	
+	if (APOServerLobbyPlayerController* PC = Cast<APOServerLobbyPlayerController>(GetOwningPlayer()))
+	{
+		PC->OnPlayerJoinLobby.RemoveDynamic(this, &UPOServerLobbyWidget::OnJoinPlayer);
+	}
+	
+	if (APOServerLobbyPlayerController* PC = Cast<APOServerLobbyPlayerController>(GetOwningPlayer()))
+	{
+		PC->OnPlayerLeaveLobby.RemoveDynamic(this, &UPOServerLobbyWidget::OnExitPlayer);
+	}
+	
 	Super::NativeDestruct();
 }
 
-void UPOServerLobbyWidget::OnReadyButtonClicked()
+void UPOServerLobbyWidget::OnClickedReadyButton()
 {
 	if (APOServerLobbyPlayerController* PC = Cast<APOServerLobbyPlayerController>(GetOwningPlayer()))
 	{
@@ -45,7 +74,22 @@ void UPOServerLobbyWidget::OnReadyButtonClicked()
 	}
 }
 
-void UPOServerLobbyWidget::OnJoinPlayer(FJoinServerData& InNewPlayer)
+void UPOServerLobbyWidget::OnClickedExitButton()
+{
+	if (APOServerLobbyPlayerController* PC = Cast<APOServerLobbyPlayerController>(GetOwningPlayer()))
+	{
+		UE_LOG(POLog, Log, TEXT("Exit Button Clicked - Leaving server"));
+		
+		// 서버에서 로그아웃하고 메인 메뉴로 돌아감
+		if (UWorld* World = GetWorld())
+		{
+			// 메인 메뉴 레벨로 이동
+			UGameplayStatics::OpenLevel(World, TEXT("L_MainMenu"));
+		}
+	}
+}
+
+void UPOServerLobbyWidget::OnJoinPlayer(const FJoinServerData& InNewPlayer)
 {
 	if (!PlayerSlotClass)
 	{
@@ -77,7 +121,7 @@ void UPOServerLobbyWidget::OnJoinPlayer(FJoinServerData& InNewPlayer)
 	}
 }
 
-void UPOServerLobbyWidget::OnExitPlayer(FJoinServerData& InExitPlayer)
+void UPOServerLobbyWidget::OnExitPlayer(const FJoinServerData& InExitPlayer)
 {
 	if (PlayerSlots.Contains(InExitPlayer.Name))
 	{
@@ -108,22 +152,4 @@ void UPOServerLobbyWidget::OnReadyPlayer(const FJoinServerData& InReadyPlayer, b
 	{
 		UE_LOG(POLog, Warning, TEXT("No player slot found for player: %s"), *InReadyPlayer.Name);
 	}
-}
-
-void UPOServerLobbyWidget::TestJoinButtonClicked()
-{
-	FJoinServerData TestPlayer;
-	TestPlayer.Name = TEXT("Test player" + FString::FromInt(PlayerSlots.Num() + 1));
-	TestPlayer.IPAddress = TEXT("123456");
-
-	OnJoinPlayer(TestPlayer);
-}
-
-void UPOServerLobbyWidget::TestExitButtonClicked()
-{
-	FJoinServerData TestPlayer;
-	TestPlayer.Name = TEXT("Test player" + FString::FromInt(PlayerSlots.Num()));
-	TestPlayer.IPAddress = TEXT("123456");
-
-	OnExitPlayer(TestPlayer);
 }

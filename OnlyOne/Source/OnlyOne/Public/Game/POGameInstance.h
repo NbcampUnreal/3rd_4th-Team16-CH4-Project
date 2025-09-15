@@ -16,6 +16,8 @@ class ONLYONE_API UPOGameInstance : public UGameInstance
 	GENERATED_BODY()
 
 public:
+
+	//TODO: 닉네임과 서버주소를 FJoinServerData와 통합하도록 변경해주세요.
 	UFUNCTION(BlueprintCallable, Category="PO|Profile")
 	void SetPendingProfile(const FString& InNickname, const FString& InServerAddress)
 	{
