@@ -11,6 +11,8 @@
 #include "Components/Button.h"
 #include "Components/ScrollBox.h"
 #include "Game/POLobbyPlayerState.h"
+#include "Engine/World.h"
+#include "Kismet/GameplayStatics.h"
 
 void UPOServerLobbyWidget::NativeConstruct()
 {
@@ -18,7 +20,12 @@ void UPOServerLobbyWidget::NativeConstruct()
 
 	if (ReadyButton)
 	{
-		ReadyButton->OnClicked.AddDynamic(this, &UPOServerLobbyWidget::OnReadyButtonClicked);
+		ReadyButton->OnClicked.AddDynamic(this, &UPOServerLobbyWidget::OnClickedReadyButton);
+	}
+	
+	if (ExitButton)
+	{
+		ExitButton->OnClicked.AddDynamic(this, &UPOServerLobbyWidget::OnClickedExitButton);
 	}
 	
 	if (APOServerLobbyPlayerController* PC = Cast<APOServerLobbyPlayerController>(GetOwningPlayer()))
@@ -58,12 +65,27 @@ void UPOServerLobbyWidget::NativeDestruct()
 	Super::NativeDestruct();
 }
 
-void UPOServerLobbyWidget::OnReadyButtonClicked()
+void UPOServerLobbyWidget::OnClickedReadyButton()
 {
 	if (APOServerLobbyPlayerController* PC = Cast<APOServerLobbyPlayerController>(GetOwningPlayer()))
 	{
 		PC->OnPlayerReady.Broadcast();
 		UE_LOG(POLog, Log, TEXT("Ready Button Clicked"));
+	}
+}
+
+void UPOServerLobbyWidget::OnClickedExitButton()
+{
+	if (APOServerLobbyPlayerController* PC = Cast<APOServerLobbyPlayerController>(GetOwningPlayer()))
+	{
+		UE_LOG(POLog, Log, TEXT("Exit Button Clicked - Leaving server"));
+		
+		// 서버에서 로그아웃하고 메인 메뉴로 돌아감
+		if (UWorld* World = GetWorld())
+		{
+			// 메인 메뉴 레벨로 이동
+			UGameplayStatics::OpenLevel(World, TEXT("L_MainMenu"));
+		}
 	}
 }
 

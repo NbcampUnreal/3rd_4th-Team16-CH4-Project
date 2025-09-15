@@ -40,7 +40,10 @@ protected:
 
 private:
 	UFUNCTION()
-	void OnReadyButtonClicked();
+	void OnClickedReadyButton();
+
+	UFUNCTION()
+	void OnClickedExitButton();
 
 	UFUNCTION()
 	void OnJoinPlayer(const FJoinServerData& InNewPlayer);
