@@ -41,8 +41,6 @@ void APOLobbyPlayerState::BeginPlay()
 
 void APOLobbyPlayerState::BeginDestroy()
 {
-	OnReadyChanged.Clear();
-	
 	Super::BeginDestroy();
 }
 

@@ -16,16 +16,6 @@ void UPOServerLobbyWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	if (TestJoinButton)
-	{
-		TestJoinButton->OnClicked.AddDynamic(this, &UPOServerLobbyWidget::TestJoinButtonClicked);
-	}
-
-	if (TestExitButton)
-	{
-		TestExitButton->OnClicked.AddDynamic(this, &UPOServerLobbyWidget::TestExitButtonClicked);
-	}
-
 	if (ReadyButton)
 	{
 		ReadyButton->OnClicked.AddDynamic(this, &UPOServerLobbyWidget::OnReadyButtonClicked);
@@ -50,16 +40,6 @@ void UPOServerLobbyWidget::NativeConstruct()
 
 void UPOServerLobbyWidget::NativeDestruct()
 {
-	if (TestJoinButton)
-	{
-		TestJoinButton->OnClicked.RemoveDynamic(this, &UPOServerLobbyWidget::TestJoinButtonClicked);
-	}
-	
-	if (TestExitButton)
-	{
-		TestExitButton->OnClicked.RemoveDynamic(this, &UPOServerLobbyWidget::TestExitButtonClicked);
-	}
-	
 	if (APOServerLobbyPlayerController* PC = Cast<APOServerLobbyPlayerController>(GetOwningPlayer()))
 	{
 		PC->OnReadyStateChanged.RemoveDynamic(this, &UPOServerLobbyWidget::OnReadyPlayer);
@@ -150,22 +130,4 @@ void UPOServerLobbyWidget::OnReadyPlayer(const FJoinServerData& InReadyPlayer, b
 	{
 		UE_LOG(POLog, Warning, TEXT("No player slot found for player: %s"), *InReadyPlayer.Name);
 	}
-}
-
-void UPOServerLobbyWidget::TestJoinButtonClicked()
-{
-	FJoinServerData TestPlayer;
-	TestPlayer.Name = TEXT("Test player" + FString::FromInt(PlayerSlots.Num() + 1));
-	TestPlayer.IPAddress = TEXT("123456");
-
-	OnJoinPlayer(TestPlayer);
-}
-
-void UPOServerLobbyWidget::TestExitButtonClicked()
-{
-	FJoinServerData TestPlayer;
-	TestPlayer.Name = TEXT("Test player" + FString::FromInt(PlayerSlots.Num()));
-	TestPlayer.IPAddress = TEXT("123456");
-
-	OnExitPlayer(TestPlayer);
 }

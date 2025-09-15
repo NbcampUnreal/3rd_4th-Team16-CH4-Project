@@ -38,23 +38,9 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> ExitButton;
 
-	// 유저 퇴장 테스트 버튼
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> TestExitButton;
-	
-	// 유저 입장 테스트 버튼
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> TestJoinButton;
-
 private:
 	UFUNCTION()
 	void OnReadyButtonClicked();
-
-	UFUNCTION()
-	void TestJoinButtonClicked();
-
-	UFUNCTION()
-	void TestExitButtonClicked();
 
 	UFUNCTION()
 	void OnJoinPlayer(const FJoinServerData& InNewPlayer);

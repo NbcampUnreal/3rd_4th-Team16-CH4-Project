@@ -7,8 +7,8 @@
 #include "GameFramework/PlayerState.h"
 #include "POLobbyPlayerState.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPOOnReadyChanged, bool, bNowReady);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInitalizedPlayerData, const FJoinServerData&, PlayerData);
+//DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPOOnReadyChanged, bool, bNowReady);
+//DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInitalizedPlayerData, const FJoinServerData&, PlayerData);
 
 /**
  * 
@@ -19,7 +19,6 @@ class ONLYONE_API APOLobbyPlayerState : public APlayerState
 	GENERATED_BODY()
 
 	/* Lifecycle 섹션 */
-
 public:
 	APOLobbyPlayerState();
 	
@@ -41,12 +40,14 @@ public:
 
 	UFUNCTION(BlueprintPure, Category="PO|Lobby")
 	const FString& GetDisplayNickname() const { return DisplayNickname; }
-	
-	UPROPERTY(BlueprintAssignable, Category="PO|Lobby")
-	FPOOnReadyChanged OnReadyChanged;
 
-	UPROPERTY(BlueprintAssignable, Category="PO|Lobby")
-	FOnInitalizedPlayerData OnInitalizedPlayerData;
+	// 더 이상 사용되지 않음
+	//UPROPERTY(BlueprintAssignable, Category="PO|Lobby")
+	//FPOOnReadyChanged OnReadyChanged;
+
+	// 더 이상 사용되지 않음
+	//UPROPERTY(BlueprintAssignable, Category="PO|Lobby")
+	//FOnInitalizedPlayerData OnInitalizedPlayerData;
 
 	UFUNCTION(BlueprintCallable, Category="PO|Lobby")
 	void ToggleReady();
