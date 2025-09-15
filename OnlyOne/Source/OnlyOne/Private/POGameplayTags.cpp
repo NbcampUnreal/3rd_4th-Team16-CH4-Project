@@ -14,7 +14,11 @@ namespace POGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Attack, "InputTag.Attack")
 
 	/* Player Tags */
+	UE_DEFINE_GAMEPLAY_TAG(Player_Ability, "Player_Ability")
 	UE_DEFINE_GAMEPLAY_TAG(Player_Ability_Attack, "Player_Ability_Attack")
+	
+	/* Player State */
+	UE_DEFINE_GAMEPLAY_TAG(Player_State_Death, "Player.State.Death")
 
 	/* Shard Tags*/
 	UE_DEFINE_GAMEPLAY_TAG(Shared_SetByCaller_BaseDamage, "Shared.SetByCaller.BaseDamage")

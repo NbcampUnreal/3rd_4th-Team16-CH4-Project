@@ -15,7 +15,11 @@ namespace POGameplayTags
 	ONLYONE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputTag_Attack);
 
 	/* Player Tags */
+	ONLYONE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Player_Ability);
 	ONLYONE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Player_Ability_Attack);
+
+	/* Player State */
+	ONLYONE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Player_State_Death);
 
 	/* Shard Tags*/
 	ONLYONE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Shared_SetByCaller_BaseDamage);

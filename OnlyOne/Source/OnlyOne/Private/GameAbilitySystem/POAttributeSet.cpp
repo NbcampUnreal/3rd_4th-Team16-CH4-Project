@@ -4,6 +4,8 @@
 #include "GameAbilitySystem/POAttributeSet.h"
 #include "Net/UnrealNetwork.h"
 #include "GameplayEffectExtension.h"
+#include "POGameplayTags.h"
+#include "GameAbilitySystem/POAbilitySystemComponent.h"
 
 UPOAttributeSet::UPOAttributeSet()
 {
@@ -43,13 +45,23 @@ void UPOAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallback
 		if (LocalDamageDone > 0.f)
 		{
 			const float OldHealth = GetCurrentHealth();
-			// 최종적으로 체력을 감소시킵니다.
+			// 최종적으로 체력을 감소
 			SetCurrentHealth(FMath::Clamp(OldHealth - LocalDamageDone, 0.f, GetMaxHealth()));
 		}
 	}
 	else if (Data.EvaluatedData.Attribute == GetCurrentHealthAttribute())
 	{
 		SetCurrentHealth(FMath::Clamp(GetCurrentHealth(), 0.f, GetMaxHealth()));
+	}
+
+	if (GetCurrentHealth() <= 0.f)
+	{
+		if (UPOAbilitySystemComponent* AbilitySystemComponent = Cast<UPOAbilitySystemComponent>(GetOwningAbilitySystemComponent()))
+		{
+			// "캐릭터가 사망했다"는 게임플레이 태그를 ASC에 추가
+			// 이 태그를 트리거로 사용하여 사망 어빌리티를 발동
+			AbilitySystemComponent->ServerAddLooseGameplayTag(POGameplayTags::Player_State_Death);
+		}
 	}
 }
 
