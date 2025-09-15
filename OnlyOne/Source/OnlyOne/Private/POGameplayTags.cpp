@@ -13,9 +13,10 @@ namespace POGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Sprint, "InputTag.Sprint")
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Attack, "InputTag.Attack")
 
+	/* Player Tags */
+	UE_DEFINE_GAMEPLAY_TAG(Player_Ability_Attack, "Player_Ability_Attack")
+
 	/* Shard Tags*/
 	UE_DEFINE_GAMEPLAY_TAG(Shared_SetByCaller_BaseDamage, "Shared.SetByCaller.BaseDamage")
-
-	/* Event Tags*/
-	UE_DEFINE_GAMEPLAY_TAG(Event_Attack_Hit, "Event_Attack_Hit")
+	UE_DEFINE_GAMEPLAY_TAG(Shared_Event_MeleeHit, "Shared.Event.MeleeHit")
 }

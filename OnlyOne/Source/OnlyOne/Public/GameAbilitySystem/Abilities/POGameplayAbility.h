@@ -14,6 +14,4 @@ UCLASS()
 class ONLYONE_API UPOGameplayAbility : public UGameplayAbility
 {
 	GENERATED_BODY()
-private:
-	mutable TWeakPtr<APOPlayerCharacter> CachedWarriorHeroCharacter;
 };

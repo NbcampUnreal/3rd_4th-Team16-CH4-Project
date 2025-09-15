@@ -18,13 +18,12 @@ public:
 	UPOGameplayAbility_Attack();
 
 protected:
-	/** 어빌리티가 활성화될 때 호출됩니다. */
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	UPROPERTY(EditDefaultsOnly, Category = "Combat | Animation")
 	TObjectPtr<UAnimMontage> AttackMontage;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Effects")
+	UPROPERTY(EditDefaultsOnly, Category = "Combat | Effects")
 	TSubclassOf<UGameplayEffect> DamageEffectClass;
 
 	UFUNCTION()
@@ -35,4 +34,8 @@ protected:
 	
 	UFUNCTION()
 	void OnHitEventReceived(FGameplayEventData EventData);
+
+private:
+	UPROPERTY(EditDefaultsOnly, Category = "Combat | Debug")
+	bool bIsDebugDraw = true;
 };

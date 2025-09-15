@@ -26,7 +26,10 @@ public:
 	virtual void PawnClientRestart() override;
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void PostInitializeComponents() override;
 	virtual UPawnCombatComponent* GetPawnCombatComponent() const override;
+
+	virtual void Tick(float DeltaSeconds) override;
 
 protected:
 	virtual void PossessedBy(AController* NewController) override;
@@ -91,6 +94,8 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UBoxComponent> AttackHitCollisionBox;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	FName AttackHandCollisionBoxAttachBoneName;
 	
 	UFUNCTION()
 	void OnAttackHitBoxOverlap(
@@ -104,5 +109,7 @@ private:
 
 public:
 	FORCEINLINE UPlayerCombatComponent* GetPlayerCombatComponent() const { return PlayerCombatComponent; }
+	FORCEINLINE UBoxComponent* GetAttackHitCollisionBox() const { return AttackHitCollisionBox; }
+
 };
 

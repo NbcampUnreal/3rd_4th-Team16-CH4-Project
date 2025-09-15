@@ -11,6 +11,11 @@
 
 UPOGameplayAbility_Attack::UPOGameplayAbility_Attack()
 {
+	FGameplayTagContainer Tags;
+	Tags.AddTag(POGameplayTags::Player_Ability_Attack);
+	SetAssetTags(Tags);
+	
+	BlockAbilitiesWithTag.AddTag(POGameplayTags::Player_Ability_Attack);
 }
 
 void UPOGameplayAbility_Attack::ActivateAbility(
@@ -20,9 +25,6 @@ void UPOGameplayAbility_Attack::ActivateAbility(
 	const FGameplayEventData* TriggerEventData
 )
 {
-	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
-
-	// [리팩토링] 몽타주 재생 태스크를 생성하고 활성화합니다.
 	UAbilityTask_PlayMontageAndWait* MontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(this,NAME_None,AttackMontage);
 
 	if (!MontageTask)
@@ -37,7 +39,7 @@ void UPOGameplayAbility_Attack::ActivateAbility(
 	MontageTask->OnInterrupted.AddDynamic(this, &ThisClass::OnMontageEndCancelled);
 
 	// POPlayerCharacter.cpp에서 오버랩 되었을때 넘어오는 태그 수신
-	UAbilityTask_WaitGameplayEvent* EventTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, POGameplayTags::Event_Attack_Hit);
+	UAbilityTask_WaitGameplayEvent* EventTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, POGameplayTags::Shared_Event_MeleeHit);
 	EventTask->EventReceived.AddDynamic(this, &ThisClass::OnHitEventReceived);
 	EventTask->ReadyForActivation();
 
@@ -57,14 +59,18 @@ void UPOGameplayAbility_Attack::OnMontageEndCancelled()
 
 void UPOGameplayAbility_Attack::OnHitEventReceived(FGameplayEventData EventData)
 {
-	// 첫 번째 파라미터였던 EventTag를 제거했습니다.
 	AActor* TargetActor = const_cast<AActor*>(EventData.Target.Get());
-    
+	
+	if (GetWorld() && bIsDebugDraw)
+	{
+		DrawDebugSphere(GetWorld(), TargetActor->GetActorLocation(), 60.f, 24, FColor::Green, false, 1.0f);
+	}
+	
 	if (!HasAuthority(&CurrentActivationInfo) || !DamageEffectClass || !TargetActor)
 	{
 		return;
 	}
-    
+	
 	if (UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(TargetActor))
 	{
 		FGameplayEffectSpecHandle DamageEffectSpec = MakeOutgoingGameplayEffectSpec(DamageEffectClass, GetAbilityLevel());
