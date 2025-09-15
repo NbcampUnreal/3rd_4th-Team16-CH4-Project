@@ -38,6 +38,7 @@ protected:
 #pragma endregion
 
 	virtual void BeginPlay() override;
+	
 
 	UFUNCTION()
 	void OnBeginOverlap(UPrimitiveComponent* comp, AActor* other, UPrimitiveComponent* otherComp
@@ -55,9 +56,15 @@ protected:
 
 
 #pragma region Network
+public:
+	
+protected:
 	UPROPERTY(VisibleAnywhere, Replicated)
 	bool bConsumed =false;
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 #pragma endregion
+
+
 };

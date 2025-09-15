@@ -21,7 +21,7 @@ APOGimmickBase::APOGimmickBase()
     BoxCollision->SetCollisionResponseToAllChannels(ECR_Ignore);
     BoxCollision->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
     BoxCollision->SetGenerateOverlapEvents(true);   
-
+ 
 }
 
 void APOGimmickBase::BeginPlay()
@@ -29,6 +29,8 @@ void APOGimmickBase::BeginPlay()
     Super::BeginPlay();
     BoxCollision->OnComponentBeginOverlap.AddDynamic(this, &APOGimmickBase::OnBeginOverlap);
 }
+
+
 
 //플레이어가 직접 컨트롤하고 있는 Pawn만 실행
 bool APOGimmickBase::CanActivate_Implementation(AActor* Target) const
@@ -78,6 +80,7 @@ UAbilitySystemComponent* APOGimmickBase::GetASC(AActor* Actor)
     }
     return Actor->FindComponentByClass<UAbilitySystemComponent>();
 }
+
 
 void APOGimmickBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {

@@ -10,5 +10,5 @@ namespace POGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Jump, "InputTag.Jump")
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Walk, "InputTag.Walk")
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Sprint, "InputTag.Sprint")
-	UE_DEFINE_GAMEPLAY_TAG(GimmickTag_Sound, "GameplayCue.Gimmick.Sound")
+	UE_DEFINE_GAMEPLAY_TAG(GameplayCue_GimmickTag_Sound, "GameplayCue.Gimmick.Sound")
 }
