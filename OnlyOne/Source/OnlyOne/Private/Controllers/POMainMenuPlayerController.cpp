@@ -122,11 +122,10 @@ void APOMainMenuPlayerController::OnJoinServer(FJoinServerData& JoinServerData)
 	// 플레이어 이름을 URL 옵션으로 추가
 	TravelURL += FString::Printf(TEXT("?Name=%s"), *JoinServerData.Name);
 
-	// UI 정리
-	HideMainMenu();
-	if (JoinServerWidget)
+	// UI 스택 전체 정리 (레벨 이동 전 모든 UI 제거)
+	if (UIStackingComponent)
 	{
-		JoinServerWidget->RemoveFromParent();
+		UIStackingComponent->ClearStack();
 	}
 
 	// 서버 접속
