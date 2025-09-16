@@ -11,6 +11,7 @@ namespace POGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Jump, "InputTag.Jump")
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Walk, "InputTag.Walk")
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Sprint, "InputTag.Sprint")
+
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Attack, "InputTag.Attack")
 
 	/* Player Tags */
@@ -21,5 +22,5 @@ namespace POGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Shared_Event_MeleeHit, "Shared.Event.MeleeHit")
 
 	/* GameplayCue Tags*/
-	UE_DEFINE_GAMEPLAY_TAG(GimmickTag_Sound, "GameplayCue.Gimmick.Sound")
+	UE_DEFINE_GAMEPLAY_TAG(GameplayCue_GimmickTag_Sound, "GameplayCue.Gimmick.Sound")
 }

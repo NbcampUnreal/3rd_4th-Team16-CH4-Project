@@ -9,12 +9,16 @@ APOSoundMine::APOSoundMine()
 {
 	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
 	StaticMesh->SetupAttachment(Root);
+	
 }
+
+
 
 void APOSoundMine::OnGimmickComplete_Implementation(AActor* Target)
 {
 	Super::OnGimmickComplete_Implementation(Target);
 }
+
 
 void APOSoundMine::ActivateGimmick_Implementation(AActor* Target)
 {
@@ -23,7 +27,7 @@ void APOSoundMine::ActivateGimmick_Implementation(AActor* Target)
 		FGameplayCueParameters P;
 		P.SourceObject = this;
 		P.Location = GetActorLocation();
-		ASC->ExecuteGameplayCue(POGameplayTags::GimmickTag_Sound, P);
+		ASC->ExecuteGameplayCue(POGameplayTags::GameplayCue_GimmickTag_Sound, P);
 	}
 	
 	OnGimmickComplete(Target);
