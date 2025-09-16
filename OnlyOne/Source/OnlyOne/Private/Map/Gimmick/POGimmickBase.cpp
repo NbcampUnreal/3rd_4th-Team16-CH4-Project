@@ -45,7 +45,7 @@ void APOGimmickBase::Tick(float DeltaTime)
 
 
 
-//플레이어가 직접 컨트롤하고 있는 Pawn만 실행
+// Only for player controlled pawn
 bool APOGimmickBase::CanActivate_Implementation(AActor* Target) const
 {
     const APawn* Pawn = Cast<APawn>(Target);

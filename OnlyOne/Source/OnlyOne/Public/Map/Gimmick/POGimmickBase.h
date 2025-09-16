@@ -65,6 +65,7 @@ protected:
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	UPROPERTY(VisibleAnywhere,BlueprintReadWrite,category="Network")
 	float NetCullDistance;
 
 #pragma endregion
