@@ -11,6 +11,9 @@
 
 UPOPlayerGameplayAbility_Attack::UPOPlayerGameplayAbility_Attack()
 {
+	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
+	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::ServerInitiated;
+	
 	FGameplayTagContainer Tags;
 	Tags.AddTag(POGameplayTags::Player_Ability_Attack);
 	SetAssetTags(Tags);

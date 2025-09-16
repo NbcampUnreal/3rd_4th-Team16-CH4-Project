@@ -19,7 +19,20 @@ TObjectPtr<APOPlayerController> UPOPlayerGameplayAbility::GetPlayerControllerFro
 {
 	if (!CachedPOPlayerController)
 	{
+		// 1. 먼저 ActorInfo에서 직접 가져오기를 시도 (주로 클라이언트에서 유효)
 		CachedPOPlayerController = Cast<APOPlayerController>(CurrentActorInfo->PlayerController.Get());
+
+		// 실패 시 AvatarActor에서 Controller를 가져옴 (주로 서버에서 유효)
+		if (!CachedPOPlayerController)
+		{
+			if (const APawn* AvatarPawn = Cast<APawn>(GetAvatarActorFromActorInfo()))
+			{
+				if (AController* Controller = AvatarPawn->GetController())
+				{
+					CachedPOPlayerController = Cast<APOPlayerController>(Controller);
+				}
+			}
+		}
 	}
 
 	return CachedPOPlayerController.Get();
