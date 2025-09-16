@@ -42,6 +42,7 @@ void APOMainMenuPlayerController::ShowMainMenu()
 		{
 			MainMenuWidget->AddToViewport();
 			SetInputMode(FInputModeUIOnly());
+			SetShowMouseCursor(true);
 		}
 	}
 }
@@ -52,6 +53,7 @@ void APOMainMenuPlayerController::HideMainMenu()
 	{
 		MainMenuWidget->RemoveFromParent();
 		SetInputMode(FInputModeGameOnly());
+		SetShowMouseCursor(false);
 	}
 }
 
