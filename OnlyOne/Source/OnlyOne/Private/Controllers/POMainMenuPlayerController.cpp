@@ -50,11 +50,9 @@ void APOMainMenuPlayerController::ShowMainMenu()
 
 void APOMainMenuPlayerController::HideMainMenu()
 {
-	if (MainMenuWidget)
+	if (IsValid(MainMenuWidget) && IsValid(UIStackingComponent))
 	{
-		MainMenuWidget->RemoveFromParent();
-		SetInputMode(FInputModeGameOnly());
-		SetShowMouseCursor(false);
+		UIStackingComponent->PopWidget();
 	}
 }
 
@@ -88,6 +86,16 @@ void APOMainMenuPlayerController::ShowHostServer()
 			UIStackingComponent->PushWidget(HostServerWidget);
 		}
 	}
+}
+
+bool APOMainMenuPlayerController::HideLastUI()
+{
+	if (IsValid(UIStackingComponent))
+	{
+		UIStackingComponent->PopWidget();
+		return true;
+	}
+	return false;
 }
 
 void APOMainMenuPlayerController::OnJoinServer(FJoinServerData& JoinServerData)

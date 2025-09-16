@@ -21,7 +21,7 @@ void UPOUIStackingComonent::PushWidget(UUserWidget* Widget)
 
 	UIStack.Add(Widget);
 	Widget->AddToViewport();
-	Widget->SetVisibility(ESlateVisibility::Collapsed);
+	Widget->SetVisibility(ESlateVisibility::Visible);
 
 	if (APlayerController* PC = GetOwner<APlayerController>())
 	{
