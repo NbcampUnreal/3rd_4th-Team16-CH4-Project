@@ -1,14 +1,10 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// PONPCCharacter.cpp
 
 
 #include "Characters/PONPCCharacter.h"
 
 #include "Components/Combat/NpcCombatComponent.h"
-
-// CMC
 #include "GameFramework/CharacterMovementComponent.h"
-
-// AIController
 #include "Controllers/PONPCController.h"
 
 APONPCCharacter::APONPCCharacter()
