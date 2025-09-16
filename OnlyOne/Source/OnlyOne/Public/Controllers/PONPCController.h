@@ -17,6 +17,7 @@ class ONLYONE_API APONPCController : public APOCharacterControllerBase
 public:
 	APONPCController();
 	virtual UPawnUIComponent* GetPawnUIComponent() const override;
+	virtual ETeamAttitude::Type GetTeamAttitudeTowards(const AActor& Other) const override;
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI", meta = (AllowPrivateAccess = "true"))
