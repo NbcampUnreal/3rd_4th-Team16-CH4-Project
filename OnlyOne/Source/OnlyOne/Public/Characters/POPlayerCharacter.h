@@ -22,29 +22,31 @@ class ONLYONE_API APOPlayerCharacter : public APOCharacterBase
 	GENERATED_BODY()
 
 public:
+#pragma region Virtual functions
+	
 	APOPlayerCharacter();
 	virtual void PawnClientRestart() override;
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void PostInitializeComponents() override;
 	virtual UPawnCombatComponent* GetPawnCombatComponent() const override;
-
 	virtual void Tick(float DeltaSeconds) override;
-
+	
+#pragma endregion
+	
 protected:
 	virtual void PossessedBy(AController* NewController) override;
 
 private:
+#pragma region Camera
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera | SpringArm", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<USpringArmComponent> CameraBoom;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UCameraComponent> ViewCamera;
+#pragma endregion
 
-private:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "CharacterData | DataAsset", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UPODataAsset_InputConfig> InputConfigDataAsset;
-
+#pragma region Movement
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Movement | walk", meta = (AllowPrivateAccess = "true"))
 	float WalkSpeed = 200.f;
 	
@@ -84,13 +86,9 @@ private:
 	bool IsInputPressed(const FInputActionValue& InputActionValue);
 
 	bool bIsJump = false;
-
-
-private:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UPlayerCombatComponent> PlayerCombatComponent;
-
-private:
+#pragma endregion
+	
+#pragma region Hit Collision
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UBoxComponent> AttackHitCollisionBox;
 
@@ -106,6 +104,13 @@ private:
 		bool bFromSweep,
 		const FHitResult& SweepResult
 	);
+#pragma endregion
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UPlayerCombatComponent> PlayerCombatComponent;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "CharacterData | DataAsset", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UPODataAsset_InputConfig> InputConfigDataAsset;
 
 public:
 	FORCEINLINE UPlayerCombatComponent* GetPlayerCombatComponent() const { return PlayerCombatComponent; }

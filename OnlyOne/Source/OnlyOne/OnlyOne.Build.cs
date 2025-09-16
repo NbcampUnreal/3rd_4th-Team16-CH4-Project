@@ -20,7 +20,8 @@ public class OnlyOne : ModuleRules
 			"GameplayAbilities",
 			"AnimGraphRuntime", 
 			"AIModule",
-			"UMG",
+            "NavigationSystem",
+            "UMG",
 			"Slate",
 			"SlateCore"
 		});

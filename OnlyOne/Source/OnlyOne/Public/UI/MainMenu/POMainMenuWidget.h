@@ -22,6 +22,9 @@ public:
 
 protected:
     UPROPERTY(meta = (BindWidget))
+    TObjectPtr<UPOCustomButton> HostServerButton;
+    
+    UPROPERTY(meta = (BindWidget))
     TObjectPtr<UPOCustomButton> JoinServerButton;
     
     UPROPERTY(meta = (BindWidget))
@@ -31,6 +34,9 @@ protected:
     TObjectPtr<UPOCustomButton> QuitButton;
 
 private:
+    UFUNCTION()
+    void OnHostServerClicked(UPOCustomButton* ClickedButton);
+    
     UFUNCTION()
     void OnJoinServerClicked(UPOCustomButton* ClickedButton);
     

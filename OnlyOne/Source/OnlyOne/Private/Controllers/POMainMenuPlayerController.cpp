@@ -9,6 +9,8 @@
 #include "OnlyOne/OnlyOne.h"
 #include "UI/MainMenu/POJoinServerWidget.h"
 #include "Game/POGameInstance.h"
+#include "Kismet/GameplayStatics.h"
+#include "UI/MainMenu/POHostServerWidget.h"
 
 APOMainMenuPlayerController::APOMainMenuPlayerController()
 {
@@ -40,6 +42,7 @@ void APOMainMenuPlayerController::ShowMainMenu()
 		{
 			MainMenuWidget->AddToViewport();
 			SetInputMode(FInputModeUIOnly());
+			SetShowMouseCursor(true);
 		}
 	}
 }
@@ -50,6 +53,7 @@ void APOMainMenuPlayerController::HideMainMenu()
 	{
 		MainMenuWidget->RemoveFromParent();
 		SetInputMode(FInputModeGameOnly());
+		SetShowMouseCursor(false);
 	}
 }
 
@@ -67,6 +71,24 @@ void APOMainMenuPlayerController::ShowJoinServer()
 		if (JoinServerWidget)
 		{
 			JoinServerWidget->SetVisibility(ESlateVisibility::Visible);
+		}
+	}
+}
+
+void APOMainMenuPlayerController::ShowHostServer()
+{
+	if (HostServerWidgetClass)
+	{
+		if (!HostServerWidget)
+		{
+			HostServerWidget = CreateWidget<UPOHostServerWidget>(this, HostServerWidgetClass);
+			HostServerWidget->AddToViewport();
+			SetInputMode(FInputModeUIOnly());
+		}
+
+		if (HostServerWidget)
+		{
+			HostServerWidget->SetVisibility(ESlateVisibility::Visible);
 		}
 	}
 }
@@ -104,4 +126,17 @@ void APOMainMenuPlayerController::OnJoinServer(FJoinServerData& JoinServerData)
 
 	// 서버 접속
 	ClientTravel(TravelURL, ETravelType::TRAVEL_Absolute);
+}
+
+void APOMainMenuPlayerController::OnHostServer(FJoinServerData& HostServerData)
+{
+	if (UPOGameInstance* GI = GetGameInstance<UPOGameInstance>())
+	{
+		GI->SetPendingProfile(HostServerData.Name, HostServerData.IPAddress);
+	}
+	
+	if (UWorld* World = GetWorld())
+	{
+		UGameplayStatics::OpenLevel(World, TEXT("L_ServerLobby"), true, TEXT("listen"));
+	}
 }

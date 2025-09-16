@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "POMainMenuPlayerController.generated.h"
 
+class UPOHostServerWidget;
 class UPOJoinServerWidget;
 class UPOMainMenuWidget;
 
@@ -34,8 +35,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void ShowJoinServer();
 
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	void ShowHostServer();
+
 	UFUNCTION()
 	void OnJoinServer(FJoinServerData& JoinServerData);
+
+	UFUNCTION()
+	void OnHostServer(FJoinServerData& HostServerData);
 	
 protected:
 	virtual void BeginPlay() override;
@@ -53,6 +60,13 @@ protected:
 	
 	UPROPERTY()
 	TObjectPtr<UPOJoinServerWidget> JoinServerWidget;
+
+	// Host Server Widget
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
+	TSubclassOf<UPOHostServerWidget> HostServerWidgetClass;
+	
+	UPROPERTY()
+	TObjectPtr<UPOHostServerWidget> HostServerWidget;
 	
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void ShowMainMenu();
