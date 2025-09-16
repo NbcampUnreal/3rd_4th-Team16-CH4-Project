@@ -59,6 +59,7 @@ void UPOGameplayAbility_Attack::OnMontageEndCancelled()
 
 void UPOGameplayAbility_Attack::OnHitEventReceived(FGameplayEventData EventData)
 {
+	// GAS 함수들이 AActor* 타입의 (const가 아닌) 포인터를 인자로 요구하기 때문에 const_cast를 사용 
 	AActor* TargetActor = const_cast<AActor*>(EventData.Target.Get());
 	
 	if (GetWorld() && bIsDebugDraw)
