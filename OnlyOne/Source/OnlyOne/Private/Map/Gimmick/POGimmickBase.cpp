@@ -5,6 +5,7 @@
 #include "GameplayEffectTypes.h"
 #include "Components/AudioComponent.h"
 #include "Components/BoxComponent.h"
+#include "Compression/lz4.h"
 #include "GameFramework/Pawn.h"              
 
 
@@ -59,7 +60,7 @@ bool APOGimmickBase::IsNetRelevantFor(const AActor* RealViewer, const AActor* Vi
 
     if (false == bIsNetRelevant)
     {
-        UE_LOG(LogTemp, Log, TEXT("%s is not relevant for(%s, %s)"), *GetName(), *RealViewer->GetName(), *ViewTarget->GetName());
+       
     }
 	
     return bIsNetRelevant;
