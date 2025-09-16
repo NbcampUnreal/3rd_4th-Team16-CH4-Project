@@ -16,6 +16,7 @@ class ONLYONE_API APOGameMode : public AGameMode
 	GENERATED_BODY()
 public:
 	virtual APlayerController* SpawnPlayerController(ENetRole InRemoteRole, const FString& Options) override;
+	virtual APlayerController* SpawnPlayerController(ENetRole InRemoteRole, FVector const& SpawnLocation, FRotator const& SpawnRotation) override;
 
 private:
 	FGenericTeamId GetTeamIdForPlayer(APlayerController* PlayerController);

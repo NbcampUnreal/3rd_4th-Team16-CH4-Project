@@ -5,6 +5,7 @@
 #include "Net/UnrealNetwork.h"
 #include "GameplayEffectExtension.h"
 #include "POGameplayTags.h"
+#include "AbilitySystemBlueprintLibrary.h"
 #include "GameAbilitySystem/POAbilitySystemComponent.h"
 
 UPOAttributeSet::UPOAttributeSet()
@@ -58,9 +59,18 @@ void UPOAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallback
 	{
 		if (UPOAbilitySystemComponent* AbilitySystemComponent = Cast<UPOAbilitySystemComponent>(GetOwningAbilitySystemComponent()))
 		{
-			// "캐릭터가 사망했다"는 게임플레이 태그를 ASC에 추가
-			// 이 태그를 트리거로 사용하여 사망 어빌리티를 발동
-			AbilitySystemComponent->ServerAddLooseGameplayTag(POGameplayTags::Player_State_Death);
+			AActor* OwnerActor = AbilitySystemComponent->GetAvatarActor();
+			if (OwnerActor)
+			{
+				// 사망 상태 태그를 부여
+				AbilitySystemComponent->AddLooseGameplayTag(POGameplayTags::Shared_Ability_Death);
+
+				// 사망 이벤트 발생
+				FGameplayEventData Payload;
+				Payload.Instigator = Data.EffectSpec.GetEffectContext().GetInstigator();
+				Payload.Target = OwnerActor;
+				UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(OwnerActor, POGameplayTags::Shared_Status_Death, Payload);
+			}
 		}
 	}
 }
