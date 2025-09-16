@@ -56,6 +56,7 @@ void APOServerLobbyPlayerController::ShowLobbyWidget()
 		{
 			ServerLobbyWidget->AddToViewport();
 			SetInputMode(FInputModeUIOnly());
+			SetShowMouseCursor(true);
 		}
 	}
 }

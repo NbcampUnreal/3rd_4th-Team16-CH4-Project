@@ -8,12 +8,19 @@
 #include "Controllers/POMainMenuPlayerController.h"
 #include "UI/Common/POCustomButton.h"
 #include "UI/MainMenu/POJoinServerWidget.h"
+#include "Kismet/GameplayStatics.h"
 
 void UPOMainMenuWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
 	// 버튼 바인딩
+	if (HostServerButton)
+	{
+		HostServerButton->SetButtonText(FText::FromString("Host Server"));
+		HostServerButton->OnCustomButtonClicked.AddDynamic(this, &UPOMainMenuWidget::OnHostServerClicked);
+	}
+	
 	if (JoinServerButton)
 	{
 		JoinServerButton->SetButtonText(FText::FromString("Join Server"));
@@ -35,6 +42,11 @@ void UPOMainMenuWidget::NativeConstruct()
 
 void UPOMainMenuWidget::NativeDestruct()
 {
+	if (HostServerButton)
+	{
+		HostServerButton->OnCustomButtonClicked.RemoveDynamic(this, &UPOMainMenuWidget::OnHostServerClicked);
+	}
+	
 	if (JoinServerButton)
 	{
 		JoinServerButton->OnCustomButtonClicked.RemoveDynamic(this, &UPOMainMenuWidget::OnJoinServerClicked);
@@ -51,6 +63,16 @@ void UPOMainMenuWidget::NativeDestruct()
 	}
 	
 	Super::NativeDestruct();
+}
+
+void UPOMainMenuWidget::OnHostServerClicked(UPOCustomButton* ClickedButton)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Host Server Clicked"));
+
+	if (APOMainMenuPlayerController* PC = Cast<APOMainMenuPlayerController>(GetOwningPlayer()))
+	{
+		PC->ShowHostServer();
+	}
 }
 
 void UPOMainMenuWidget::OnJoinServerClicked(UPOCustomButton* ClickedButton)
