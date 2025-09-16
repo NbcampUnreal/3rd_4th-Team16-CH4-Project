@@ -10,6 +10,7 @@
 #include "GameFramework/GameStateBase.h"
 #include "Kismet/GameplayStatics.h"
 #include "OnlyOne/OnlyOne.h"
+#include "game/POLobbyGameMode.h"
 
 APOLobbyPlayerState::APOLobbyPlayerState()
 {
@@ -56,8 +57,8 @@ void APOLobbyPlayerState::InitNicknameFromGameInstanceOnce()
 {
 	if (UPOGameInstance* GI = GetGameInstance<UPOGameInstance>())
 	{
-		const FString NickFromGI = GI->GetPendingProfile().Name;
-		ServerSetNicknameOnce(NickFromGI);
+		const FJoinServerData& Data = GI->GetPendingProfile();
+		ServerSetNicknameOnce(Data.Name);
 		LOG_NET(POLog, Warning, TEXT("Player %d nickname initialized from GI: %s"), GetPlayerId(), *BaseNickname);
 	}
 	else
@@ -109,20 +110,30 @@ void APOLobbyPlayerState::ServerSetNicknameOnce_Implementation(const FString& In
 		UE_LOG(POLog, Warning, TEXT("Player %d ServerSetNicknameOnce_Implementation: Base was empty, using default 'Player'"), GetPlayerId());
 	}
 	*/
-
+	const FString Base = InNickname.IsEmpty() ? TEXT("Player") : InNickname;
 	const int32 Tag = GetPlayerId() % 10000;
 	const FString TagStr = FString::Printf(TEXT("#%04d"), Tag);
 
-	BaseNickname    = InNickname;
-	DisplayNickname = InNickname;
+	BaseNickname    = Base;
+	DisplayNickname = FString::Printf(TEXT("%s%s"), *BaseNickname, *TagStr);
+	
 	LOG_NET(POLog, Warning, TEXT("Player %d set nickname: %s"), GetPlayerId(), *DisplayNickname);
 
 	MulticastPlayerJoinedLobby(BaseNickname);
 }
 
-void APOLobbyPlayerState::ServerSetReady_Implementation() //NOTE: 매개변수 제거, Toggle에서는 매개변수가 필요 없음
+void APOLobbyPlayerState::ServerSetReady_Implementation()
 {
 	bIsReady = !bIsReady;
+
+	if (HasAuthority())
+	{
+		if (APOLobbyGameMode* GM = GetWorld() ? GetWorld()->GetAuthGameMode<APOLobbyGameMode>() : nullptr)
+		{
+			GM->NotifyReadyStateChanged(this, bIsReady);
+		}
+	}
+	
 	if (GetNetMode() == NM_ListenServer)
 	{
 		OnRep_IsReady();
