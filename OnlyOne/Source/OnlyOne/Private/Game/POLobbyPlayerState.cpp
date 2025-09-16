@@ -24,7 +24,7 @@ void APOLobbyPlayerState::BeginPlay()
 	 *		하지만 지연호출을 하는 것이 완벽한 해결책은 아니며, 더 나은 방법이 있을 수 있습니다.
 	 *		예를 들어, PlayerState가 초기화 됐을 때, 플래그를 설정하고, 그 플래그를 체크하는 방법 등이 있습니다.
 	 */
-	if (GetNetMode() == NM_Client)
+	if (GetNetMode() == NM_Client || GetNetMode() == NM_ListenServer)
 	{
 		FTimerHandle TimerHandle;
 		GetWorld()->GetTimerManager().SetTimer(TimerHandle, 
@@ -35,8 +35,6 @@ void APOLobbyPlayerState::BeginPlay()
 			}, 
 			1.0f, false);
 	}
-
-	
 }
 
 void APOLobbyPlayerState::BeginDestroy()
