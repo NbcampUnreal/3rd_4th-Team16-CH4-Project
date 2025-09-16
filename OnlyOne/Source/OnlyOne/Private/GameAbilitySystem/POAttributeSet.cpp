@@ -4,6 +4,9 @@
 #include "GameAbilitySystem/POAttributeSet.h"
 #include "Net/UnrealNetwork.h"
 #include "GameplayEffectExtension.h"
+#include "POGameplayTags.h"
+#include "AbilitySystemBlueprintLibrary.h"
+#include "GameAbilitySystem/POAbilitySystemComponent.h"
 
 UPOAttributeSet::UPOAttributeSet()
 {
@@ -43,13 +46,32 @@ void UPOAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallback
 		if (LocalDamageDone > 0.f)
 		{
 			const float OldHealth = GetCurrentHealth();
-			// 최종적으로 체력을 감소시킵니다.
+			// 최종적으로 체력을 감소
 			SetCurrentHealth(FMath::Clamp(OldHealth - LocalDamageDone, 0.f, GetMaxHealth()));
 		}
 	}
 	else if (Data.EvaluatedData.Attribute == GetCurrentHealthAttribute())
 	{
 		SetCurrentHealth(FMath::Clamp(GetCurrentHealth(), 0.f, GetMaxHealth()));
+	}
+
+	if (GetCurrentHealth() <= 0.f)
+	{
+		if (UPOAbilitySystemComponent* AbilitySystemComponent = Cast<UPOAbilitySystemComponent>(GetOwningAbilitySystemComponent()))
+		{
+			AActor* OwnerActor = AbilitySystemComponent->GetAvatarActor();
+			if (OwnerActor)
+			{
+				// 사망 상태 태그를 부여
+				AbilitySystemComponent->AddLooseGameplayTag(POGameplayTags::Shared_Ability_Death);
+
+				// 사망 이벤트 발생
+				FGameplayEventData Payload;
+				Payload.Instigator = Data.EffectSpec.GetEffectContext().GetInstigator();
+				Payload.Target = OwnerActor;
+				UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(OwnerActor, POGameplayTags::Shared_Status_Death, Payload);
+			}
+		}
 	}
 }
 
