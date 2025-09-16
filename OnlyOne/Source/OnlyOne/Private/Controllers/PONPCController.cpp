@@ -3,11 +3,9 @@
 
 #include "Controllers/PONPCController.h"
 
-// AI
 #include "Characters/PONPCCharacter.h"
 #include "BehaviorTree/BehaviorTree.h"
 
-// UI
 #include "Components/UI/NpcUIComponent.h"
 
 APONPCController::APONPCController()
@@ -20,10 +18,10 @@ void APONPCController::OnPossess(APawn* InPawn)
 	Super::OnPossess(InPawn);
 
 	APONPCCharacter* AICharacter = Cast<APONPCCharacter>(InPawn);
-	if (IsValid(AICharacter) == true)
+	if (IsValid(AICharacter))
 	{
 		UBehaviorTree* BT = AICharacter->GetBehaviorTree();
-		if (IsValid(BT) == true)
+		if (IsValid(BT))
 		{
 			UBlackboardComponent* BlackboardComp;
 			UseBlackboard(BT->GetBlackboardAsset(), BlackboardComp);

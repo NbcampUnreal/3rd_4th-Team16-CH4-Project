@@ -3,16 +3,9 @@
 
 #include "AI/Tasks/BTT_FindRandomLocation.h"
 
-// AIController
 #include "Controllers/PONPCController.h"
-
-// AICharacter
 #include "Characters/PONPCCharacter.h"
-
-// Navgation
 #include "NavigationSystem.h"
-
-// Blackboard
 #include "BehaviorTree/BlackboardComponent.h"
 
 UBTT_FindRandomLocation::UBTT_FindRandomLocation()

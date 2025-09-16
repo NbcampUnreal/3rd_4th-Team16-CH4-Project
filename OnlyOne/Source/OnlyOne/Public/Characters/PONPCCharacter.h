@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// PONPCCharacter.cpp
 
 #pragma once
 
@@ -8,9 +8,7 @@
 #include "PONPCCharacter.generated.h"
 
 class UNpcCombatComponent;
-/**
- * 
- */
+
 UCLASS()
 class ONLYONE_API APONPCCharacter : public APOCharacterBase
 {
