@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
+#include "Controllers/POMainMenuPlayerController.h"
 #include "POGameInstance.generated.h"
 
 /**
@@ -18,23 +19,20 @@ class ONLYONE_API UPOGameInstance : public UGameInstance
 public:
 
 	//TODO: 닉네임과 서버주소를 FJoinServerData와 통합하도록 변경해주세요.
-	UFUNCTION(BlueprintCallable, Category="PO|Profile")
-	void SetPendingProfile(const FString& InNickname, const FString& InServerAddress)
+	UFUNCTION(Category="PO|Profile")
+	void SetPendingProfile(FJoinServerData& InitUserData)
 	{
-		PendingNickname = InNickname;
-		PendingServerAddress = InServerAddress;
+		JoinServerData = InitUserData;
 	}
 	
-	UFUNCTION(BlueprintPure, Category="PO|Profile")
-	const FString& GetPendingNickname() const { return PendingNickname; }
-
-	UFUNCTION(BlueprintPure, Category="PO|Profile")
-	const FString& GetPendingServerAddress() const { return PendingServerAddress; }
+	UFUNCTION(Category="PO|Profile")
+	const FJoinServerData& GetPendingProfile() const
+	{
+		return JoinServerData;
+	}
 
 private:
 	UPROPERTY()
-	FString PendingNickname;
+	FJoinServerData JoinServerData;
 
-	UPROPERTY()
-	FString PendingServerAddress;
 };

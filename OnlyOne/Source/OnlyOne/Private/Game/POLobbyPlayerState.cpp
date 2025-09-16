@@ -3,6 +3,7 @@
 #include "game/POLobbyPlayerState.h"
 
 #include "Controllers/POServerLobbyPlayerController.h"
+#include "Controllers/POMainMenuPlayerController.h"
 #include "Net/UnrealNetwork.h"
 #include "game/POGameInstance.h"
 #include "game/POBadWords.h"
@@ -55,7 +56,7 @@ void APOLobbyPlayerState::InitNicknameFromGameInstanceOnce()
 {
 	if (UPOGameInstance* GI = GetGameInstance<UPOGameInstance>())
 	{
-		const FString NickFromGI = GI->GetPendingNickname();
+		const FString NickFromGI = GI->GetPendingProfile().Name;
 		ServerSetNicknameOnce(NickFromGI);
 		LOG_NET(POLog, Warning, TEXT("Player %d nickname initialized from GI: %s"), GetPlayerId(), *BaseNickname);
 	}
