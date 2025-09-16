@@ -69,18 +69,4 @@ void UPOPlayerGameplayAbility_Death::OnMontageCompleted()
 	}
 
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
-	// if (APOPlayerCharacter* PlayerCharacter = GetPlayerCharacterFromActorInfo())
-	// {
-	// 	// 컨트롤러의 빙의를 해제
-	// 	if (AController* Controller = PlayerCharacter->GetController())
-	// 	{
-	// 		Controller->UnPossess();
-	// 	}
-	//
-	// 	// 캐릭터를 파괴
-	// 	PlayerCharacter->Destroy();
-	// }
-	//
-	// EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
-	
 }
