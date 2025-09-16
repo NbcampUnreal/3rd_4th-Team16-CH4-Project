@@ -76,6 +76,7 @@ void UPOInputComponent::BindAbilityInputAction(
 			InputPressedFunc,
 			AbilityInputActionConfig.InputTag
 		);
+		
 		BindAction(
 			AbilityInputActionConfig.InputAction,
 			ETriggerEvent::Completed,
