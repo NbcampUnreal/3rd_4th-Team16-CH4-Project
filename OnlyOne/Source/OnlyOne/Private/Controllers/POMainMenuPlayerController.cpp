@@ -4,6 +4,7 @@
 #include "UI/MainMenu/POMainMenuWidget.h"
 #include "Components/Widget.h"
 #include "Blueprint/UserWidget.h"
+#include "Controllers/Components/POUIStackingComonent.h"
 #include "Engine/Engine.h"
 #include "Framework/Application/SlateApplication.h"
 #include "OnlyOne/OnlyOne.h"
@@ -17,6 +18,8 @@ APOMainMenuPlayerController::APOMainMenuPlayerController()
 	bShowMouseCursor = true;
 	bEnableClickEvents = true;
 	bEnableMouseOverEvents = true;
+
+	UIStackingComponent = CreateDefaultSubobject<UPOUIStackingComonent>(TEXT("UI Stacking Component"));
 }
 
 void APOMainMenuPlayerController::BeginPlay()
@@ -40,9 +43,7 @@ void APOMainMenuPlayerController::ShowMainMenu()
 
 		if (MainMenuWidget)
 		{
-			MainMenuWidget->AddToViewport();
-			SetInputMode(FInputModeUIOnly());
-			SetShowMouseCursor(true);
+			UIStackingComponent->PushWidget(MainMenuWidget);
 		}
 	}
 }
@@ -64,13 +65,11 @@ void APOMainMenuPlayerController::ShowJoinServer()
 		if (!JoinServerWidget)
 		{
 			JoinServerWidget = CreateWidget<UPOJoinServerWidget>(this, JoinServerWidgetClass);
-			JoinServerWidget->AddToViewport();
-			SetInputMode(FInputModeUIOnly());
 		}
 
 		if (JoinServerWidget)
 		{
-			JoinServerWidget->SetVisibility(ESlateVisibility::Visible);
+			UIStackingComponent->PushWidget(JoinServerWidget);
 		}
 	}
 }
@@ -82,13 +81,11 @@ void APOMainMenuPlayerController::ShowHostServer()
 		if (!HostServerWidget)
 		{
 			HostServerWidget = CreateWidget<UPOHostServerWidget>(this, HostServerWidgetClass);
-			HostServerWidget->AddToViewport();
-			SetInputMode(FInputModeUIOnly());
 		}
 
 		if (HostServerWidget)
 		{
-			HostServerWidget->SetVisibility(ESlateVisibility::Visible);
+			UIStackingComponent->PushWidget(HostServerWidget);
 		}
 	}
 }

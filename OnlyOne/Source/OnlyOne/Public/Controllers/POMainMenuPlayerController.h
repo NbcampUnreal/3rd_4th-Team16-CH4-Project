@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "POMainMenuPlayerController.generated.h"
 
+class UPOUIStackingComonent;
 class UPOHostServerWidget;
 class UPOJoinServerWidget;
 class UPOMainMenuWidget;
@@ -47,21 +48,21 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	// MainMenu Widget 
+	UPROPERTY()
+	TObjectPtr<UPOUIStackingComonent> UIStackingComponent;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
 	TSubclassOf<UPOMainMenuWidget> MainMenuWidgetClass;
 	
 	UPROPERTY()
 	TObjectPtr<UPOMainMenuWidget> MainMenuWidget;
 
-	// Join Server Widget
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
 	TSubclassOf<UPOJoinServerWidget> JoinServerWidgetClass;
 	
 	UPROPERTY()
 	TObjectPtr<UPOJoinServerWidget> JoinServerWidget;
-
-	// Host Server Widget
+ 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
 	TSubclassOf<UPOHostServerWidget> HostServerWidgetClass;
 	
