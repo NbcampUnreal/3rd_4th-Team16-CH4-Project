@@ -29,6 +29,16 @@ void APOCharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(APOCharacterBase, TeamID);
 }
 
+void APOCharacterBase::SetGenericTeamId(const FGenericTeamId& NewTeamID)
+{
+	TeamID = NewTeamID;
+}
+
+FGenericTeamId APOCharacterBase::GetGenericTeamId() const
+{
+	return TeamID;
+}
+
 UPawnCombatComponent* APOCharacterBase::GetPawnCombatComponent() const
 {
 	return nullptr;

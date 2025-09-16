@@ -26,8 +26,10 @@ class ONLYONE_API APOCharacterBase :
 public:
 	APOCharacterBase();
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
-	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void SetGenericTeamId(const FGenericTeamId& NewTeamID) override;
+	virtual FGenericTeamId GetGenericTeamId() const override;
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	virtual UPawnCombatComponent* GetPawnCombatComponent() const override;
 	void InitializeAbilitySystemFromDataAsset();
 

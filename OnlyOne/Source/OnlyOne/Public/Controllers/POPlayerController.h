@@ -17,8 +17,16 @@ class ONLYONE_API APOPlayerController : public APOCharacterControllerBase
 public:
 	APOPlayerController();
 	virtual UPawnUIComponent* GetPawnUIComponent() const override;
+	virtual FGenericTeamId GetGenericTeamId() const override;
+	virtual void SetGenericTeamId(const FGenericTeamId& NewTeamID) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void OnPossess(APawn* InPawn) override;
+	virtual ETeamAttitude::Type GetTeamAttitudeTowards(const AActor& Other) const override;
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UPlayerUIComponent> PlayerUIComponent;
+
+	UPROPERTY(Replicated)
+	FGenericTeamId TeamID;
 };

@@ -13,3 +13,13 @@ UPawnUIComponent* APONPCController::GetPawnUIComponent() const
 {
 	return NpcUIComponent;
 }
+
+ETeamAttitude::Type APONPCController::GetTeamAttitudeTowards(const AActor& Other) const
+{
+	if (GetPawn() == &Other)
+	{
+		return ETeamAttitude::Friendly;
+	}
+	
+	return ETeamAttitude::Hostile;
+}
