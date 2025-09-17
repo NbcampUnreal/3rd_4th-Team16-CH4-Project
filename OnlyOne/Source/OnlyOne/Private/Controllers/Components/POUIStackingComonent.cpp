@@ -22,7 +22,7 @@ void UPOUIStackingComonent::PushWidget(UUserWidget* Widget)
 		UIStack.Last()->SetVisibility(ESlateVisibility::Collapsed);
 	}
 
-	if (UIStack.Num() > 1)
+	if (UIStack.Num() <= 0)
 	{
 		if (APlayerController* PC = GetOwner<APlayerController>())
 		{
