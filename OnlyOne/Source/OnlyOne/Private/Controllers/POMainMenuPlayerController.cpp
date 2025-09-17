@@ -110,7 +110,7 @@ void APOMainMenuPlayerController::OnJoinServer(FJoinServerData& JoinServerData)
 	
 	if (UPOGameInstance* GI = GetGameInstance<UPOGameInstance>())
 	{
-		GI->SetPendingProfile(JoinServerData.Name, JoinServerData.IPAddress);
+		GI->SetPendingProfile(JoinServerData);
 	}
 	
 	FString TravelURL = JoinServerData.IPAddress;
@@ -136,7 +136,7 @@ void APOMainMenuPlayerController::OnHostServer(FJoinServerData& HostServerData)
 {
 	if (UPOGameInstance* GI = GetGameInstance<UPOGameInstance>())
 	{
-		GI->SetPendingProfile(HostServerData.Name, HostServerData.IPAddress);
+		GI->SetPendingProfile(HostServerData);
 	}
 	
 	if (UWorld* World = GetWorld())
