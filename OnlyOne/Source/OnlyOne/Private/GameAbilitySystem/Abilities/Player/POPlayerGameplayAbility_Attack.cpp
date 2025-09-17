@@ -1,7 +1,7 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "GameAbilitySystem/Abilities/Player/POGameplayAbility_Attack.h"
+#include "GameAbilitySystem/Abilities/Player/POPlayerGameplayAbility_Attack.h"
 #include "GameAbilitySystem/POAttributeSet.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h" 
@@ -9,8 +9,11 @@
 #include "Characters/POCharacterBase.h"
 #include "POGameplayTags.h"
 
-UPOGameplayAbility_Attack::UPOGameplayAbility_Attack()
+UPOPlayerGameplayAbility_Attack::UPOPlayerGameplayAbility_Attack()
 {
+	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
+	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::ServerInitiated;
+	
 	FGameplayTagContainer Tags;
 	Tags.AddTag(POGameplayTags::Player_Ability_Attack);
 	SetAssetTags(Tags);
@@ -18,7 +21,7 @@ UPOGameplayAbility_Attack::UPOGameplayAbility_Attack()
 	BlockAbilitiesWithTag.AddTag(POGameplayTags::Player_Ability_Attack);
 }
 
-void UPOGameplayAbility_Attack::ActivateAbility(
+void UPOPlayerGameplayAbility_Attack::ActivateAbility(
 	const FGameplayAbilitySpecHandle Handle,
 	const FGameplayAbilityActorInfo* ActorInfo,
 	const FGameplayAbilityActivationInfo ActivationInfo,
@@ -47,17 +50,17 @@ void UPOGameplayAbility_Attack::ActivateAbility(
 	MontageTask->ReadyForActivation();
 }
 
-void UPOGameplayAbility_Attack::OnMontageCompleted()
+void UPOPlayerGameplayAbility_Attack::OnMontageCompleted()
 {
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
 }
 
-void UPOGameplayAbility_Attack::OnMontageEndCancelled()
+void UPOPlayerGameplayAbility_Attack::OnMontageEndCancelled()
 {
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
 }
 
-void UPOGameplayAbility_Attack::OnHitEventReceived(FGameplayEventData EventData)
+void UPOPlayerGameplayAbility_Attack::OnHitEventReceived(FGameplayEventData EventData)
 {
 	// GAS 함수들이 AActor* 타입의 (const가 아닌) 포인터를 인자로 요구하기 때문에 const_cast를 사용 
 	AActor* TargetActor = const_cast<AActor*>(EventData.Target.Get());

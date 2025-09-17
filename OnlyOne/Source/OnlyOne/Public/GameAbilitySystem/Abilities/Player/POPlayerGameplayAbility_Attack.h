@@ -4,18 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "POPlayerGameplayAbility.h"
-#include "POGameplayAbility_Attack.generated.h"
+#include "POPlayerGameplayAbility_Attack.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class ONLYONE_API UPOGameplayAbility_Attack : public UPOPlayerGameplayAbility
+class ONLYONE_API UPOPlayerGameplayAbility_Attack : public UPOPlayerGameplayAbility
 {
 	GENERATED_BODY()
 
 public:
-	UPOGameplayAbility_Attack();
+	UPOPlayerGameplayAbility_Attack();
 
 protected:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
