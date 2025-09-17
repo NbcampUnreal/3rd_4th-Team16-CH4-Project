@@ -28,4 +28,5 @@ namespace POGameplayTags
 
 	/* GameplayCue Tags*/
 	UE_DEFINE_GAMEPLAY_TAG(GameplayCue_GimmickTag_Sound, "GameplayCue.Gimmick.Sound")
+	UE_DEFINE_GAMEPLAY_TAG(GameplayCue_Status_Slow,"GameplayCue.Status.Slow")
 }

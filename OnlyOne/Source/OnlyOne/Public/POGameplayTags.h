@@ -29,5 +29,6 @@ namespace POGameplayTags
 	
    /* GameplayCue Tags*/
 	ONLYONE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_GimmickTag_Sound);
+	ONLYONE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_Status_Slow);
 
 }

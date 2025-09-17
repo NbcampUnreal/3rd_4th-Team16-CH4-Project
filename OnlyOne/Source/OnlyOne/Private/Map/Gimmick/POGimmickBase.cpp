@@ -5,6 +5,7 @@
 #include "GameplayEffectTypes.h"
 #include "Components/AudioComponent.h"
 #include "Components/BoxComponent.h"
+#include "Components/StaticMeshComponent.h"  
 #include "Compression/lz4.h"
 #include "GameFramework/Pawn.h"              
 
@@ -24,6 +25,9 @@ APOGimmickBase::APOGimmickBase() :
     BoxCollision->SetCollisionResponseToAllChannels(ECR_Ignore);
     BoxCollision->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
     BoxCollision->SetGenerateOverlapEvents(true);
+
+    StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
+    StaticMesh->SetupAttachment(Root);
 
     SetNetCullDistanceSquared(NetCullDistance * NetCullDistance);
 }
