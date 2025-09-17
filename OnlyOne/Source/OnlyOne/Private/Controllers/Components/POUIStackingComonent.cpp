@@ -12,22 +12,29 @@ UPOUIStackingComonent::UPOUIStackingComonent()
 
 void UPOUIStackingComonent::PushWidget(UUserWidget* Widget)
 {
-	if (!Widget) return;
+	if (!Widget) 
+	{
+		return;
+	}
 
 	if (!UIStack.IsEmpty())
 	{
 		UIStack.Last()->SetVisibility(ESlateVisibility::Collapsed);
 	}
 
+	if (UIStack.Num() > 1)
+	{
+		if (APlayerController* PC = GetOwner<APlayerController>())
+		{
+			PC->SetInputMode(FInputModeUIOnly());
+			PC->bShowMouseCursor = true;
+		}
+	}
+
 	UIStack.Add(Widget);
 	Widget->AddToViewport();
 	Widget->SetVisibility(ESlateVisibility::Visible);
 
-	if (APlayerController* PC = GetOwner<APlayerController>())
-	{
-		PC->SetInputMode(FInputModeUIOnly());
-		PC->bShowMouseCursor = true;
-	}
 }
 
 void UPOUIStackingComonent::PopWidget()
