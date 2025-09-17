@@ -91,7 +91,7 @@ void APOGimmickBase::ActivateGimmick_Implementation(AActor* Target)
 {
 }
 
-//GAS연결점 
+
 UAbilitySystemComponent* APOGimmickBase::GetASC(AActor* Actor)
 {
     if (!Actor)
@@ -113,7 +113,7 @@ void APOGimmickBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
     DOREPLIFETIME(APOGimmickBase, bConsumed);
 }
 
-//Gimmick발동 이후 처리
+
 void APOGimmickBase::OnGimmickComplete_Implementation(AActor* Target)
 {
     if (!HasAuthority())

@@ -22,7 +22,7 @@ namespace POGameplayTags
 	ONLYONE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Shared_SetByCaller_BaseDamage);
 	ONLYONE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Shared_Event_MeleeHit);
 	
-  /* GameplayCue Tags*/
+   /* GameplayCue Tags*/
 	ONLYONE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_GimmickTag_Sound);
 
 }
