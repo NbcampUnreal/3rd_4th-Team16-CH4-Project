@@ -31,15 +31,12 @@ void APOSlowMine::ActivateGimmick_Implementation(AActor* Target)
 		{
 			return;
 		}
+		
+		FGameplayEffectSpec& SpecRef = *Spec.Data.Get();
+		SpecRef.SetDuration(5.0f, false);
 
-		if (Spec.IsValid())
-		{
-			FGameplayEffectSpec& SpecRef = *Spec.Data.Get();
-			SpecRef.SetDuration(5.0f, false);
-
-			SpecRef.DynamicGrantedTags.AddTag(POGameplayTags::Shared_Status_Slow);
-			ASC->ApplyGameplayEffectSpecToSelf(SpecRef);
-		}
+		SpecRef.DynamicGrantedTags.AddTag(POGameplayTags::Shared_Status_Slow);
+		ASC->ApplyGameplayEffectSpecToSelf(SpecRef);
 	}
 
 	OnGimmickComplete(Target);

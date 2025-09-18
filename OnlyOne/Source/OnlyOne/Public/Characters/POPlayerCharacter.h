@@ -37,6 +37,8 @@ public:
 protected:
 	virtual void PossessedBy(AController* NewController) override;
 
+	virtual void UnPossessed() override;
+
 private:
 #pragma region Camera
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera | SpringArm", meta = (AllowPrivateAccess = "true"))
@@ -121,6 +123,13 @@ private:
 public:
 	FORCEINLINE UPlayerCombatComponent* GetPlayerCombatComponent() const { return PlayerCombatComponent; }
 	FORCEINLINE UBoxComponent* GetAttackHitCollisionBox() const { return AttackHitCollisionBox; }
+
+#pragma region Bind
+	bool bSlowTagBind = false;
+	FDelegateHandle SlowTagDelegate;
+
+	void UnbindSlowTagDelegate();   //바인드 해제 함수 
+#pragma endregion
 
 };
 

@@ -109,16 +109,40 @@ void APOPlayerCharacter::PossessedBy(AController* NewController)
 			LoadedData->GiveToAbilitySystemComponent(POAbilitySystemComponent, AbilityApplyLevel);
 		}
 	}
-	if (POAbilitySystemComponent)
+	if (POAbilitySystemComponent && !bSlowTagBind)
 	{
 		// 슬로우 태그 add/remove시 속도 재계산
-		POAbilitySystemComponent
-		  ->RegisterGameplayTagEvent(POGameplayTags::Shared_Status_Slow,EGameplayTagEventType::NewOrRemoved)
-		  .AddUObject(this, &ThisClass::OnSlowTagChanged);
+		SlowTagDelegate =
+			POAbilitySystemComponent
+			->RegisterGameplayTagEvent(POGameplayTags::Shared_Status_Slow,EGameplayTagEventType::NewOrRemoved)
+			.AddUObject(this, &ThisClass::OnSlowTagChanged);
+
+		bSlowTagBind = true;
 	}
 
 	// 최초 계산
 	UpdateMovementSpeed();
+}
+
+void APOPlayerCharacter::UnPossessed()
+{
+	UnbindSlowTagDelegate();   //UnPossessed되면 바인드 해제 
+	Super::UnPossessed();
+}
+
+void APOPlayerCharacter::UnbindSlowTagDelegate()
+{
+	if (POAbilitySystemComponent && SlowTagDelegate.IsValid())
+	{
+		POAbilitySystemComponent->UnregisterGameplayTagEvent(
+			SlowTagDelegate,
+			POGameplayTags::Shared_Status_Slow,
+			EGameplayTagEventType::NewOrRemoved);
+
+		SlowTagDelegate.Reset();
+	}
+
+	bSlowTagBind = false;
 }
 
 void APOPlayerCharacter::Server_SetWalking_Implementation(bool bNewIsWalking)
@@ -250,6 +274,7 @@ void APOPlayerCharacter::OnAttackHitBoxOverlap(UPrimitiveComponent* OverlappedCo
 		}
 	}
 }
+
 
 void APOPlayerCharacter::PostInitializeComponents()
 {
