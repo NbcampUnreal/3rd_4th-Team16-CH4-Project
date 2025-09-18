@@ -19,14 +19,25 @@ void APOSlowMine::OnGimmickComplete_Implementation(AActor* Target)
 void APOSlowMine::ActivateGimmick_Implementation(AActor* Target)
 {
 	Super::ActivateGimmick_Implementation(Target);
-
+	if (!HasAuthority())
+	{
+		return;
+	}
+	
 	if (UAbilitySystemComponent* ASC = GetASC(Target))
 	{
-		FGameplayEffectSpecHandle Spec = ASC->MakeOutgoingSpec(GE_Slow,1.0f,ASC->MakeEffectContext());
+		FGameplayEffectSpecHandle Spec = ASC->MakeOutgoingSpec(GE_Slow,1.f,ASC->MakeEffectContext());
+		if (!Spec.IsValid())
+		{
+			return;
+		}
+
 		if (Spec.IsValid())
 		{
 			FGameplayEffectSpec& SpecRef = *Spec.Data.Get();
-			SpecRef.SetDuration(5.0f,false);
+			SpecRef.SetDuration(5.0f, false);
+
+			SpecRef.DynamicGrantedTags.AddTag(POGameplayTags::Shared_Status_Slow);
 			ASC->ApplyGameplayEffectSpecToSelf(SpecRef);
 		}
 	}

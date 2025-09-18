@@ -22,6 +22,7 @@ namespace POGameplayTags
 	/* Player State */
 	ONLYONE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Shared_Status_Death);
 	ONLYONE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Shared_Ability_Death);
+	ONLYONE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Shared_Status_Slow);
 
 	/* Shard Tags*/
 	ONLYONE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Shared_SetByCaller_BaseDamage);

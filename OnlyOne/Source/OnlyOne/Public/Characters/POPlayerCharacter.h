@@ -86,6 +86,12 @@ private:
 	bool IsInputPressed(const FInputActionValue& InputActionValue);
 
 	bool bIsJump = false;
+
+	UFUNCTION()
+	void OnSlowTagChanged(const FGameplayTag Tag, int32 NewCount);
+
+	UPROPERTY(EditDefaultsOnly, Category="Movement")
+	float SlowMultiplier = 0.6f;
 #pragma endregion
 	
 #pragma region Hit Collision
