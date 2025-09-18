@@ -6,6 +6,7 @@
 #include "Components/Button.h"
 #include "Components/EditableTextBox.h"
 #include "Controllers/POMainMenuPlayerController.h"
+#include "Controllers/Components/POUIStackingComonent.h"
 #include "OnlyOne/OnlyOne.h"
 #include "UI/Common/POBaseWindow.h"
 
@@ -13,12 +14,12 @@ void UPOHostServerWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	if (WindowUI && !WindowUI->OnCloseWindow.IsBound())
+	if (WindowUI && !WindowUI->OnCloseWindow.IsAlreadyBound(this, &UPOHostServerWidget::OnCloseWindow))
 	{
 		WindowUI->OnCloseWindow.AddDynamic(this, &UPOHostServerWidget::OnCloseWindow);
 	}
 	
-	if (HostButton && !HostButton->OnClicked.IsBound())
+	if (HostButton && !HostButton->OnClicked.IsAlreadyBound(this, &UPOHostServerWidget::OnHostButtonClicked))
 	{
 		HostButton->OnClicked.AddDynamic(this, &UPOHostServerWidget::OnHostButtonClicked);
 	}
@@ -26,6 +27,15 @@ void UPOHostServerWidget::NativeConstruct()
 
 void UPOHostServerWidget::NativeDestruct()
 {
+	if (WindowUI && WindowUI->OnCloseWindow.IsAlreadyBound(this, &UPOHostServerWidget::OnCloseWindow))
+	{
+		WindowUI->OnCloseWindow.RemoveDynamic(this, &UPOHostServerWidget::OnCloseWindow);
+	}
+	if (HostButton && HostButton->OnClicked.IsAlreadyBound(this, &UPOHostServerWidget::OnHostButtonClicked))
+	{
+		HostButton->OnClicked.RemoveDynamic(this, &UPOHostServerWidget::OnHostButtonClicked);
+	}
+	
 	Super::NativeDestruct();
 }
 
@@ -44,5 +54,8 @@ void UPOHostServerWidget::OnHostButtonClicked()
 
 void UPOHostServerWidget::OnCloseWindow()
 {
-	SetVisibility(ESlateVisibility::Collapsed);
+	if (IPOUIStackingInterface* UIStackingInterface = Cast<IPOUIStackingInterface>(GetOwningPlayer()))
+	{
+		UIStackingInterface->GetUIStackingComponent()->PopWidget();
+	}
 }

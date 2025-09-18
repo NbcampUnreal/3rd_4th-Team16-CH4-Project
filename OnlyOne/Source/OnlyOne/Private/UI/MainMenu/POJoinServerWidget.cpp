@@ -6,6 +6,7 @@
 #include "Components/Button.h"
 #include "Components/EditableTextBox.h"
 #include "Controllers/POMainMenuPlayerController.h"
+#include "Controllers/Components/POUIStackingComonent.h"
 #include "OnlyOne/OnlyOne.h"
 #include "UI/Common/POBaseWindow.h"
 
@@ -56,5 +57,8 @@ void UPOJoinServerWidget::OnJoinButtonClicked()
 
 void UPOJoinServerWidget::OnCloseWindow()
 {
-	SetVisibility(ESlateVisibility::Collapsed);
+	if (IPOUIStackingInterface* UIStackingInterface = Cast<IPOUIStackingInterface>(GetOwningPlayer()))
+	{
+		UIStackingInterface->GetUIStackingComponent()->PopWidget();
+	}
 }

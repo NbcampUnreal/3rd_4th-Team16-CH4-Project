@@ -8,7 +8,7 @@ void UPOBaseWindow::NativeConstruct()
 {
 	Super::NativeConstruct();
 	
-	if (ExitButton)
+	if (ExitButton && !ExitButton->OnClicked.IsAlreadyBound(this, &UPOBaseWindow::OnExitButtonClicked))
 	{
 		ExitButton->OnClicked.AddDynamic(this, &UPOBaseWindow::OnExitButtonClicked);
 	}
@@ -16,6 +16,11 @@ void UPOBaseWindow::NativeConstruct()
 
 void UPOBaseWindow::NativeDestruct()
 {
+	if (ExitButton && ExitButton->OnClicked.IsAlreadyBound(this, &UPOBaseWindow::OnExitButtonClicked))
+	{
+		ExitButton->OnClicked.RemoveDynamic(this, &UPOBaseWindow::OnExitButtonClicked);
+	}
+	
 	OnCloseWindow.Clear();
 	
 	Super::NativeDestruct();
