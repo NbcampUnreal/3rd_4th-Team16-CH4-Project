@@ -38,6 +38,7 @@ protected:
 	
 protected:
 	FTimerHandle StartMatchTimerHandle;
+	FTimerHandle DelayedTravelHandle; // 안전한 ServerTravel 재시도용
 	int32 CountdownRemaining;
 
 	UPROPERTY(EditDefaultsOnly, Category="PO|Lobby", meta=(ClampMin="2", ClampMax="16", UIMin="2", UIMax="16"))

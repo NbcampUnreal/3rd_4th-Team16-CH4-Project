@@ -56,3 +56,11 @@ ETeamAttitude::Type APOPlayerController::GetTeamAttitudeTowards(const AActor& Ot
 	
 	return ETeamAttitude::Hostile;
 }
+
+void APOPlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	SetInputMode(FInputModeGameOnly());
+	SetShowMouseCursor(false);
+}

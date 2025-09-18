@@ -23,6 +23,9 @@ public:
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual ETeamAttitude::Type GetTeamAttitudeTowards(const AActor& Other) const override;
 
+protected:
+	virtual void BeginPlay() override;
+	
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UPlayerUIComponent> PlayerUIComponent;
