@@ -1,0 +1,8 @@
+*.vsconfig
+/OnlyOne/Config/DefaultEditor.ini
+/OnlyOne/Config/DefaultEngine.ini
+
+/Content/Feature
+/Content/__ExternalActors__
+/Content/__ExternalObjects__
+/OnlyOne.sln.DotSettings.user
