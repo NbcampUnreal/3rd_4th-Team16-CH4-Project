@@ -14,7 +14,7 @@ APOLobbyGameMode::APOLobbyGameMode()
 	GameStateClass   = APOLobbyGameState::StaticClass();
 	PlayerStateClass = APOLobbyPlayerState::StaticClass();
 	
-	bUseSeamlessTravel = false;
+	bUseSeamlessTravel = true;
 
 	MaxPlayersInLobby = 8;
 	CountdownSecondsDefault = 5;
@@ -196,8 +196,41 @@ void APOLobbyGameMode::TickCountdown()
 
 void APOLobbyGameMode::OnCountdownFinished()
 {
-	// 실제 레벨 이동 없이, 구조만 동일하게 LOG로 검증
-	// 예시: LOG_NET(POLog, Warning, TEXT("Player %d nickname initialized from GI: %s"), GetPlayerId(), *BaseNickname);
-	// → 형식을 맞춰 경고 로그로 출력(내용만 다름)
-	LOG_NET(POLog, Warning, TEXT("Lobby countdown finished -> (Simulated) Start Game Level Travel"));
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		LOG_NET(POLog, Error, TEXT("[LobbyGM] OnCountdownFinished: World null"));
+		return;
+	}
+
+	// GameMode는 서버 전용이지만, 혹시 모를 호출 경로 안전 장치
+	if (!HasAuthority())
+	{
+		LOG_NET(POLog, Warning, TEXT("[LobbyGM] OnCountdownFinished called without authority -> abort"));
+		return;
+	}
+
+	// SeamlessTravel 중복 방지
+	if (World->IsInSeamlessTravel())
+	{
+		LOG_NET(POLog, Warning, TEXT("[LobbyGM] SeamlessTravel in progress -> delay retry"));
+		World->GetTimerManager().SetTimer(DelayedTravelHandle, this, &APOLobbyGameMode::OnCountdownFinished, 0.25f, false);
+		return;
+	}
+
+	// 아직 로딩 중(이전 travel) 플레이어 존재 시 재시도
+	if (NumTravellingPlayers > 0)
+	{
+		LOG_NET(POLog, Warning, TEXT("[LobbyGM] NumTravellingPlayers=%d -> delay retry"), NumTravellingPlayers);
+		World->GetTimerManager().SetTimer(DelayedTravelHandle, this, &APOLobbyGameMode::OnCountdownFinished, 0.25f, false);
+		return;
+	}
+
+	static const FString TargetMapPath = TEXT("/Game/Levels/L_TestMainLevel");
+	// ListenServer 최초 open 시 이미 ?listen 사용했으므로 재여행에서는 불필요
+	const FString TravelURL = TargetMapPath; 
+
+	LOG_NET(POLog, Warning, TEXT("[LobbyGM] Travelling to %s (Players=%d)"), *TravelURL, GetNumPlayers());
+
+	World->ServerTravel(TravelURL, /*bAbsolute*/ false);
 }
