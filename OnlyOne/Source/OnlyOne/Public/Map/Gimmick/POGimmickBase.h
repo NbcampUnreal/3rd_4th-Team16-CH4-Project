@@ -22,8 +22,12 @@ protected:
 #pragma region Components
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USceneComponent> Root;
+	
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UBoxComponent> BoxCollision;
+	
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UStaticMeshComponent> StaticMesh;
 
 	#pragma endregion 
 

@@ -109,6 +109,40 @@ void APOPlayerCharacter::PossessedBy(AController* NewController)
 			LoadedData->GiveToAbilitySystemComponent(POAbilitySystemComponent, AbilityApplyLevel);
 		}
 	}
+	if (POAbilitySystemComponent && !bSlowTagBind)
+	{
+		// 슬로우 태그 add/remove시 속도 재계산
+		SlowTagDelegate =
+			POAbilitySystemComponent
+			->RegisterGameplayTagEvent(POGameplayTags::Shared_Status_Slow,EGameplayTagEventType::NewOrRemoved)
+			.AddUObject(this, &ThisClass::OnSlowTagChanged);
+
+		bSlowTagBind = true;
+	}
+
+	// 최초 계산
+	UpdateMovementSpeed();
+}
+
+void APOPlayerCharacter::UnPossessed()
+{
+	UnbindSlowTagDelegate();   //UnPossessed되면 바인드 해제 
+	Super::UnPossessed();
+}
+
+void APOPlayerCharacter::UnbindSlowTagDelegate()
+{
+	if (POAbilitySystemComponent && SlowTagDelegate.IsValid())
+	{
+		POAbilitySystemComponent->UnregisterGameplayTagEvent(
+			SlowTagDelegate,
+			POGameplayTags::Shared_Status_Slow,
+			EGameplayTagEventType::NewOrRemoved);
+
+		SlowTagDelegate.Reset();
+	}
+
+	bSlowTagBind = false;
 }
 
 void APOPlayerCharacter::Server_SetWalking_Implementation(bool bNewIsWalking)
@@ -214,6 +248,11 @@ bool APOPlayerCharacter::IsInputPressed(const FInputActionValue& InputActionValu
 	return InputActionValue.Get<bool>();
 }
 
+void APOPlayerCharacter::OnSlowTagChanged(const FGameplayTag Tag, int32 NewCount)
+{
+	UpdateMovementSpeed();
+}
+
 void APOPlayerCharacter::OnAttackHitBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (!HasAuthority() || !OtherActor)
@@ -235,6 +274,7 @@ void APOPlayerCharacter::OnAttackHitBoxOverlap(UPrimitiveComponent* OverlappedCo
 		}
 	}
 }
+
 
 void APOPlayerCharacter::PostInitializeComponents()
 {
@@ -260,16 +300,26 @@ void APOPlayerCharacter::SetMovementSpeed(const float NewMaxWalkSpeed)
 
 void APOPlayerCharacter::UpdateMovementSpeed()
 {
+	float Speed;
+
 	if (bIsSprinting)
 	{
-		SetMovementSpeed(SprintSpeed);
+		Speed = SprintSpeed;
 	}
 	else if (bIsWalking)
 	{
-		SetMovementSpeed(WalkSpeed);
+		Speed = WalkSpeed;
 	}
 	else
 	{
-		SetMovementSpeed(RunSpeed);
+		Speed = RunSpeed;
 	}
+
+	if (POAbilitySystemComponent &&
+		POAbilitySystemComponent->HasMatchingGameplayTag(POGameplayTags::Shared_Status_Slow))
+	{
+		Speed *= SlowMultiplier;  // 슬로우 적용
+	}
+
+	SetMovementSpeed(Speed);
 }

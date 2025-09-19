@@ -2,13 +2,10 @@
 
 #include "AbilitySystemComponent.h"
 #include "GameplayEffectTypes.h"
-#include "Components/StaticMeshComponent.h"  
 #include "POGameplayTags.h"
 
 APOSoundMine::APOSoundMine()
 {
-	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
-	StaticMesh->SetupAttachment(Root);
 	
 }
 

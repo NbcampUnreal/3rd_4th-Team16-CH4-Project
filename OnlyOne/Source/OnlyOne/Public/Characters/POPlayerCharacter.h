@@ -37,6 +37,8 @@ public:
 protected:
 	virtual void PossessedBy(AController* NewController) override;
 
+	virtual void UnPossessed() override;
+
 private:
 #pragma region Camera
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera | SpringArm", meta = (AllowPrivateAccess = "true"))
@@ -86,6 +88,12 @@ private:
 	bool IsInputPressed(const FInputActionValue& InputActionValue);
 
 	bool bIsJump = false;
+
+	UFUNCTION()
+	void OnSlowTagChanged(const FGameplayTag Tag, int32 NewCount);
+
+	UPROPERTY(EditDefaultsOnly, Category="Movement")
+	float SlowMultiplier = 0.6f;
 #pragma endregion
 	
 #pragma region Hit Collision
@@ -115,6 +123,13 @@ private:
 public:
 	FORCEINLINE UPlayerCombatComponent* GetPlayerCombatComponent() const { return PlayerCombatComponent; }
 	FORCEINLINE UBoxComponent* GetAttackHitCollisionBox() const { return AttackHitCollisionBox; }
+
+#pragma region Bind
+	bool bSlowTagBind = false;
+	FDelegateHandle SlowTagDelegate;
+
+	void UnbindSlowTagDelegate();   //바인드 해제 함수 
+#pragma endregion
 
 };
 

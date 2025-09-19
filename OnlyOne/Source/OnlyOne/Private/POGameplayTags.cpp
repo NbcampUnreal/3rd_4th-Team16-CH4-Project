@@ -21,11 +21,12 @@ namespace POGameplayTags
 	/* Player State */
 	UE_DEFINE_GAMEPLAY_TAG(Shared_Status_Death, "Shared.Status.Death")
 	UE_DEFINE_GAMEPLAY_TAG(Shared_Ability_Death, "Shared.Ability.Death")
-
+	UE_DEFINE_GAMEPLAY_TAG(Shared_Status_Slow,"Shared.Status.Slow")
 	/* Shard Tags*/
 	UE_DEFINE_GAMEPLAY_TAG(Shared_SetByCaller_BaseDamage, "Shared.SetByCaller.BaseDamage")
 	UE_DEFINE_GAMEPLAY_TAG(Shared_Event_MeleeHit, "Shared.Event.MeleeHit")
 
 	/* GameplayCue Tags*/
 	UE_DEFINE_GAMEPLAY_TAG(GameplayCue_GimmickTag_Sound, "GameplayCue.Gimmick.Sound")
+	UE_DEFINE_GAMEPLAY_TAG(GameplayCue_Status_Slow,"GameplayCue.Status.Slow")
 }
