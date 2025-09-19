@@ -13,8 +13,9 @@
 
 UPONPCGameplayAbility_Death::UPONPCGameplayAbility_Death()
 {
+	ReplicationPolicy = EGameplayAbilityReplicationPolicy::ReplicateYes;
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
-	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::ServerInitiated;
+	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::ServerOnly;
 
 	AbilityTags.AddTag(POGameplayTags::Shared_Ability_Death);
 
