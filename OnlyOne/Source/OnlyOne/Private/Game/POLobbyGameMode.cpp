@@ -225,9 +225,11 @@ void APOLobbyGameMode::OnCountdownFinished()
 		World->GetTimerManager().SetTimer(DelayedTravelHandle, this, &APOLobbyGameMode::OnCountdownFinished, 0.25f, false);
 		return;
 	}
-
-	static const FString TargetMapPath = TEXT("/Game/Levels/L_TestMainLevel");
+	// 기존
+	//static const FString TargetMapPath = TEXT("/Game/Levels/L_TestMainLevel");
 	// ListenServer 최초 open 시 이미 ?listen 사용했으므로 재여행에서는 불필요
+
+	static const FString TargetMapPath = TEXT("/Game/Levels/GameTestStageLevel");
 	const FString TravelURL = TargetMapPath; 
 
 	LOG_NET(POLog, Warning, TEXT("[LobbyGM] Travelling to %s (Players=%d)"), *TravelURL, GetNumPlayers());

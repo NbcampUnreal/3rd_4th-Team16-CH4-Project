@@ -3,13 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Controllers/POMainMenuPlayerController.h"
 #include "GameFramework/PlayerState.h"
 #include "POLobbyPlayerState.generated.h"
 
 /**
  * 
- */
+ */	
 UCLASS()
 class ONLYONE_API APOLobbyPlayerState : public APlayerState
 {
@@ -71,4 +70,32 @@ protected:
 
 protected:
 	FString SanitizeNickname_Server(const FString& InRaw) const;
+
+	/* ===== Stage(통계/초기화) ===== */
+public:
+	UFUNCTION()
+	void ServerResetForMatchStart();
+	
+	UFUNCTION(BlueprintPure, Category="PO|Stats")
+	int32 GetKillScore() const { return KillScore; }
+
+	UFUNCTION(BlueprintPure, Category="PO|Stats")
+	bool IsAlive() const { return bIsAlive; }
+	
+	UFUNCTION(Server, Reliable)
+	void ServerAddKill(int32 Delta = 1);
+
+	UFUNCTION(Server, Reliable)
+	void ServerSetAlive(bool bInAlive);
+
+protected:
+	UFUNCTION() void OnRep_KillScore();
+	UFUNCTION() void OnRep_IsAlive();
+
+protected:
+	UPROPERTY(ReplicatedUsing=OnRep_KillScore)
+	int32 KillScore = 0;
+
+	UPROPERTY(ReplicatedUsing=OnRep_IsAlive)
+	bool bIsAlive = true;
 };

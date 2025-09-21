@@ -15,6 +15,8 @@
 APOLobbyPlayerState::APOLobbyPlayerState()
 {
 	bIsReady = false;
+	KillScore = 0;
+	bIsAlive  = true;
 }
 
 void APOLobbyPlayerState::BeginPlay()
@@ -50,6 +52,9 @@ void APOLobbyPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	DOREPLIFETIME(APOLobbyPlayerState, bIsReady);
 	DOREPLIFETIME(APOLobbyPlayerState, BaseNickname);
 	DOREPLIFETIME(APOLobbyPlayerState, DisplayNickname);
+
+	DOREPLIFETIME(APOLobbyPlayerState, KillScore);
+	DOREPLIFETIME(APOLobbyPlayerState, bIsAlive);
 }
 
 
@@ -253,6 +258,40 @@ FString APOLobbyPlayerState::SanitizeNickname_Server(const FString& InRaw) const
 	}
 
 	return S;
+}
+
+void APOLobbyPlayerState::ServerResetForMatchStart()
+{
+	if (!HasAuthority()) return;
+	
+	bIsReady  = false;
+	
+	KillScore = 0;
+	bIsAlive  = true;
+}
+
+void APOLobbyPlayerState::ServerAddKill_Implementation(int32 Delta)
+{
+	if (!HasAuthority()) return;
+	KillScore = FMath::Max(0, KillScore + Delta);
+	OnRep_KillScore();
+}
+
+void APOLobbyPlayerState::ServerSetAlive_Implementation(bool bInAlive)
+{
+	if (!HasAuthority()) return;
+	bIsAlive = bInAlive;
+	OnRep_IsAlive();
+}
+
+void APOLobbyPlayerState::OnRep_KillScore()
+{
+	// HUD/위젯 갱신 필요 시 브로드캐스트
+}
+
+void APOLobbyPlayerState::OnRep_IsAlive()
+{
+	// 이름표 색상(사망시 회색) 등 갱신 필요 시 처리
 }
 
 void APOLobbyPlayerState::InitializeExistingPlayers()
