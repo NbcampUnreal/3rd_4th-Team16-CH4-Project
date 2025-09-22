@@ -11,7 +11,8 @@ namespace POGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Jump, "InputTag.Jump")
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Walk, "InputTag.Walk")
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Sprint, "InputTag.Sprint")
-	UE_DEFINE_GAMEPLAY_TAG(InputTag_SprSpectator, "InputTag.SprSpectator")
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_Spectator_Next, "InputTag.Spectator.Next")
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_Spectator_Previous, "InputTag.Spectator.Previous")
 
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Attack, "InputTag.Attack")
 

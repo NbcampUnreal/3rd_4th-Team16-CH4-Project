@@ -36,6 +36,7 @@ public:
 #pragma region Spectator
 	void StartSpectating(const APawn* DeadCharacter);
 	void SpectatorNextTarget();
+	void SpectatorPreviousTarget(); 
 #pragma endregion
 
 private:
@@ -63,5 +64,6 @@ private:
 	int32 CurrentSpectatorIndex = 0;
 
 	void BuildSpectatorTargets();
+	void CycleSpectator(int32 Direction); // 순환 로직을 처리할 공통 함수 추가
 #pragma endregion
 };

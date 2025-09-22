@@ -78,7 +78,8 @@ void APOPlayerController::SetupInputComponent()
 	
 	if (UPOInputComponent* POInputComponent = Cast<UPOInputComponent>(InputComponent))
 	{
-		POInputComponent->BindNativeInputAction(InputConfigDataAsset,POGameplayTags::InputTag_SprSpectator, ETriggerEvent::Triggered,this, &ThisClass::SpectatorNextTarget);
+		POInputComponent->BindNativeInputAction(InputConfigDataAsset, POGameplayTags::InputTag_Spectator_Next, ETriggerEvent::Triggered, this, &ThisClass::SpectatorNextTarget);
+		POInputComponent->BindNativeInputAction(InputConfigDataAsset, POGameplayTags::InputTag_Spectator_Previous, ETriggerEvent::Triggered, this, &ThisClass::SpectatorPreviousTarget);
 	}
 }
 
@@ -141,24 +142,33 @@ void APOPlayerController::BuildSpectatorTargets()
 	}
 }
 
-void APOPlayerController::SpectatorNextTarget()
+void APOPlayerController::CycleSpectator(int32 Direction)
 {
 	if (!(PlayerState && PlayerState->IsSpectator()))
 	{
 		return;
 	}
-
-	// 최신 생존 플레이어 목록을 다시 생성
+	
 	BuildSpectatorTargets();
 
 	if (SpectatorTargets.Num() == 0)
 	{
-		// 관전할 대상 없으면 컨트롤러 카메라로
 		SetViewTargetWithBlend(this, 0.5f);
 		return;
 	}
 
-	// 인덱스 증가
-	CurrentSpectatorIndex = (CurrentSpectatorIndex + 1) % SpectatorTargets.Num();
+	const int32 TargetCount = SpectatorTargets.Num();
+	CurrentSpectatorIndex = (CurrentSpectatorIndex + Direction + TargetCount) % TargetCount;
+    
 	SetViewTargetWithBlend(SpectatorTargets[CurrentSpectatorIndex], 0.5f);
+}
+
+void APOPlayerController::SpectatorNextTarget()
+{
+	CycleSpectator(1);
+}
+
+void APOPlayerController::SpectatorPreviousTarget()
+{
+	CycleSpectator(-1);
 }
