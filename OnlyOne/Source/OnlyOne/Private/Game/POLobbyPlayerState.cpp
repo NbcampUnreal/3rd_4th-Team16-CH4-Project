@@ -16,7 +16,7 @@ APOLobbyPlayerState::APOLobbyPlayerState()
 {
 	bIsReady = false;
 	KillScore = 0;
-	bIsAlive  = true;
+	bIsAlive = true;
 }
 
 void APOLobbyPlayerState::BeginPlay()
@@ -31,13 +31,16 @@ void APOLobbyPlayerState::BeginPlay()
 	if (GetNetMode() == NM_Client || GetNetMode() == NM_ListenServer)
 	{
 		FTimerHandle TimerHandle;
-		GetWorld()->GetTimerManager().SetTimer(TimerHandle, 
+		GetWorld()->GetTimerManager().SetTimer(
+			TimerHandle,
 			[this]()
 			{
 				InitializeExistingPlayers();
 				InitNicknameFromGameInstanceOnce();
-			}, 
-			1.0f, false);
+			},
+			1.0f,
+			false
+		);
 	}
 }
 
@@ -49,14 +52,14 @@ void APOLobbyPlayerState::BeginDestroy()
 void APOLobbyPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
 	DOREPLIFETIME(APOLobbyPlayerState, bIsReady);
 	DOREPLIFETIME(APOLobbyPlayerState, BaseNickname);
 	DOREPLIFETIME(APOLobbyPlayerState, DisplayNickname);
-
+	
 	DOREPLIFETIME(APOLobbyPlayerState, KillScore);
 	DOREPLIFETIME(APOLobbyPlayerState, bIsAlive);
 }
-
 
 void APOLobbyPlayerState::InitNicknameFromGameInstanceOnce()
 {
@@ -64,6 +67,7 @@ void APOLobbyPlayerState::InitNicknameFromGameInstanceOnce()
 	{
 		const FJoinServerData& Data = GI->GetPendingProfile();
 		ServerSetNicknameOnce(Data.Name);
+
 		LOG_NET(POLog, Warning, TEXT("Player %d nickname initialized from GI: %s"), GetPlayerId(), *BaseNickname);
 	}
 	else
@@ -82,6 +86,7 @@ void APOLobbyPlayerState::MulticastPlayerLeftLobby_Implementation(const FString&
 	FJoinServerData PlayerData;
 	PlayerData.Name = BaseNickname;
 	PlayerData.DisplayNickname = DisplayNickname;
+
 	if (APOServerLobbyPlayerController* PC = Cast<APOServerLobbyPlayerController>(UGameplayStatics::GetPlayerController(this, 0)))
 	{
 		UE_LOG(POLog, Warning, TEXT("Broadcasting OnPlayerLeaveLobby for %s"), *BaseNickname);
@@ -119,9 +124,9 @@ void APOLobbyPlayerState::ServerSetNicknameOnce_Implementation(const FString& In
 	const int32 Tag = GetPlayerId() % 10000;
 	const FString TagStr = FString::Printf(TEXT("#%04d"), Tag);
 
-	BaseNickname    = Base;
+	BaseNickname = Base;
 	DisplayNickname = FString::Printf(TEXT("%s%s"), *BaseNickname, *TagStr);
-	
+
 	LOG_NET(POLog, Warning, TEXT("Player %d set nickname: %s"), GetPlayerId(), *DisplayNickname);
 
 	MulticastPlayerJoinedLobby(BaseNickname);
@@ -138,7 +143,7 @@ void APOLobbyPlayerState::ServerSetReady_Implementation()
 			GM->NotifyReadyStateChanged(this, bIsReady);
 		}
 	}
-	
+
 	if (GetNetMode() == NM_ListenServer)
 	{
 		OnRep_IsReady();
@@ -148,9 +153,10 @@ void APOLobbyPlayerState::ServerSetReady_Implementation()
 void APOLobbyPlayerState::OnRep_IsReady()
 {
 	LOG_NET(POLog, Log, TEXT("Player %d OnRep_IsReady: bIsReady = %s"), GetPlayerId(), bIsReady ? TEXT("true") : TEXT("false"));
+
 	if (APOServerLobbyPlayerController* PC = Cast<APOServerLobbyPlayerController>(UGameplayStatics::GetPlayerController(this, 0)))
 	{
-		//TODO: FJoinServerData에 통합되면 이 부분도 변경되야 합니다.
+		// TODO: FJoinServerData 통합 시 변경
 		FJoinServerData PlayerData;
 		PlayerData.Name = BaseNickname;
 		PlayerData.DisplayNickname = DisplayNickname;
@@ -166,19 +172,19 @@ void APOLobbyPlayerState::MulticastPlayerJoinedLobby_Implementation(const FStrin
 		PlayerData.Name = InName;
 		PlayerData.DisplayNickname = InName;
 		PC->OnPlayerJoinLobby.Broadcast(PlayerData);
-	} 
+	}
 }
 
-FString APOLobbyPlayerState::SanitizeNickname_Server(const FString& InRaw) const 
+FString APOLobbyPlayerState::SanitizeNickname_Server(const FString& InRaw) const
 {
 	FString S = InRaw;
-	
 	S = S.TrimStartAndEnd();
-	
+
 	{
 		FString Compacted;
 		Compacted.Reserve(S.Len());
 		bool bPrevSpace = false;
+
 		for (const TCHAR C : S)
 		{
 			const bool bSpace = FChar::IsWhitespace(C);
@@ -196,9 +202,10 @@ FString APOLobbyPlayerState::SanitizeNickname_Server(const FString& InRaw) const
 				bPrevSpace = false;
 			}
 		}
+
 		S = Compacted.TrimStartAndEnd();
 	}
-	
+
 	{
 		FString Filtered;
 		Filtered.Reserve(S.Len());
@@ -217,10 +224,11 @@ FString APOLobbyPlayerState::SanitizeNickname_Server(const FString& InRaw) const
 		}
 
 		S = Filtered.TrimStartAndEnd();
-		
+
 		FString Compacted;
 		Compacted.Reserve(S.Len());
 		bool bPrevSpace = false;
+
 		for (const TCHAR C : S)
 		{
 			const bool bSpace = (C == TEXT(' '));
@@ -238,20 +246,23 @@ FString APOLobbyPlayerState::SanitizeNickname_Server(const FString& InRaw) const
 				bPrevSpace = false;
 			}
 		}
+
 		S = Compacted.TrimStartAndEnd();
 	}
-	
+
 	constexpr int32 MinLen = 2;
 	constexpr int32 MaxLen = 8;
+
 	if (S.Len() > MaxLen)
 	{
 		S.LeftInline(MaxLen, EAllowShrinking::No);
 	}
+
 	if (S.Len() < MinLen)
 	{
 		S.Reset();
 	}
-	
+
 	if (!S.IsEmpty() && POBadWords::ContainsProfanity(S))
 	{
 		S.Reset();
@@ -262,24 +273,34 @@ FString APOLobbyPlayerState::SanitizeNickname_Server(const FString& InRaw) const
 
 void APOLobbyPlayerState::ServerResetForMatchStart()
 {
-	if (!HasAuthority()) return;
-	
-	bIsReady  = false;
-	
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	bIsReady = false;
 	KillScore = 0;
-	bIsAlive  = true;
+	bIsAlive = true;
 }
 
 void APOLobbyPlayerState::ServerAddKill_Implementation(int32 Delta)
 {
-	if (!HasAuthority()) return;
+	if (!HasAuthority())
+	{
+		return;
+	}
+
 	KillScore = FMath::Max(0, KillScore + Delta);
 	OnRep_KillScore();
 }
 
 void APOLobbyPlayerState::ServerSetAlive_Implementation(bool bInAlive)
 {
-	if (!HasAuthority()) return;
+	if (!HasAuthority())
+	{
+		return;
+	}
+
 	bIsAlive = bInAlive;
 	OnRep_IsAlive();
 }
@@ -293,6 +314,7 @@ void APOLobbyPlayerState::OnRep_IsAlive()
 {
 	// 이름표 색상(사망시 회색) 등 갱신 필요 시 처리
 }
+
 
 void APOLobbyPlayerState::InitializeExistingPlayers()
 {

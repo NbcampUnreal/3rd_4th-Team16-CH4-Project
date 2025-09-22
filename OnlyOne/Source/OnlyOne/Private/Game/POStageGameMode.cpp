@@ -1,4 +1,5 @@
 ﻿// Copyright Epic Games, Inc. All Rights Reserved.
+
 #include "game/POStageGameMode.h"
 #include "game/POStageGameState.h"
 #include "game/POLobbyPlayerState.h"
@@ -12,14 +13,14 @@
 #include "Engine/World.h"
 #include "Engine/EngineTypes.h"
 #include "CollisionQueryParams.h"
-#include "HAL/CriticalSection.h" 
+#include "HAL/CriticalSection.h"
 #include "OnlyOne/OnlyOne.h"
 
 APOStageGameMode::APOStageGameMode()
 {
-	NumAIsToSpawn   = 8;
-	AIRandomRadius  = 2000.0f;
-	PrepSeconds     = 10;
+	NumAIsToSpawn = 8;
+	AIRandomRadius = 2000.0f;
+	PrepSeconds = 10;
 	StageSeconds = 20;
 	bDidSubscribePhase = false;
 
@@ -34,16 +35,22 @@ void APOStageGameMode::InitGame(const FString& MapName, const FString& Options, 
 void APOStageGameMode::BeginPlay()
 {
 	Super::BeginPlay();
-	LOG_NET(POLog, Warning, TEXT("[StageGM] BeginPlay: PrepSeconds=%d, NumAIsToSpawn=%d, AIRadius=%.1f"),
-	PrepSeconds, NumAIsToSpawn, AIRandomRadius);
-	
-	UsedPlayerStarts.Reset(); 
-	
+
+	LOG_NET(
+		POLog,
+		Warning,
+		TEXT("[StageGM] BeginPlay: PrepSeconds=%d, NumAIsToSpawn=%d, AIRadius=%.1f"),
+		PrepSeconds,
+		NumAIsToSpawn,
+		AIRandomRadius
+	);
+
+	UsedPlayerStarts.Reset();
 	ResetAllPlayerStatesForMatchStart();
-	
+
 	CachePlayerStarts();
 	SpawnAIsOnStage();
-	
+
 	if (APOStageGameState* GS = GetGameState<APOStageGameState>())
 	{
 		if (!bDidSubscribePhase)
@@ -51,6 +58,7 @@ void APOStageGameMode::BeginPlay()
 			GS->OnPhaseChanged.AddUObject(this, &APOStageGameMode::HandlePhaseChanged);
 			bDidSubscribePhase = true;
 		}
+
 		LOG_NET(POLog, Warning, TEXT("[StageGM] Requesting prep countdown start (%d sec)"), PrepSeconds);
 		GS->ServerStartPrepCountdown(PrepSeconds);
 	}
@@ -63,7 +71,7 @@ void APOStageGameMode::BeginPlay()
 void APOStageGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	UsedPlayerStarts.Reset();
-	
+
 	if (APOStageGameState* GS = GetGameState<APOStageGameState>())
 	{
 		if (bDidSubscribePhase)
@@ -72,17 +80,21 @@ void APOStageGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
 			bDidSubscribePhase = false;
 		}
 	}
-	
+
 	for (TActorIterator<AAIController> It(GetWorld()); It; ++It)
 	{
 		if (AAIController* AIC = *It)
 		{
-			if (AIC->BrainComponent) { AIC->BrainComponent->StopLogic(TEXT("LevelEnd")); }
+			if (AIC->BrainComponent)
+			{
+				AIC->BrainComponent->StopLogic(TEXT("LevelEnd"));
+			}
 			AIC->StopMovement();
 		}
 	}
 
 	CachedPlayerStarts.Empty();
+
 	Super::EndPlay(EndPlayReason);
 }
 
@@ -93,37 +105,59 @@ void APOStageGameMode::PostLogin(APlayerController* NewPlayer)
 	// Seamless 후 늦게 들어온 플레이어
 	if (NewPlayer)
 	{
-		//TODO: 관전 모드로 진입 
+		// TODO: 관전 모드 진입 고려
 		RestartPlayer(NewPlayer);
 	}
 }
 
 UClass* APOStageGameMode::GetDefaultPawnClassForController_Implementation(AController* InController)
 {
-	return PlayerPawnClass ? *PlayerPawnClass
-	                       : Super::GetDefaultPawnClassForController_Implementation(InController);
+	return PlayerPawnClass
+		? *PlayerPawnClass
+		: Super::GetDefaultPawnClassForController_Implementation(InController);
 }
 
 AActor* APOStageGameMode::ChoosePlayerStart_Implementation(AController* Player)
 {
-	if (CachedPlayerStarts.Num() == 0) { CachePlayerStarts(); }
+	if (CachedPlayerStarts.Num() == 0)
+	{
+		CachePlayerStarts();
+	}
 
 	TArray<AActor*> Starts;
-	for (auto& W : CachedPlayerStarts) if (AActor* A = W.Get()) Starts.Add(A);
-	for (int32 i=0; i<Starts.Num(); ++i) { Starts.Swap(i, FMath::RandRange(i, Starts.Num()-1)); }
+	Starts.Reserve(CachedPlayerStarts.Num());
+
+	for (const TWeakObjectPtr<AActor>& W : CachedPlayerStarts)
+	{
+		if (AActor* A = W.Get())
+		{
+			Starts.Add(A);
+		}
+	}
+
+	for (int32 i = 0; i < Starts.Num(); ++i)
+	{
+		const int32 J = FMath::RandRange(i, Starts.Num() - 1);
+		Starts.Swap(i, J);
+	}
 
 	for (AActor* S : Starts)
 	{
-		if (!S) continue;
-		
+		if (!S)
+		{
+			continue;
+		}
+
 		{
 			FScopeLock Guard(&StartLock);
-			if (UsedPlayerStarts.Contains(S)) continue;
-			
+			if (UsedPlayerStarts.Contains(S))
+			{
+				continue;
+			}
 			UsedPlayerStarts.Add(S);
 		}
-		
-		if (IsStartFree(S))
+
+		if (IsSpawnPointFree(S))
 		{
 			return S;
 		}
@@ -133,23 +167,31 @@ AActor* APOStageGameMode::ChoosePlayerStart_Implementation(AController* Player)
 			UsedPlayerStarts.Remove(S);
 		}
 	}
-	
+
 	return Super::ChoosePlayerStart_Implementation(Player);
 }
 
-bool APOStageGameMode::IsStartFree(AActor* Start) const
+bool APOStageGameMode::IsSpawnPointFree(AActor* Start) const
 {
-	if (!Start || !GetWorld()) return false;
+	if (!Start || !GetWorld())
+	{
+		return false;
+	}
 
 	const FVector Loc = Start->GetActorLocation();
-	const float Radius = 120.f;
+	const float Radius = 120.0f;
 
 	FCollisionQueryParams Params(SCENE_QUERY_STAT(SpawnCheck), false);
 	FCollisionObjectQueryParams ObjParams;
 	ObjParams.AddObjectTypesToQuery(ECC_Pawn);
-	
+
 	const bool bAnyHit = GetWorld()->OverlapAnyTestByObjectType(
-		Loc, FQuat::Identity, ObjParams, FCollisionShape::MakeSphere(Radius), Params);
+		Loc,
+		FQuat::Identity,
+		ObjParams,
+		FCollisionShape::MakeSphere(Radius),
+		Params
+	);
 
 	return !bAnyHit;
 }
@@ -157,8 +199,9 @@ bool APOStageGameMode::IsStartFree(AActor* Start) const
 void APOStageGameMode::RestartPlayerAtPlayerStart(AController* NewPlayer, AActor* StartSpot)
 {
 	Super::RestartPlayerAtPlayerStart(NewPlayer, StartSpot);
-	
-	if (NewPlayer && NewPlayer->GetPawn() && StartSpot) {
+
+	if (NewPlayer && NewPlayer->GetPawn() && StartSpot)
+	{
 		UsedPlayerStarts.Add(StartSpot);
 	}
 }
@@ -169,19 +212,25 @@ void APOStageGameMode::CachePlayerStarts()
 
 	TArray<AActor*> Found;
 	UGameplayStatics::GetAllActorsOfClass(this, APlayerStart::StaticClass(), Found);
+
 	for (AActor* Act : Found)
 	{
 		CachedPlayerStarts.Add(Act);
 	}
 }
 
-
 void APOStageGameMode::SpawnAIsOnStage()
 {
-	if (!HasAuthority() || !AIClass) { return; }
+	if (!HasAuthority() || !AIClass)
+	{
+		return;
+	}
 
 	UNavigationSystemV1* NavSys = UNavigationSystemV1::GetCurrent(GetWorld());
-	if (!NavSys) { return; }
+	if (!NavSys)
+	{
+		return;
+	}
 
 	for (int32 i = 0; i < NumAIsToSpawn; ++i)
 	{
@@ -202,11 +251,18 @@ void APOStageGameMode::SpawnAIsOnStage()
 
 void APOStageGameMode::HandlePhaseChanged(EPOStagePhase NewPhase)
 {
-	if (!HasAuthority()) { return; }
+	if (!HasAuthority())
+	{
+		return;
+	}
 
-	LOG_NET(POLog, Warning, TEXT("[StageGM] Phase changed -> %s"),
-		*StaticEnum<EPOStagePhase>()->GetNameStringByValue(static_cast<int64>(NewPhase)));
-	
+	LOG_NET(
+		POLog,
+		Warning,
+		TEXT("[StageGM] Phase changed -> %s"),
+		*StaticEnum<EPOStagePhase>()->GetNameStringByValue(static_cast<int64>(NewPhase))
+	);
+
 	if (NewPhase == EPOStagePhase::Active)
 	{
 		if (APOStageGameState* GS = GetGameState<APOStageGameState>())
@@ -218,7 +274,10 @@ void APOStageGameMode::HandlePhaseChanged(EPOStagePhase NewPhase)
 
 void APOStageGameMode::ResetAllPlayerStatesForMatchStart()
 {
-	if (!HasAuthority()) { return; }
+	if (!HasAuthority())
+	{
+		return;
+	}
 
 	if (AGameStateBase* GS = GameState)
 	{
