@@ -78,8 +78,8 @@ void APOPlayerController::SetupInputComponent()
 	
 	if (UPOInputComponent* POInputComponent = Cast<UPOInputComponent>(InputComponent))
 	{
-		POInputComponent->BindNativeInputAction(InputConfigDataAsset, POGameplayTags::InputTag_Spectator_Next, ETriggerEvent::Triggered, this, &ThisClass::SpectatorNextTarget);
-		POInputComponent->BindNativeInputAction(InputConfigDataAsset, POGameplayTags::InputTag_Spectator_Previous, ETriggerEvent::Triggered, this, &ThisClass::SpectatorPreviousTarget);
+		POInputComponent->BindNativeInputAction(InputConfigDataAsset, POGameplayTags::InputTag_Spectator_Next, ETriggerEvent::Completed, this, &ThisClass::SpectatorNextTarget);
+		POInputComponent->BindNativeInputAction(InputConfigDataAsset, POGameplayTags::InputTag_Spectator_Previous, ETriggerEvent::Completed, this, &ThisClass::SpectatorPreviousTarget);
 	}
 }
 
@@ -134,7 +134,10 @@ void APOPlayerController::BuildSpectatorTargets()
 	for (AActor* Actor : FoundActors)
 	{
 		APOPlayerCharacter* TargetPlayerCharacter = Cast<APOPlayerCharacter>(Actor);
-		if (!TargetPlayerCharacter) continue;
+		if (!TargetPlayerCharacter)
+		{
+			continue;
+		} 
 
 		// 캐릭터가 살아있는지, 그리고 방금 죽은 자기 자신이 아닌지 확인
 		const bool bIsAlive = TargetPlayerCharacter->GetPOAbilitySystemComponent() && !TargetPlayerCharacter->GetPOAbilitySystemComponent()->HasMatchingGameplayTag(POGameplayTags::Shared_Status_Death);
