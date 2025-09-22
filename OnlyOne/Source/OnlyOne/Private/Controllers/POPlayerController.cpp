@@ -86,6 +86,11 @@ void APOPlayerController::SetupInputComponent()
 void APOPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
+
+	SetInputMode(FInputModeGameOnly());
+	SetShowMouseCursor(false);
+
+	
 	if (InputConfigDataAsset)
 	{
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
@@ -171,12 +176,4 @@ void APOPlayerController::SpectatorNextTarget()
 void APOPlayerController::SpectatorPreviousTarget()
 {
 	CycleSpectator(-1);
-}
-
-void APOPlayerController::BeginPlay()
-{
-	Super::BeginPlay();
-	
-	SetInputMode(FInputModeGameOnly());
-	SetShowMouseCursor(false);
 }
