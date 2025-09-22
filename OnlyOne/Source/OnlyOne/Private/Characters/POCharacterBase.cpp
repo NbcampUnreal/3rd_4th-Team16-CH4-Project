@@ -72,7 +72,7 @@ void APOCharacterBase::SetIsDead(bool bNewIsDead)
 
 void APOCharacterBase::OnRep_IsDead()
 {
-	// 이 캐릭터를 관전하고 있을 수 있는 모든 플레이어 컨트롤러를 확인하여 관전 대상을 갱신하도록 요
+	// 이 캐릭터를 관전하고 있을 수 있는 모든 플레이어 컨트롤러를 확인하여 관전 대상을 갱신하도록 요청
 	if (GetWorld())
 	{
 		for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
