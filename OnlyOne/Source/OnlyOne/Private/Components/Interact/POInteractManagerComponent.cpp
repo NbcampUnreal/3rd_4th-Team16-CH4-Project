@@ -36,12 +36,28 @@ void UPOInteractManagerComponent::TickComponent(float DeltaTime, ELevelTick Tick
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	// Todo: 상호작용 가능 UI 호출
+	// TODO: Raycasting 최적화 필요
+	// 소유자 Pawn이 로컬로 조종 중인지 확인하는 방법도 최적화 필요
+	// 모든 메소드에서 확인할 것
+	if (!OwnerPawn)
+	{
+		OwnerPawn = Cast<APawn>(GetOwner());
+	}
+	if (!OwnerPawn || !OwnerPawn->IsLocallyControlled())
+	{
+		return;
+	}
+	
 	CheckInteractableUnderRay();
 }
 
 void UPOInteractManagerComponent::TryInteract()
 {
+	if (!OwnerPawn || !OwnerPawn->IsLocallyControlled())
+	{
+		return;
+	}
+
 	// 상호작용 시도 시 Ray 캐스팅 실행
 	CheckAndSetForInteractable();
 	
@@ -69,7 +85,7 @@ void UPOInteractManagerComponent::TryInteract()
 
 void UPOInteractManagerComponent::CheckAndSetForInteractable()
 {
-	if (!OwnerPawn)
+	if (!OwnerPawn || !OwnerPawn->IsLocallyControlled())
 	{
 		return;
 	}
@@ -155,6 +171,12 @@ void UPOInteractManagerComponent::OnInteractPressed(const FInputActionValue& Val
 
 void UPOInteractManagerComponent::CheckInteractableUnderRay()
 {
+	// 로컬로 조종 중인 Pawn에서만 하이라이트 검사
+	if (!OwnerPawn || !OwnerPawn->IsLocallyControlled())
+	{
+		return;
+	}
+
 	/* 상호작용을 위한 Ray 발사 섹션 */
 	// 카메라 위치와 방향 가져오기
 	FVector CameraLocation;
