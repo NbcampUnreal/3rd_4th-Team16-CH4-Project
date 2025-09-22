@@ -8,9 +8,9 @@
 #include "Components/InputComponent.h"
 #include "EnhancedInputComponent.h"
 #include "InputActionValue.h"
-#include "PEInteractManagerComponent.generated.h"
+#include "POInteractManagerComponent.generated.h"
 
-class UPEInteractableComponent;
+class UPOInteractableComponent;
 class UInputAction;
 
 /*
@@ -25,13 +25,13 @@ class UInputAction;
  *		해당 컴포넌트의 오너가 입력을 처리하고 컴포넌트의 상호작용 기능을 호출하도록 변경해야함
  */
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class PROJECTESCAPE_API UPEInteractManagerComponent : public UActorComponent
+class PROJECTESCAPE_API UPOInteractManagerComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
 	/* Lifecycle 관련 섹션 */
 public:
-	UPEInteractManagerComponent();
+	UPOInteractManagerComponent();
 
 protected:
 	virtual void BeginPlay() override;
@@ -46,7 +46,7 @@ protected:
 	float InteractionRange = 300.0f;
 	
 	UPROPERTY()
-	TObjectPtr<UPEInteractableComponent> CurrentInteractable;
+	TObjectPtr<UPOInteractableComponent> CurrentInteractable;
 
 	UPROPERTY()
 	TObjectPtr<APawn> OwnerPawn;
@@ -68,7 +68,7 @@ protected:
 	/* Interact 하이라이트 관련 섹션 */
 protected:
 	UPROPERTY()
-	TObjectPtr<UPEInteractableComponent> LastHighlightedComp;
+	TObjectPtr<UPOInteractableComponent> LastHighlightedComp;
 
 public:
 	void CheckInteractableUnderRay();

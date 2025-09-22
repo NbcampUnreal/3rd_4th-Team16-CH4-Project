@@ -1,12 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Items/Components/PEInteractableComponent.h"
-#include "Items/Interface/PEInteractable.h"
+#include "Components/Interact/POInteractableComponent.h"
+#include "Interfaces/POInteractableInterface.h"
 #include "Components/WidgetComponent.h"
 #include "Components/MeshComponent.h"
 
-UPEInteractableComponent::UPEInteractableComponent(const FObjectInitializer& ObjectInitializer)
+UPOInteractableComponent::UPOInteractableComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -14,13 +14,13 @@ UPEInteractableComponent::UPEInteractableComponent(const FObjectInitializer& Obj
 
 	// Collision 설정
 	SetCollisionProfileName(TEXT("InteractBox"));
-	SetCollisionObjectType(ECC_GameTraceChannel5); // CCHANNEL_INTERACTABLE
+	SetCollisionObjectType(ECC_GameTraceChannel5); // TODO: Interactable 관련 CollisionChannel 생성
 	
 	SetRenderCustomDepth(false);
 	SetCustomDepthStencilValue(0);
 }
 
-void UPEInteractableComponent::BeginPlay()
+void UPOInteractableComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	
@@ -37,7 +37,7 @@ void UPEInteractableComponent::BeginPlay()
 	Highlight(false);
 }
 
-bool UPEInteractableComponent::Interact(AActor* Interactor)
+bool UPOInteractableComponent::Interact(AActor* Interactor)
 {
 	if (!ComponentOwner)
 	{
@@ -58,12 +58,12 @@ bool UPEInteractableComponent::Interact(AActor* Interactor)
 	return true;
 }
 
-void UPEInteractableComponent::SetComponentOwnerInterface(UObject* NewOwner)
+void UPOInteractableComponent::SetComponentOwnerInterface(UObject* NewOwner)
 {
-	if (NewOwner && NewOwner->Implements<UPEInteractable>())
+	if (NewOwner && NewOwner->Implements<UPOInteractableInterface>())
 	{
 		ComponentOwner.SetObject(NewOwner);
-		ComponentOwner.SetInterface(Cast<IPEInteractable>(NewOwner));
+		ComponentOwner.SetInterface(Cast<IPOInteractableInterface>(NewOwner));
 	}
 	else
 	{
@@ -72,11 +72,11 @@ void UPEInteractableComponent::SetComponentOwnerInterface(UObject* NewOwner)
 	}
 }
 
-void UPEInteractableComponent::Highlight(bool bIsEnable)
+void UPOInteractableComponent::Highlight(bool bIsEnable)
 {
 	if (AActor* Owner = GetOwner())
 	{
-		if (IPEInteractable* InteractableItem = Cast<IPEInteractable>(Owner))
+		if (IPOInteractableInterface* InteractableItem = Cast<IPOInteractableInterface>(Owner))
 		{
 			if (bIsEnable)
 			{

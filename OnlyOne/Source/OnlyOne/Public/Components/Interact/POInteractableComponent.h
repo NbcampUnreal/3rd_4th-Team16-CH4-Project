@@ -7,10 +7,10 @@
 #include "Components/BoxComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Blueprint/UserWidget.h"
-#include "PEInteractableComponent.generated.h"
+#include "POInteractableComponent.generated.h"
 
 
-class IPEInteractable;
+class IPOInteractableInterface;
 class UBoxComponent;
 class UWidgetComponent;
 
@@ -20,31 +20,31 @@ class UWidgetComponent;
  *
  */
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class PROJECTESCAPE_API UPEInteractableComponent : public UBoxComponent
+class PROJECTESCAPE_API UPOInteractableComponent : public UBoxComponent
 {
 	GENERATED_BODY()
 
 	/* Lifecycle 관련 섹션 */
 public:	
-	UPEInteractableComponent();
-	UPEInteractableComponent(const FObjectInitializer& ObjectInitializer);
+	UPOInteractableComponent(const FObjectInitializer& ObjectInitializer);
 
 protected:
 	virtual void BeginPlay() override;
 
 	/* Interact 관련 섹션 */
-protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interaction")
-	TScriptInterface<IPEInteractable> ComponentOwner;
 
 public:	
 	UFUNCTION(BlueprintCallable, Category = "Interaction")
 	bool Interact(AActor* Interactor);
 	
+protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interaction")
+	TScriptInterface<IPOInteractableInterface> ComponentOwner;
 
 	void SetComponentOwnerInterface(UObject* NewOwner);
 
 	/* 하이라이트 관련 섹션 */
+public:
 	void Highlight(bool bIsEnable);
 
 private:

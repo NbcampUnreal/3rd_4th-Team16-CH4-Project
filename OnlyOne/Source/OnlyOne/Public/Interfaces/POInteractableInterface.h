@@ -4,15 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "PEInteractable.generated.h"
+#include "POInteractableInterface.generated.h"
 
 UINTERFACE(MinimalAPI)
-class UPEInteractable : public UInterface
+class UPOInteractableInterface : public UInterface
 {
 	GENERATED_BODY()
 };
 
-class PROJECTESCAPE_API IPEInteractable
+class PROJECTESCAPE_API IPOInteractableInterface
 {
 	GENERATED_BODY()
 

@@ -1,7 +1,7 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Characters/Hero/Interface/PEInteractManagerHandler.h"
+#include "Interfaces/POInteractManagerHandlerInterface.h"
 
 
 // Add default functionality here for any IPETryInteract functions that are not pure virtual.

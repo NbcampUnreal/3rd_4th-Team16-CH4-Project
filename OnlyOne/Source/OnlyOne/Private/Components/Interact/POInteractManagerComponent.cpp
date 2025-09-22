@@ -1,17 +1,16 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Characters/Hero/Components/PEInteractManagerComponent.h"
-#include "Items/Components/PEInteractableComponent.h"
+#include "Components/Interact/POInteractManagerComponent.h"
+#include "Components/Interact/POInteractableComponent.h"
 #include "GameFramework/Pawn.h"
 #include "Engine/World.h"
 #include "DrawDebugHelpers.h"
 #include "EnhancedInputComponent.h"
 #include "InputAction.h"
-#include "Characters/Hero/Interface/PEInteractManagerHandler.h"
-#include "Core/PEPhysics.h"
+#include "Interfaces/POInteractManagerHandlerInterface.h"
 
-UPEInteractManagerComponent::UPEInteractManagerComponent()
+UPOInteractManagerComponent::UPOInteractManagerComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 	InteractionRange = 300.0f;
@@ -19,7 +18,7 @@ UPEInteractManagerComponent::UPEInteractManagerComponent()
 	OwnerPawn = nullptr;
 }
 
-void UPEInteractManagerComponent::BeginPlay()
+void UPOInteractManagerComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	
@@ -32,7 +31,7 @@ void UPEInteractManagerComponent::BeginPlay()
 	}
 }
 
-void UPEInteractManagerComponent::TickComponent(float DeltaTime, ELevelTick TickType,
+void UPOInteractManagerComponent::TickComponent(float DeltaTime, ELevelTick TickType,
                                                 FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
@@ -41,7 +40,7 @@ void UPEInteractManagerComponent::TickComponent(float DeltaTime, ELevelTick Tick
 	CheckInteractableUnderRay();
 }
 
-void UPEInteractManagerComponent::TryInteract()
+void UPOInteractManagerComponent::TryInteract()
 {
 	// 상호작용 시도 시 Ray 캐스팅 실행
 	CheckAndSetForInteractable();
@@ -51,7 +50,7 @@ void UPEInteractManagerComponent::TryInteract()
 		// 상호작용 실행
 		if (CurrentInteractable->Interact(OwnerPawn))
 		{
-			if (IPEInteractManagerHandler* TryInteractInterface = Cast<IPEInteractManagerHandler>(OwnerPawn))
+			if (IPOInteractManagerHandlerInterface* TryInteractInterface = Cast<IPOInteractManagerHandlerInterface>(OwnerPawn))
 			{
 				TryInteractInterface->TryInteract(CurrentInteractable->GetOwner());
 				UE_LOG(LogTemp, Warning, TEXT("Interacted with: %s"), *CurrentInteractable->GetOwner()->GetName());
@@ -68,7 +67,7 @@ void UPEInteractManagerComponent::TryInteract()
 	}
 }
 
-void UPEInteractManagerComponent::CheckAndSetForInteractable()
+void UPOInteractManagerComponent::CheckAndSetForInteractable()
 {
 	if (!OwnerPawn)
 	{
@@ -104,7 +103,8 @@ void UPEInteractManagerComponent::CheckAndSetForInteractable()
 		HitResult,
 		StartLocation,
 		EndLocation,
-		CCHANNEL_INTERACT,
+		//CCHANNEL_INTERACT ,
+		ECC_Visibility, //TODO: 프로젝트에 맞는 채널로 수정 필요
 		QueryParams
 	);
 
@@ -123,12 +123,12 @@ void UPEInteractManagerComponent::CheckAndSetForInteractable()
 #endif
 
 	// 이전 상호작용 대상 초기화
-	UPEInteractableComponent* NewInteractable = nullptr;
+	UPOInteractableComponent* NewInteractable = nullptr;
 
 	if (bHit && HitResult.GetActor())
 	{
 		// Hit된 액터에서 PEInteractableComponent 찾기
-		NewInteractable = HitResult.GetActor()->FindComponentByClass<UPEInteractableComponent>();
+		NewInteractable = HitResult.GetActor()->FindComponentByClass<UPOInteractableComponent>();
 	}
 
 	// 상호작용 대상이 변경되었을 때 로그 출력
@@ -147,13 +147,13 @@ void UPEInteractManagerComponent::CheckAndSetForInteractable()
 	}
 }
 
-void UPEInteractManagerComponent::OnInteractPressed(const FInputActionValue& Value)
+void UPOInteractManagerComponent::OnInteractPressed(const FInputActionValue& Value)
 {
 	// 상호작용 실행
 	TryInteract();
 }
 
-void UPEInteractManagerComponent::CheckInteractableUnderRay()
+void UPOInteractManagerComponent::CheckInteractableUnderRay()
 {
 	/* 상호작용을 위한 Ray 발사 섹션 */
 	// 카메라 위치와 방향 가져오기
@@ -173,12 +173,12 @@ void UPEInteractManagerComponent::CheckInteractableUnderRay()
 	FCollisionQueryParams Params;
 	Params.AddIgnoredActor(GetOwner());
 
-	if (GetWorld()->LineTraceSingleByChannel(Hit, StartLocation, EndLocation, CCHANNEL_INTERACT, Params))
+	if (GetWorld()->LineTraceSingleByChannel(Hit, StartLocation, EndLocation, ECC_Visibility /*수정 필요*/, Params))
 	{
 		AActor* HitActor = Hit.GetActor();
 		if (HitActor)
 		{
-			if (UPEInteractableComponent* InteractableComp = HitActor->FindComponentByClass<UPEInteractableComponent>())
+			if (UPOInteractableComponent* InteractableComp = HitActor->FindComponentByClass<UPOInteractableComponent>())
 			{
 				// 이전 대상과 다르면 전 대상은 끄기
 				if (LastHighlightedComp && LastHighlightedComp != InteractableComp)
