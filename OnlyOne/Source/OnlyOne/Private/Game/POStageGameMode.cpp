@@ -148,14 +148,11 @@ AActor* APOStageGameMode::ChoosePlayerStart_Implementation(AController* Player)
 			continue;
 		}
 
+		if (UsedPlayerStarts.Contains(S))
 		{
-			FScopeLock Guard(&StartLock);
-			if (UsedPlayerStarts.Contains(S))
-			{
-				continue;
-			}
-			UsedPlayerStarts.Add(S);
+			continue;
 		}
+		UsedPlayerStarts.Add(S);
 
 		if (IsSpawnPointFree(S))
 		{
@@ -163,7 +160,6 @@ AActor* APOStageGameMode::ChoosePlayerStart_Implementation(AController* Player)
 		}
 		else
 		{
-			FScopeLock Guard(&StartLock);
 			UsedPlayerStarts.Remove(S);
 		}
 	}

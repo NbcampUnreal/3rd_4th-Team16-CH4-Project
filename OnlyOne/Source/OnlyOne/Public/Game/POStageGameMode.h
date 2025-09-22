@@ -62,7 +62,6 @@ private:
 	TArray<TWeakObjectPtr<AActor>> CachedPlayerStarts;
 	TSet<TWeakObjectPtr<AActor>>   UsedPlayerStarts;
 
-	FCriticalSection StartLock;
 	bool bDidSubscribePhase = false;
 
 	bool IsSpawnPointFree(AActor* SpawnPoint) const;
