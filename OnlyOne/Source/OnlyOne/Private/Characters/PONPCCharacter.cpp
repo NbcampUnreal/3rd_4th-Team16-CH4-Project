@@ -5,6 +5,8 @@
 
 #include "Components/Combat/NpcCombatComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Components/CapsuleComponent.h"
+#include "DataAssets/Startup/PODataAsset_StartupDataBase.h"
 #include "Controllers/PONPCController.h"
 
 APONPCCharacter::APONPCCharacter()
@@ -17,6 +19,19 @@ APONPCCharacter::APONPCCharacter()
 	NpcCombatComponent = CreateDefaultSubobject<UNpcCombatComponent>(TEXT("NPC Combat Component"));
 }
 
+void APONPCCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+	if (!CharacterStartUpData.IsNull())
+	{
+		if (UPODataAsset_StartupDataBase* LoadedData = CharacterStartUpData.LoadSynchronous())
+		{
+			constexpr int32 AbilityApplyLevel = 1;
+			LoadedData->GiveToAbilitySystemComponent(POAbilitySystemComponent, AbilityApplyLevel);
+		}
+	}
+}
+
 UBehaviorTree* APONPCCharacter::GetBehaviorTree() const
 {
 	return BehaviorTree;
@@ -25,4 +40,12 @@ UBehaviorTree* APONPCCharacter::GetBehaviorTree() const
 UPawnCombatComponent* APONPCCharacter::GetPawnCombatComponent() const
 {
 	return GetNpcCombatComponent();
+}
+
+void APONPCCharacter::SetCapsuleCollisionNoCollision_Multicast_Implementation()
+{
+	if (GetCapsuleComponent())
+	{
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
 }

@@ -4,8 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "Interfaces/POUIStackingInterface.h"
 #include "POMainMenuPlayerController.generated.h"
 
+class UPOUIStackingComonent;
 class UPOHostServerWidget;
 class UPOJoinServerWidget;
 class UPOMainMenuWidget;
@@ -25,7 +27,7 @@ struct FJoinServerData
 };
 
 UCLASS()
-class ONLYONE_API APOMainMenuPlayerController : public APlayerController
+class ONLYONE_API APOMainMenuPlayerController : public APlayerController, public IPOUIStackingInterface
 {
 	GENERATED_BODY()
 
@@ -38,30 +40,35 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void ShowHostServer();
 
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	bool HideLastUI();
+	
 	UFUNCTION()
 	void OnJoinServer(FJoinServerData& JoinServerData);
 
 	UFUNCTION()
 	void OnHostServer(FJoinServerData& HostServerData);
+
+	FORCEINLINE virtual UPOUIStackingComonent* GetUIStackingComponent() const override { return UIStackingComponent; }
 	
 protected:
 	virtual void BeginPlay() override;
 
-	// MainMenu Widget 
+	UPROPERTY()
+	TObjectPtr<UPOUIStackingComonent> UIStackingComponent;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
 	TSubclassOf<UPOMainMenuWidget> MainMenuWidgetClass;
 	
 	UPROPERTY()
 	TObjectPtr<UPOMainMenuWidget> MainMenuWidget;
 
-	// Join Server Widget
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
 	TSubclassOf<UPOJoinServerWidget> JoinServerWidgetClass;
 	
 	UPROPERTY()
 	TObjectPtr<UPOJoinServerWidget> JoinServerWidget;
-
-	// Host Server Widget
+ 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
 	TSubclassOf<UPOHostServerWidget> HostServerWidgetClass;
 	

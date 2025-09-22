@@ -39,6 +39,9 @@ public:
 	void SpectatorPreviousTarget(); 
 #pragma endregion
 
+protected:
+	virtual void BeginPlay() override;
+	
 private:
 #pragma region Core Properties
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI", meta = (AllowPrivateAccess = "true"))

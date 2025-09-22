@@ -172,3 +172,11 @@ void APOPlayerController::SpectatorPreviousTarget()
 {
 	CycleSpectator(-1);
 }
+
+void APOPlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	SetInputMode(FInputModeGameOnly());
+	SetShowMouseCursor(false);
+}

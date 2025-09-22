@@ -24,6 +24,7 @@ namespace POGameplayTags
 	/* Player State */
 	ONLYONE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Shared_Status_Death);
 	ONLYONE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Shared_Ability_Death);
+	ONLYONE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Shared_Status_Slow);
 
 	/* Event Tags */
 	ONLYONE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Death);
@@ -32,7 +33,8 @@ namespace POGameplayTags
 	ONLYONE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Shared_SetByCaller_BaseDamage);
 	ONLYONE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Shared_Event_MeleeHit);
 	
-  /* GameplayCue Tags*/
+   /* GameplayCue Tags*/
 	ONLYONE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_GimmickTag_Sound);
+	ONLYONE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_Status_Slow);
 
 }

@@ -4,6 +4,7 @@
 #include "UI/MainMenu/POMainMenuWidget.h"
 #include "Components/Widget.h"
 #include "Blueprint/UserWidget.h"
+#include "Controllers/Components/POUIStackingComonent.h"
 #include "Engine/Engine.h"
 #include "Framework/Application/SlateApplication.h"
 #include "OnlyOne/OnlyOne.h"
@@ -17,6 +18,8 @@ APOMainMenuPlayerController::APOMainMenuPlayerController()
 	bShowMouseCursor = true;
 	bEnableClickEvents = true;
 	bEnableMouseOverEvents = true;
+
+	UIStackingComponent = CreateDefaultSubobject<UPOUIStackingComonent>(TEXT("UI Stacking Component"));
 }
 
 void APOMainMenuPlayerController::BeginPlay()
@@ -40,20 +43,16 @@ void APOMainMenuPlayerController::ShowMainMenu()
 
 		if (MainMenuWidget)
 		{
-			MainMenuWidget->AddToViewport();
-			SetInputMode(FInputModeUIOnly());
-			SetShowMouseCursor(true);
+			UIStackingComponent->PushWidget(MainMenuWidget);
 		}
 	}
 }
 
 void APOMainMenuPlayerController::HideMainMenu()
 {
-	if (MainMenuWidget)
+	if (IsValid(MainMenuWidget) && IsValid(UIStackingComponent))
 	{
-		MainMenuWidget->RemoveFromParent();
-		SetInputMode(FInputModeGameOnly());
-		SetShowMouseCursor(false);
+		UIStackingComponent->PopWidget();
 	}
 }
 
@@ -64,13 +63,11 @@ void APOMainMenuPlayerController::ShowJoinServer()
 		if (!JoinServerWidget)
 		{
 			JoinServerWidget = CreateWidget<UPOJoinServerWidget>(this, JoinServerWidgetClass);
-			JoinServerWidget->AddToViewport();
-			SetInputMode(FInputModeUIOnly());
 		}
 
 		if (JoinServerWidget)
 		{
-			JoinServerWidget->SetVisibility(ESlateVisibility::Visible);
+			UIStackingComponent->PushWidget(JoinServerWidget);
 		}
 	}
 }
@@ -82,15 +79,23 @@ void APOMainMenuPlayerController::ShowHostServer()
 		if (!HostServerWidget)
 		{
 			HostServerWidget = CreateWidget<UPOHostServerWidget>(this, HostServerWidgetClass);
-			HostServerWidget->AddToViewport();
-			SetInputMode(FInputModeUIOnly());
 		}
 
 		if (HostServerWidget)
 		{
-			HostServerWidget->SetVisibility(ESlateVisibility::Visible);
+			UIStackingComponent->PushWidget(HostServerWidget);
 		}
 	}
+}
+
+bool APOMainMenuPlayerController::HideLastUI()
+{
+	if (IsValid(UIStackingComponent))
+	{
+		UIStackingComponent->PopWidget();
+		return true;
+	}
+	return false;
 }
 
 void APOMainMenuPlayerController::OnJoinServer(FJoinServerData& JoinServerData)
@@ -105,7 +110,7 @@ void APOMainMenuPlayerController::OnJoinServer(FJoinServerData& JoinServerData)
 	
 	if (UPOGameInstance* GI = GetGameInstance<UPOGameInstance>())
 	{
-		GI->SetPendingProfile(JoinServerData.Name, JoinServerData.IPAddress);
+		GI->SetPendingProfile(JoinServerData);
 	}
 	
 	FString TravelURL = JoinServerData.IPAddress;
@@ -117,11 +122,10 @@ void APOMainMenuPlayerController::OnJoinServer(FJoinServerData& JoinServerData)
 	// 플레이어 이름을 URL 옵션으로 추가
 	TravelURL += FString::Printf(TEXT("?Name=%s"), *JoinServerData.Name);
 
-	// UI 정리
-	HideMainMenu();
-	if (JoinServerWidget)
+	// UI 스택 전체 정리 (레벨 이동 전 모든 UI 제거)
+	if (UIStackingComponent)
 	{
-		JoinServerWidget->RemoveFromParent();
+		UIStackingComponent->ClearStack();
 	}
 
 	// 서버 접속
@@ -132,7 +136,7 @@ void APOMainMenuPlayerController::OnHostServer(FJoinServerData& HostServerData)
 {
 	if (UPOGameInstance* GI = GetGameInstance<UPOGameInstance>())
 	{
-		GI->SetPendingProfile(HostServerData.Name, HostServerData.IPAddress);
+		GI->SetPendingProfile(HostServerData);
 	}
 	
 	if (UWorld* World = GetWorld())

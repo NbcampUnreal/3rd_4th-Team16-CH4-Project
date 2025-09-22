@@ -23,6 +23,7 @@ namespace POGameplayTags
 	/* Player State */
 	UE_DEFINE_GAMEPLAY_TAG(Shared_Status_Death, "Shared.Status.Death")
 	UE_DEFINE_GAMEPLAY_TAG(Shared_Ability_Death, "Shared.Ability.Death")
+	UE_DEFINE_GAMEPLAY_TAG(Shared_Status_Slow,"Shared.Status.Slow")
 
 	/* Event Tags */
 	UE_DEFINE_GAMEPLAY_TAG(Event_Death, "Event.Death")
@@ -33,4 +34,5 @@ namespace POGameplayTags
 
 	/* GameplayCue Tags*/
 	UE_DEFINE_GAMEPLAY_TAG(GameplayCue_GimmickTag_Sound, "GameplayCue.Gimmick.Sound")
+	UE_DEFINE_GAMEPLAY_TAG(GameplayCue_Status_Slow,"GameplayCue.Status.Slow")
 }

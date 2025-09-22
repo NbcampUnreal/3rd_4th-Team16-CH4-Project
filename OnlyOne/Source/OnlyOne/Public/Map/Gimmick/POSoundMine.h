@@ -19,8 +19,6 @@ protected:
 	
 	virtual void OnGimmickComplete_Implementation(AActor* Target) override;
 	
-	UPROPERTY(VisibleAnywhere)
-	UStaticMeshComponent* StaticMesh;
 	
 	virtual void ActivateGimmick_Implementation(AActor* Target) override;
 	
