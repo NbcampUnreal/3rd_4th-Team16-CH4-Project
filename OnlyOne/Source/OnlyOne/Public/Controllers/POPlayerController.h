@@ -32,4 +32,7 @@ private:
 
 	UPROPERTY(Replicated)
 	FGenericTeamId TeamID;
+
+	/* UI 섹션 */
+public:
 };
