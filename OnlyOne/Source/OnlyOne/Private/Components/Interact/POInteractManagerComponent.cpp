@@ -6,8 +6,6 @@
 #include "GameFramework/Pawn.h"
 #include "Engine/World.h"
 #include "DrawDebugHelpers.h"
-#include "EnhancedInputComponent.h"
-#include "InputAction.h"
 #include "Interfaces/POInteractManagerHandlerInterface.h"
 
 UPOInteractManagerComponent::UPOInteractManagerComponent()
@@ -178,7 +176,6 @@ void UPOInteractManagerComponent::CheckInteractableUnderRay()
 	}
 
 	/* 상호작용을 위한 Ray 발사 섹션 */
-	// 카메라 위치와 방향 가져오기
 	FVector CameraLocation;
 	FRotator CameraRotation;
 
