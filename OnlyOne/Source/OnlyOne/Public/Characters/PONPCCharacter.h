@@ -17,6 +17,8 @@ class ONLYONE_API APONPCCharacter : public APOCharacterBase
 public:
 	APONPCCharacter();
 
+	virtual void PossessedBy(AController* NewController) override;
+
 #pragma region BehaviorTree
 
 public:
@@ -39,6 +41,14 @@ public:
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UNpcCombatComponent> NpcCombatComponent;
+
+#pragma endregion
+
+#pragma region RPC
+
+public:
+	UFUNCTION(NetMulticast, Reliable)
+	void SetCapsuleCollisionNoCollision_Multicast();
 
 #pragma endregion
 };
