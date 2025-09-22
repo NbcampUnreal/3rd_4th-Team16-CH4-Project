@@ -12,7 +12,7 @@ class UPOInteractableInterface : public UInterface
 	GENERATED_BODY()
 };
 
-class PROJECTESCAPE_API IPOInteractableInterface
+class ONLYONE_API IPOInteractableInterface
 {
 	GENERATED_BODY()
 

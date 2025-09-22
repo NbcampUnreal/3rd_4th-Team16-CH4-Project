@@ -25,7 +25,7 @@ class UInputAction;
  *		해당 컴포넌트의 오너가 입력을 처리하고 컴포넌트의 상호작용 기능을 호출하도록 변경해야함
  */
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class PROJECTESCAPE_API UPOInteractManagerComponent : public UActorComponent
+class ONLYONE_API UPOInteractManagerComponent : public UActorComponent
 {
 	GENERATED_BODY()
 

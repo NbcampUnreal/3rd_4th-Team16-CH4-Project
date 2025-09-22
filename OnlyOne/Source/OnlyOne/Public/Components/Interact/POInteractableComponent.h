@@ -20,7 +20,7 @@ class UWidgetComponent;
  *
  */
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class PROJECTESCAPE_API UPOInteractableComponent : public UBoxComponent
+class ONLYONE_API UPOInteractableComponent : public UBoxComponent
 {
 	GENERATED_BODY()
 

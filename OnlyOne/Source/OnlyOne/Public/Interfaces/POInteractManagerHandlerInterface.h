@@ -17,7 +17,7 @@ class UPOInteractManagerHandlerInterface : public UInterface
 /**
  * 
  */
-class PROJECTESCAPE_API IPOInteractManagerHandlerInterface
+class ONLYONE_API IPOInteractManagerHandlerInterface
 {
 	GENERATED_BODY()
 
