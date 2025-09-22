@@ -58,6 +58,12 @@ void UPONPCGameplayAbility_Death::ActivateAbility(const FGameplayAbilitySpecHand
 			MontageTask->OnCompleted.AddDynamic(this, &UPONPCGameplayAbility_Death::OnCompletedCallback);
 			MontageTask->ReadyForActivation();
 		}
+		else
+		{
+			bool bReplicateEndAbility = true;
+			bool bWasCancelled = false;
+			EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, bReplicateEndAbility, bWasCancelled);
+		}
 	}
 }
 

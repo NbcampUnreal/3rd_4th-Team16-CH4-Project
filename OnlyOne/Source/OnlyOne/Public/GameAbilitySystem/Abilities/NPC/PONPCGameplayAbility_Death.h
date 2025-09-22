@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameAbilitySystem/Abilities/NPC/PONPCGameplayAbility.h"
+#include "GameAbilitySystem/Abilities/POGameplayAbility.h"
 #include "PONPCGameplayAbility_Death.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class ONLYONE_API UPONPCGameplayAbility_Death : public UPONPCGameplayAbility
+class ONLYONE_API UPONPCGameplayAbility_Death : public UPOGameplayAbility
 {
 	GENERATED_BODY()
 public:
