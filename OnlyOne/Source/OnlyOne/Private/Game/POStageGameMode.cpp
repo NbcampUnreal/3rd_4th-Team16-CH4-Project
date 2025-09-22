@@ -20,6 +20,7 @@ APOStageGameMode::APOStageGameMode()
 	NumAIsToSpawn   = 8;
 	AIRandomRadius  = 2000.0f;
 	PrepSeconds     = 10;
+	StageSeconds = 20;
 	bDidSubscribePhase = false;
 
 	GameStateClass = APOStageGameState::StaticClass();
@@ -208,12 +209,9 @@ void APOStageGameMode::HandlePhaseChanged(EPOStagePhase NewPhase)
 	
 	if (NewPhase == EPOStagePhase::Active)
 	{
-		for (TActorIterator<AAIController> It(GetWorld()); It; ++It)
+		if (APOStageGameState* GS = GetGameState<APOStageGameState>())
 		{
-			if (AAIController* AIC = *It)
-			{
-				if (AIC->BrainComponent) { AIC->BrainComponent->ResumeLogic(TEXT("Active")); }
-			}
+			GS->ServerStartStageCountdown(StageSeconds);
 		}
 	}
 }

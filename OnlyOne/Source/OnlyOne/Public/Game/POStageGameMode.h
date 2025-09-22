@@ -57,6 +57,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="PO|Phase", meta=(ClampMin="0", ClampMax="60"))
 	int32 PrepSeconds;
 
+	UPROPERTY(EditDefaultsOnly, Category="PO|Phase", meta=(ClampMin="0", ClampMax="3600"))
+	int32 StageSeconds;
+
 private:
 	TArray<TWeakObjectPtr<AActor>> CachedPlayerStarts;
 	bool bDidSubscribePhase;

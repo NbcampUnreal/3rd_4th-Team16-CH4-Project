@@ -32,6 +32,7 @@ void APOStageGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(APOStageGameState, Phase);
 	DOREPLIFETIME(APOStageGameState, PrepRemainingSeconds);
+	DOREPLIFETIME(APOStageGameState, StageRemainingSeconds);
 }
 
 void APOStageGameState::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -39,6 +40,7 @@ void APOStageGameState::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	if (UWorld* World = GetWorld())
 	{
 		World->GetTimerManager().ClearTimer(PrepTimerHandle);
+		World->GetTimerManager().ClearTimer(StageTimerHandle);
 	}
 	LOG_NET(POLog, Log, TEXT("[StageGS] EndPlay (Reason=%d)"), (int32)EndPlayReason);
 	Super::EndPlay(EndPlayReason);
@@ -93,6 +95,50 @@ void APOStageGameState::TickPrepCountdown()
 	}
 }
 
+void APOStageGameState::ServerStartStageCountdown(int32 InSeconds)
+{
+	if (!HasAuthority()) return;
+
+	StageRemainingSeconds = FMath::Max(0, InSeconds);
+	OnRep_StageRemainingSeconds();
+
+	if (UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().ClearTimer(StageTimerHandle);
+		if (StageRemainingSeconds > 0)
+		{
+			LOG_NET(POLog, Warning, TEXT("[StageGS] Stage timer START: %d sec"), StageRemainingSeconds);
+			World->GetTimerManager().SetTimer(
+				StageTimerHandle, this, &APOStageGameState::TickStageCountdown, 1.0f, true);
+		}
+		else
+		{
+			if (World) { World->GetTimerManager().ClearTimer(StageTimerHandle); }
+			LOG_NET(POLog, Warning, TEXT("[StageGS] Stage timer expired immediately"));
+			OnStageTimeExpired.Broadcast();
+		}
+	}
+}
+
+void APOStageGameState::TickStageCountdown()
+{
+	if (!HasAuthority()) return;
+
+	StageRemainingSeconds = FMath::Max(0, StageRemainingSeconds - 1);
+	LOG_NET(POLog, Log, TEXT("[StageGS] Stage ticking... %d"), StageRemainingSeconds);
+	OnRep_StageRemainingSeconds();
+
+	if (StageRemainingSeconds <= 0)
+	{
+		if (UWorld* World = GetWorld())
+		{
+			World->GetTimerManager().ClearTimer(StageTimerHandle);
+		}
+		LOG_NET(POLog, Warning, TEXT("[StageGS] Stage timer finished"));
+		OnStageTimeExpired.Broadcast();
+	}
+}
+
 void APOStageGameState::OnRep_Phase()
 {
 	LOG_NET(POLog, Warning, TEXT("[StageGS] OnRep_Phase -> %s (Auth=%s)"),
@@ -105,4 +151,11 @@ void APOStageGameState::OnRep_PrepRemainingSeconds()
 	LOG_NET(POLog, Log, TEXT("[StageGS] OnRep_PrepRemainingSeconds -> %d (Auth=%s)"),
 	PrepRemainingSeconds, HasAuthority() ? TEXT("Server") : TEXT("Client"));
 	OnPrepTimeUpdated.Broadcast(PrepRemainingSeconds);
+}
+
+void APOStageGameState::OnRep_StageRemainingSeconds()
+{
+	OnStageTimeUpdated.Broadcast(StageRemainingSeconds);
+	LOG_NET(POLog, Log, TEXT("[StageGS] OnRep_StageRemainingSeconds -> %d (Auth=%s)"),
+		StageRemainingSeconds, HasAuthority() ? TEXT("Server") : TEXT("Client"));
 }

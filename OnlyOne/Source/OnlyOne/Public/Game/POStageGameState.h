@@ -59,6 +59,29 @@ protected:
 	UPROPERTY(ReplicatedUsing=OnRep_PrepRemainingSeconds)
 	int32 PrepRemainingSeconds;
 
+public:
+	UFUNCTION(BlueprintPure, Category="PO|StageTime")
+	int32 GetStageRemainingSeconds() const { return StageRemainingSeconds; }
+	
+	UFUNCTION(Category="PO|StageTime")
+	void ServerStartStageCountdown(int32 InSeconds);
+	
+	DECLARE_MULTICAST_DELEGATE_OneParam(FPOOnStageTimeUpdated, int32);
+	FPOOnStageTimeUpdated OnStageTimeUpdated;
+
+	DECLARE_MULTICAST_DELEGATE(FPOOnStageTimeExpired);
+	FPOOnStageTimeExpired OnStageTimeExpired;
+
+protected:
+	UFUNCTION() void OnRep_StageRemainingSeconds();
+
+protected:
+	UPROPERTY(ReplicatedUsing=OnRep_StageRemainingSeconds)
+	int32 StageRemainingSeconds = 0;
+
+
 private:
 	FTimerHandle PrepTimerHandle;
+	FTimerHandle StageTimerHandle;
+	void TickStageCountdown();
 };
