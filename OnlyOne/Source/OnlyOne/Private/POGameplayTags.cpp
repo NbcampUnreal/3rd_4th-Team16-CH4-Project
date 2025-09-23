@@ -11,6 +11,8 @@ namespace POGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Jump, "InputTag.Jump")
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Walk, "InputTag.Walk")
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Sprint, "InputTag.Sprint")
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_Spectator_Next, "InputTag.Spectator.Next")
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_Spectator_Previous, "InputTag.Spectator.Previous")
 
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Attack, "InputTag.Attack")
 
@@ -22,6 +24,10 @@ namespace POGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Shared_Status_Death, "Shared.Status.Death")
 	UE_DEFINE_GAMEPLAY_TAG(Shared_Ability_Death, "Shared.Ability.Death")
 	UE_DEFINE_GAMEPLAY_TAG(Shared_Status_Slow,"Shared.Status.Slow")
+
+	/* Event Tags */
+	UE_DEFINE_GAMEPLAY_TAG(Event_Death, "Event.Death")
+
 	/* Shard Tags*/
 	UE_DEFINE_GAMEPLAY_TAG(Shared_SetByCaller_BaseDamage, "Shared.SetByCaller.BaseDamage")
 	UE_DEFINE_GAMEPLAY_TAG(Shared_Event_MeleeHit, "Shared.Event.MeleeHit")
