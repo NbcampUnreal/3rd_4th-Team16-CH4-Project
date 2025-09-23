@@ -24,5 +24,5 @@ protected:
 	TObjectPtr<UAnimMontage> DeathMontage;
 	
 	UFUNCTION()
-	void OnMontageCompleted();
+	void OnMontageCompleted(FGameplayEventData EventData);
 };
