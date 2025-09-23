@@ -6,6 +6,9 @@
 #include "GameFramework/CharacterMovementComponent.h"
 
 UBTT_SetRandomSpeed::UBTT_SetRandomSpeed()
+	: WalkSpeed(200.0f)
+	, RunSpeed(500.0f)
+	, SprintSpeed(600.0f)
 {
 	NodeName = TEXT("Set Random Speed");
 }
@@ -18,7 +21,7 @@ EBTNodeResult::Type UBTT_SetRandomSpeed::ExecuteTask(UBehaviorTreeComponent& Own
 		{
 			if (UCharacterMovementComponent* MoveComp = AICharacter->FindComponentByClass<UCharacterMovementComponent>())
 			{
-				float Speeds[3] = { 200.f, 500.f, 600.f };
+				float Speeds[3] = { WalkSpeed, RunSpeed, SprintSpeed };
 				int32 Index = FMath::RandRange(0, 2);
 				MoveComp->MaxWalkSpeed = Speeds[Index];
 			}
