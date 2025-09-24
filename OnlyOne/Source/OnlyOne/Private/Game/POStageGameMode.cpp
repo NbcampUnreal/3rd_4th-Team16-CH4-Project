@@ -4,6 +4,8 @@
 #include "game/POStageGameState.h"
 #include "game/POLobbyPlayerState.h"
 
+#include "Controllers/POPlayerController.h"
+
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerStart.h"
 #include "EngineUtils.h"
@@ -25,6 +27,20 @@ APOStageGameMode::APOStageGameMode()
 	bDidSubscribePhase = false;
 
 	GameStateClass = APOStageGameState::StaticClass();
+
+	bUseSeamlessTravel = true;
+}
+
+APOLobbyPlayerState* APOStageGameMode::ToLobbyPS(AController* C) const
+{
+	return (C && C->PlayerState) ? Cast<APOLobbyPlayerState>(C->PlayerState) : nullptr;
+}
+
+APOLobbyPlayerState* APOStageGameMode::ToLobbyPS(AActor* A) const
+{
+	const APawn* P = Cast<APawn>(A);
+	const AController* C = P ? P->GetController() : Cast<AController>(A);
+	return (C && C->PlayerState) ? Cast<APOLobbyPlayerState>(C->PlayerState) : nullptr;
 }
 
 void APOStageGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
@@ -45,17 +61,31 @@ void APOStageGameMode::BeginPlay()
 		AIRandomRadius
 	);
 
+	AlivePlayers.Reset();
 	UsedPlayerStarts.Reset();
 	ResetAllPlayerStatesForMatchStart();
-
 	CachePlayerStarts();
 	SpawnAIsOnStage();
+
+	if (AGameStateBase* GSBase = GameState)
+	{
+		for (APlayerState* PSBase : GSBase->PlayerArray)
+		{
+			if (APOLobbyPlayerState* PS = Cast<APOLobbyPlayerState>(PSBase))
+			{
+				AlivePlayers.Add(PS);
+				PS->SetAlive_ServerOnly(true);
+			}
+		}
+		LOG_NET(POLog, Warning, TEXT("[StageGM] AlivePlayers initialized: %d"), AlivePlayers.Num());
+	}
 
 	if (APOStageGameState* GS = GetGameState<APOStageGameState>())
 	{
 		if (!bDidSubscribePhase)
 		{
 			GS->OnPhaseChanged.AddUObject(this, &APOStageGameMode::HandlePhaseChanged);
+			GS->OnStageTimeExpired.AddUObject(this, &APOStageGameMode::HandleStageTimeExpired);
 			bDidSubscribePhase = true;
 		}
 
@@ -77,6 +107,7 @@ void APOStageGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
 		if (bDidSubscribePhase)
 		{
 			GS->OnPhaseChanged.RemoveAll(this);
+			GS->OnStageTimeExpired.RemoveAll(this);
 			bDidSubscribePhase = false;
 		}
 	}
@@ -95,20 +126,48 @@ void APOStageGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 	CachedPlayerStarts.Empty();
 
+	if (UWorld* W = GetWorld())
+	{
+		W->GetTimerManager().ClearTimer(ReturnToLobbyTimerHandle);
+	}
+
 	Super::EndPlay(EndPlayReason);
 }
 
 void APOStageGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
-
-	// Seamless 후 늦게 들어온 플레이어
+	
+	if (ShouldEnterSpectatorOnJoin())
+	{
+		EnterSpectatorForMidJoin(NewPlayer);
+		return;
+	}
 	if (NewPlayer)
 	{
-		// TODO: 관전 모드 진입 고려
+		if (APOLobbyPlayerState* PS = ToLobbyPS(NewPlayer))
+		{
+			AlivePlayers.Add(PS);
+			PS->SetAlive_ServerOnly(true);
+			LOG_NET(POLog, Log, TEXT("[StageGM] PostLogin: Add Alive %s"), *PS->GetPlayerName());
+		}
 		RestartPlayer(NewPlayer);
 	}
 }
+
+void APOStageGameMode::Logout(AController* Exiting)
+{
+	if (APOLobbyPlayerState* PS = ToLobbyPS(Exiting))
+	{
+		AlivePlayers.Remove(PS);
+		LOG_NET(POLog, Log, TEXT("[StageGM] Logout: Remove Alive %s"), *PS->GetPlayerName());
+		CompactAlivePlayers();
+		TryDecideWinner();
+	}
+
+	Super::Logout(Exiting);
+}
+
 
 UClass* APOStageGameMode::GetDefaultPawnClassForController_Implementation(AController* InController)
 {
@@ -192,6 +251,38 @@ bool APOStageGameMode::IsSpawnPointFree(AActor* Start) const
 	return !bAnyHit;
 }
 
+bool APOStageGameMode::ShouldEnterSpectatorOnJoin() const
+{
+	const APOStageGameState* GS = GetGameState<APOStageGameState>();
+	if (!GS)
+	{
+		return false;
+	}
+
+	const EPOStagePhase P = GS->GetPhase();
+	return (P == EPOStagePhase::Active || P == EPOStagePhase::RoundEnd || P == EPOStagePhase::GameEnd); // ★ Step6
+}
+
+void APOStageGameMode::EnterSpectatorForMidJoin(APlayerController* PC)
+{
+	if (!HasAuthority() || !PC)
+	{
+		return;
+	}
+
+	if (APOLobbyPlayerState* PS = ToLobbyPS(PC))
+	{
+		PS->SetAlive_ServerOnly(false);
+	}
+	
+	if (APOPlayerController* PO = Cast<APOPlayerController>(PC))
+	{
+		PO->StartSpectating(nullptr);
+	}
+	
+	LOG_NET(POLog, Warning, TEXT("[StageGM] Mid-join as Spectator: %s"), *PC->GetName());
+}
+
 void APOStageGameMode::RestartPlayerAtPlayerStart(AController* NewPlayer, AActor* StartSpot)
 {
 	Super::RestartPlayerAtPlayerStart(NewPlayer, StartSpot);
@@ -245,6 +336,73 @@ void APOStageGameMode::SpawnAIsOnStage()
 	}
 }
 
+void APOStageGameMode::NotifyCharacterDied(AController* VictimController, AController* KillerController)
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+	
+	APOLobbyPlayerState* VictimPS = ToLobbyPS(VictimController);
+	APOLobbyPlayerState* KillerPS = ToLobbyPS(KillerController);
+
+	if (KillerPS && KillerPS != VictimPS)
+	{
+		KillerPS->AddKill_ServerOnly(1);
+		LOG_NET(POLog, Log, TEXT("[StageGM] Kill++ : %s"), *KillerPS->GetPlayerName());
+	}
+
+	if (VictimPS)
+	{
+		VictimPS->SetAlive_ServerOnly(false);
+		AlivePlayers.Remove(VictimPS);
+		LOG_NET(POLog, Log, TEXT("[StageGM] Dead : %s, AliveNow=%d"), *VictimPS->GetPlayerName(), AlivePlayers.Num());
+	}
+
+	CompactAlivePlayers();
+	TryDecideWinner();
+}
+
+void APOStageGameMode::CompactAlivePlayers()
+{
+	for (auto It = AlivePlayers.CreateIterator(); It; ++It)
+	{
+		if (!It->IsValid())
+		{
+			It.RemoveCurrent();
+		}
+	}
+}
+
+void APOStageGameMode::TryDecideWinner()
+{
+	int32 Count = 0;
+	APOLobbyPlayerState* LastAlive = nullptr;
+
+	for (const TWeakObjectPtr<APlayerState>& W : AlivePlayers)
+	{
+		if (APOLobbyPlayerState* PS = Cast<APOLobbyPlayerState>(W.Get()))
+		{
+			if (PS->IsAlive())
+			{
+				LastAlive = PS;
+				++Count;
+			}
+		}
+	}
+
+	if (Count == 1)
+	{
+		LOG_NET(POLog, Warning, TEXT("[StageGM] TryDecideWinner: Winner=%s"), *LastAlive->GetPlayerName());
+		BeginGameEndPhase(LastAlive);
+	}
+	else if (Count == 0)
+	{
+		LOG_NET(POLog, Warning, TEXT("[StageGM] TryDecideWinner: No survivors → draw"));
+		BeginGameEndPhase(nullptr);
+	}
+}
+
 void APOStageGameMode::HandlePhaseChanged(EPOStagePhase NewPhase)
 {
 	if (!HasAuthority())
@@ -268,6 +426,17 @@ void APOStageGameMode::HandlePhaseChanged(EPOStagePhase NewPhase)
 	}
 }
 
+void APOStageGameMode::HandleStageTimeExpired()
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+	
+	LOG_NET(POLog, Warning, TEXT("[StageGM] HandleStageTimeExpired: Stage time expired signal received."));
+	BeginRoundEndPhase();
+}
+
 void APOStageGameMode::ResetAllPlayerStatesForMatchStart()
 {
 	if (!HasAuthority())
@@ -284,5 +453,157 @@ void APOStageGameMode::ResetAllPlayerStatesForMatchStart()
 				PS->ServerResetForMatchStart();
 			}
 		}
+	}
+	
+	if (APOStageGameState* POGS = GetGameState<APOStageGameState>())
+	{
+		POGS->ServerClearWinner();
+	}
+
+	bAIWipedAtRoundEnd = false;
+	bGameEndStarted    = false;
+}
+
+void APOStageGameMode::BeginRoundEndPhase()
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+		
+	if (APOStageGameState* GS = GetGameState<APOStageGameState>())
+	{
+		GS->ServerSetPhase(EPOStagePhase::RoundEnd);
+	}
+
+	WipeAllAIsOnStage();
+}
+
+void APOStageGameMode::WipeAllAIsOnStage()
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+	if (bAIWipedAtRoundEnd)
+	{
+		return;
+	}
+	bAIWipedAtRoundEnd = true;
+
+	int32 Removed = 0;
+	
+	for (TActorIterator<AAIController> It(GetWorld()); It; ++It)
+	{
+		AAIController* AIC = *It;
+		if (!AIC) { continue; }
+		
+		if (AIC->IsPlayerController())
+		{
+			continue;
+		}
+
+		APawn* Pawn = AIC->GetPawn();
+		if (!Pawn)
+		{
+			AIC->Destroy();
+			continue;
+		}
+		
+		if (AIClass && !Pawn->IsA(AIClass))
+		{
+			continue;
+		}
+		
+		if (AIC->BrainComponent)
+		{
+			AIC->BrainComponent->StopLogic(TEXT("RoundEnd"));
+		}
+		AIC->StopMovement();
+		
+		AIC->UnPossess();
+		Pawn->Destroy();
+		AIC->Destroy();
+
+		++Removed;
+	}
+
+	LOG_NET(POLog, Warning, TEXT("[StageGM] WipeAllAIsOnStage: Removed AI pawns=%d"), Removed);
+}
+
+void APOStageGameMode::BeginGameEndPhase(APlayerState* InWinnerPS)
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+	if (bGameEndStarted)
+	{
+		return;
+	}
+	bGameEndStarted = true;
+
+	if (APOStageGameState* GS = GetGameState<APOStageGameState>())
+	{
+		GS->ServerSetWinner(InWinnerPS);
+		GS->ServerSetPhase(EPOStagePhase::GameEnd);
+
+		LOG_NET(POLog, Warning, TEXT("[StageGM] BeginGameEndPhase: Winner=%s"),
+			InWinnerPS ? *InWinnerPS->GetPlayerName() : TEXT("None"));
+
+		StartReturnToLobbyTimer();
+	}
+}
+
+void APOStageGameMode::StartReturnToLobbyTimer()
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	const int32 Delay = FMath::Max(0, GameEndReturnSeconds);
+	if (Delay == 0)
+	{
+		DoReturnToLobby();
+		return;
+	}
+
+	if (UWorld* W = GetWorld())
+	{
+		W->GetTimerManager().SetTimer(
+			ReturnToLobbyTimerHandle,
+			this,
+			&APOStageGameMode::DoReturnToLobby,
+			Delay,
+			false
+		);
+	}
+
+	LOG_NET(POLog, Warning, TEXT("[StageGM] ReturnToLobby scheduled in %d sec"), Delay);
+}
+
+void APOStageGameMode::DoReturnToLobby()
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	if (UWorld* W = GetWorld())
+	{
+		W->GetTimerManager().ClearTimer(ReturnToLobbyTimerHandle);
+	}
+	
+	FString URL = LobbyMapURL;
+	if (URL.IsEmpty())
+	{
+		URL = TEXT("/Game/Maps/Lobby?listen"); // 임시
+	}
+	
+	if (UWorld* W = GetWorld())
+	{
+		LOG_NET(POLog, Warning, TEXT("[StageGM] ServerTravel → %s"), *URL);
+		W->ServerTravel(URL, false);
 	}
 }

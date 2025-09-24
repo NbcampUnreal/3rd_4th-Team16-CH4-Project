@@ -38,13 +38,22 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category="PO|Phase", meta=(ClampMin="0", ClampMax="3600"))
 	int32 StageSeconds;
-
+	
+	UPROPERTY(EditDefaultsOnly, Category="PO|Flow", meta=(ClampMin="0", ClampMax="60"))
+	int32 GameEndReturnSeconds = 5;
+	
+	UPROPERTY(EditDefaultsOnly, Category="PO|Flow")
+	FString LobbyMapURL = TEXT("/Game/Maps/Lobby?listen");
+	
+	UFUNCTION(BlueprintCallable, Category="PO|Rules")
+	void NotifyCharacterDied(AController* VictimController, AController* KillerController);
 	/* ===== protected: Unreal Lifecycle ===== */
 protected:
 	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void PostLogin(APlayerController* NewPlayer) override;
+	virtual void Logout(AController* Exiting) override;
 
 	virtual UClass* GetDefaultPawnClassForController_Implementation(AController* InController) override;
 	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
@@ -52,10 +61,21 @@ protected:
 
 	/* ===== protected: Game Rules & Flow ===== */
 protected:
+	TSet<TWeakObjectPtr<APlayerState>> AlivePlayers;
 	void CachePlayerStarts();
 	void SpawnAIsOnStage();
 	void HandlePhaseChanged(EPOStagePhase NewPhase);
+	void HandleStageTimeExpired();
 	void ResetAllPlayerStatesForMatchStart();
+	void BeginRoundEndPhase();
+	void BeginGameEndPhase(APlayerState* InWinnerPS);
+	void CompactAlivePlayers();
+	void TryDecideWinner();
+	void WipeAllAIsOnStage();
+	bool ShouldEnterSpectatorOnJoin() const;
+	void EnterSpectatorForMidJoin(APlayerController* PC);
+	void StartReturnToLobbyTimer();
+	void DoReturnToLobby();  
 
 	/* ===== private: Internal State ===== */
 private:
@@ -63,6 +83,12 @@ private:
 	TSet<TWeakObjectPtr<AActor>>   UsedPlayerStarts;
 
 	bool bDidSubscribePhase = false;
+	bool bGameEndStarted = false;
+	bool bAIWipedAtRoundEnd = false;
+
+	FTimerHandle ReturnToLobbyTimerHandle;
 
 	bool IsSpawnPointFree(AActor* SpawnPoint) const;
+	APOLobbyPlayerState* ToLobbyPS(AController* C) const;
+	APOLobbyPlayerState* ToLobbyPS(AActor* A) const;
 };
