@@ -8,6 +8,7 @@
 #include "Components/CapsuleComponent.h"
 #include "DataAssets/Startup/PODataAsset_StartupDataBase.h"
 #include "Controllers/PONPCController.h"
+#include "BrainComponent.h"
 #include "Net/UnrealNetwork.h"
 
 APONPCCharacter::APONPCCharacter()
@@ -24,9 +25,12 @@ void APONPCCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (APOStageGameState* GS = GetWorld()->GetGameState<APOStageGameState>())
+	if (HasAuthority())
 	{
-		GS->OnPhaseChanged.AddUObject(this, &APONPCCharacter::HandleGamePhaseChanged);
+		if (APOStageGameState* GS = GetWorld()->GetGameState<APOStageGameState>())
+		{
+			GS->OnPhaseChanged.AddUObject(this, &APONPCCharacter::HandleGamePhaseChanged);
+		}
 	}
 }
 
@@ -45,13 +49,30 @@ void APONPCCharacter::PossessedBy(AController* NewController)
 
 void APONPCCharacter::HandleGamePhaseChanged(EPOStagePhase NewPhase)
 {
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	APONPCController* AIC = Cast<APONPCController>(GetController());
+	if (!AIC)
+	{
+		return;
+	}
+
+	UBrainComponent* BrainComp = AIC->BrainComponent;
+	if (!BrainComp)
+	{
+		return;
+	}
+
 	if (NewPhase == EPOStagePhase::Prep)
 	{
-		GetCharacterMovement()->DisableMovement();
+		BrainComp->StopLogic(TEXT("Prep Phase - AI Disabled"));
 	}
 	else if (NewPhase == EPOStagePhase::Active)
 	{
-		GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+		BrainComp->RestartLogic();
 	}
 }
 
