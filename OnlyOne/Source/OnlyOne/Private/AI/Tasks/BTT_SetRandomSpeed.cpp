@@ -1,0 +1,32 @@
+#include "AI/Tasks/BTT_SetRandomSpeed.h"
+
+#include "Controllers/PONPCController.h"
+#include "Characters/PONPCCharacter.h"
+#include "BehaviorTree/BlackboardComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
+
+UBTT_SetRandomSpeed::UBTT_SetRandomSpeed()
+	: WalkSpeed(200.0f)
+	, RunSpeed(500.0f)
+	, SprintSpeed(600.0f)
+{
+	NodeName = TEXT("Set Random Speed");
+
+	Speeds = { WalkSpeed, RunSpeed, SprintSpeed };
+}
+
+EBTNodeResult::Type UBTT_SetRandomSpeed::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+{
+	if (APONPCController* AIController = Cast<APONPCController>(OwnerComp.GetAIOwner()))
+	{
+		if (APONPCCharacter* AICharacter = Cast<APONPCCharacter>(AIController->GetPawn()))
+		{
+			if (UCharacterMovementComponent* MoveComp = AICharacter->FindComponentByClass<UCharacterMovementComponent>())
+			{
+				int32 Index = FMath::RandRange(0, 2);
+				MoveComp->MaxWalkSpeed = Speeds[Index];
+			}
+		}
+	}
+	return EBTNodeResult::Succeeded;
+}
