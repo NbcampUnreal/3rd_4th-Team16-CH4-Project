@@ -6,14 +6,24 @@
 #include "Components/PanelWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/ScrollBox.h"
+#include "Controllers/POPlayerController.h"
 
 void UPOPlayerStateListWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	AddPlayerStateEntry(TEXT("Player1"), true, 3 );
-	AddPlayerStateEntry(TEXT("Player2"), false, 1 );
-	AddPlayerStateEntry(TEXT("Player3"), true, 0 );
+	if (APOPlayerController* PC = GetOwningPlayer<APOPlayerController>())
+	{
+		if (!PC->OnSetPlayerStateEntry.IsBoundToObject(this))
+		{
+			PC->OnSetPlayerStateEntry.AddUObject(this, &UPOPlayerStateListWidget::SetPlayerStateEntry);
+		}
+	}
+
+	
+	SetPlayerStateEntry(TEXT("Player1"), true, 3 );
+	SetPlayerStateEntry(TEXT("Player2"), false, 1 );
+	SetPlayerStateEntry(TEXT("Player3"), true, 0 );
 	
 }
 
@@ -21,30 +31,45 @@ void UPOPlayerStateListWidget::NativeDestruct()
 {
 	Super::NativeDestruct();
 
+	if (APOPlayerController* PC = GetOwningPlayer<APOPlayerController>())
+	{
+		PC->OnSetPlayerStateEntry.RemoveAll(this);
+	}
+
 	ClearPlayerStateEntries();
+	PlayerEntries.Empty();
 }
 
-UPOPlayerStateElementWidget* UPOPlayerStateListWidget::AddPlayerStateEntry(const FString& Nickname, bool bIsAlive, int32 KillCount)
+void UPOPlayerStateListWidget::SetPlayerStateEntry(const FString& Nickname, bool bIsAlive, int32 KillCount)
 {
 	if (!PlayerList || !PlayerEntryClass)
 	{
-		return nullptr;
+		return;
 	}
 
-	UPOPlayerStateElementWidget* Entry = CreateWidget<UPOPlayerStateElementWidget>(GetWorld(), PlayerEntryClass);
-	if (!Entry)
+	if (!PlayerEntries.Contains(Nickname))
 	{
-		return nullptr;
+		UPOPlayerStateElementWidget* Entry = CreateWidget<UPOPlayerStateElementWidget>(GetWorld(), PlayerEntryClass);
+		if (!Entry)
+		{
+			return;
+		}
+
+		Entry->SetPlayerNickname(Nickname);
+		Entry->SetIsAlive(bIsAlive);
+		Entry->SetKillCount(KillCount);
+
+		PlayerList->AddChild(Entry);
+		PlayerEntries.Add(Nickname, Entry);
 	}
-
-	// 값 설정
-	Entry->SetPlayerNickname(Nickname);
-	Entry->SetIsAlive(bIsAlive);
-	Entry->SetKillCount(KillCount);
-
-	// 패널에 추가
-	PlayerList->AddChild(Entry);
-	return Entry;
+	else
+	{
+		if (UPOPlayerStateElementWidget* Entry = PlayerEntries[Nickname])
+		{
+			Entry->SetIsAlive(bIsAlive);
+			Entry->SetKillCount(KillCount);
+		}
+	}
 }
 
 void UPOPlayerStateListWidget::ClearPlayerStateEntries()
@@ -54,4 +79,5 @@ void UPOPlayerStateListWidget::ClearPlayerStateEntries()
 		return;
 	}
 	PlayerList->ClearChildren();
+	PlayerEntries.Empty();
 }

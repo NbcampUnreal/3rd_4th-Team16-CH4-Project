@@ -7,6 +7,7 @@
 #include "Characters/POCharacterBase.h"
 #include "Components/UI/PlayerUIComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "UI/PlayerStateList/POPlayerStateListWidget.h"
 
 APOPlayerController::APOPlayerController()
 {
@@ -63,4 +64,43 @@ void APOPlayerController::BeginPlay()
 	
 	SetInputMode(FInputModeGameOnly());
 	SetShowMouseCursor(false);
+}
+
+void APOPlayerController::EnsureListWidgetCreated()
+{
+	if (PlayerStateListWidget == nullptr)
+	{
+		if (!PlayerStateListWidgetClass)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("PlayerStateListWidgetClass is not set on %s"), *GetName());
+			return;
+		}
+
+		PlayerStateListWidget = CreateWidget<UPOPlayerStateListWidget>(this, PlayerStateListWidgetClass);
+		if (!PlayerStateListWidget)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Failed to create PlayerStateListWidget"));
+		}
+	}
+}
+
+void APOPlayerController::ShowListWidget()
+{
+	EnsureListWidgetCreated();
+	if (PlayerStateListWidget)
+	{
+		if (!PlayerStateListWidget->IsInViewport())
+		{
+			PlayerStateListWidget->AddToViewport();
+		}
+		PlayerStateListWidget->SetVisibility(ESlateVisibility::Visible);
+	}
+}
+
+void APOPlayerController::HideListWidget()
+{
+	if (PlayerStateListWidget)
+	{
+		PlayerStateListWidget->SetVisibility(ESlateVisibility::Collapsed);
+	}
 }

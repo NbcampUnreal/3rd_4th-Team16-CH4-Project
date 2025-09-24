@@ -21,8 +21,8 @@ class ONLYONE_API UPOPlayerStateListWidget : public UPOBaseWidget
 public:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
-	
-	UPOPlayerStateElementWidget* AddPlayerStateEntry(const FString& Nickname, bool bIsAlive, int32 KillCount);
+
+	void SetPlayerStateEntry(const FString& Nickname, bool bIsAlive, int32 KillCount);
 	void ClearPlayerStateEntries();
 
 protected:
@@ -32,4 +32,8 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PlayerStateList")
 	TSubclassOf<UPOPlayerStateElementWidget> PlayerEntryClass;
+
+private:
+	UPROPERTY()
+	TMap<FString, TObjectPtr<UPOPlayerStateElementWidget>> PlayerEntries;
 };

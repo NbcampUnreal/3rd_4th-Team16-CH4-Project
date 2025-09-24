@@ -60,6 +60,6 @@ void APOUITestPlayerController::HideListWidget()
 {
 	if (PlayerStateListWidget)
 	{
-		PlayerStateListWidget->RemoveFromParent();
+		PlayerStateListWidget->SetVisibility(ESlateVisibility::Collapsed);
 	}
 }

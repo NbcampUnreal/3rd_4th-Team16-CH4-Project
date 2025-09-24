@@ -40,7 +40,7 @@ protected:
 	TObjectPtr<UTextBlock> KillCountText;
 
 private:
-	// 값이 먼저 설정되고 위젯이 아직 생성되지 않았을 수 있으므로 캐시합니다.
+	// NOTE: 값이 먼저 설정되고 위젯이 아직 생성되지 않았을 수 있으므로 캐싱합니다
 	FString CachedNickname;
 	bool bCachedAlive = false;
 	int32 CachedKillCount = 0;

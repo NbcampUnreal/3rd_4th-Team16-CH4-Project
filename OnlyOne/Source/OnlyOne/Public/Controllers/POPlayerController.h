@@ -6,9 +6,14 @@
 #include "POCharacterControllerBase.h"
 #include "POPlayerController.generated.h"
 
+class UPOPlayerStateListWidget;
 /**
  * 
  */
+
+
+DECLARE_MULTICAST_DELEGATE_ThreeParams(FPOOnSetPlayerStateEntry, const FString& /*Nickname*/, bool /*bIsAlive*/, int32 /*KillCount*/);
+
 UCLASS()
 class ONLYONE_API APOPlayerController : public APOCharacterControllerBase
 {
@@ -35,4 +40,17 @@ private:
 
 	/* UI 섹션 */
 public:
+	// NOTE: 외부에서 Broadcast하여 리스트를 갱신할 수 있는 델리게이트
+	FPOOnSetPlayerStateEntry OnSetPlayerStateEntry;
+	
+	// 위젯 생성/표시/숨김
+	void EnsureListWidgetCreated();
+	void ShowListWidget();
+	void HideListWidget();
+
+	UPROPERTY(EditAnywhere, Category = "UI")
+	TSubclassOf<UPOPlayerStateListWidget> PlayerStateListWidgetClass;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UPOPlayerStateListWidget> PlayerStateListWidget;
 };
