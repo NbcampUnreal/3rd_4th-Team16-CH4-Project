@@ -22,4 +22,6 @@ private:
 	float RunSpeed;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Speed", meta = (AllowPrivateAccess = "true"))
 	float SprintSpeed;
+
+	TArray<float> Speeds;
 };

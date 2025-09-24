@@ -11,6 +11,8 @@ UBTT_SetRandomSpeed::UBTT_SetRandomSpeed()
 	, SprintSpeed(600.0f)
 {
 	NodeName = TEXT("Set Random Speed");
+
+	Speeds = { WalkSpeed, RunSpeed, SprintSpeed };
 }
 
 EBTNodeResult::Type UBTT_SetRandomSpeed::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -21,7 +23,6 @@ EBTNodeResult::Type UBTT_SetRandomSpeed::ExecuteTask(UBehaviorTreeComponent& Own
 		{
 			if (UCharacterMovementComponent* MoveComp = AICharacter->FindComponentByClass<UCharacterMovementComponent>())
 			{
-				float Speeds[3] = { WalkSpeed, RunSpeed, SprintSpeed };
 				int32 Index = FMath::RandRange(0, 2);
 				MoveComp->MaxWalkSpeed = Speeds[Index];
 			}
