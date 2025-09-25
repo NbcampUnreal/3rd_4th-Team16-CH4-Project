@@ -46,6 +46,17 @@ APOLobbyPlayerState* APOStageGameMode::ToLobbyPS(AActor* A) const
 void APOStageGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
 {
 	Super::InitGame(MapName, Options, ErrorMessage);
+
+	const FString ReturnURL = UGameplayStatics::ParseOption(Options, TEXT("Return"));
+	if (!ReturnURL.IsEmpty())
+	{
+		LobbyMapURL = ReturnURL;
+		LOG_NET(POLog, Warning, TEXT("[StageGM] InitGame: LobbyMapURL set from Return option: %s"), *LobbyMapURL); // [ADD]
+	}
+	else
+	{
+		LOG_NET(POLog, Warning, TEXT("[StageGM] InitGame: No Return option. Using default LobbyMapURL=%s"), *LobbyMapURL); // [ADD]
+	}
 }
 
 void APOStageGameMode::BeginPlay()
@@ -598,12 +609,24 @@ void APOStageGameMode::DoReturnToLobby()
 	FString URL = LobbyMapURL;
 	if (URL.IsEmpty())
 	{
-		URL = TEXT("/Game/Maps/Lobby?listen"); // 임시
+		URL = TEXT("/Game/All/Game/Levels/L_ServerLobby");
 	}
+	
+	if (GetNetMode() == NM_ListenServer && !URL.Contains(TEXT("?")))
+	{
+		URL += TEXT("?listen");
+	}
+
+
+		LOG_NET(
+		POLog,
+		Warning,
+		TEXT("[StageGM] DoReturnToLobby: NOW traveling to lobby -> %s"),
+		*URL
+	);
 	
 	if (UWorld* W = GetWorld())
 	{
-		LOG_NET(POLog, Warning, TEXT("[StageGM] ServerTravel → %s"), *URL);
 		W->ServerTravel(URL, false);
 	}
 }

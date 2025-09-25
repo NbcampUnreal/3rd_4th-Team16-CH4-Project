@@ -9,6 +9,9 @@
 #include "GameFramework/GameStateBase.h"
 #include "OnlyOne/OnlyOne.h"
 
+#include "UObject/Package.h"
+#include "Kismet/GameplayStatics.h"
+
 APOLobbyGameMode::APOLobbyGameMode()
 {
 	GameStateClass   = APOLobbyGameState::StaticClass();
@@ -194,6 +197,18 @@ void APOLobbyGameMode::TickCountdown()
 	OnCountdownFinished();
 }
 
+static FString GetCurrentMapPackagePath(UWorld* World)
+{
+	if (!World) return FString();
+
+	if (UPackage* Pkg = World->GetOutermost())
+	{
+		return Pkg->GetName(); // 예: "/Game/All/Game/Levels/L_ServerLobby"
+	}
+	
+	return UGameplayStatics::GetCurrentLevelName(World, /*bRemovePrefix=*/true);
+}
+
 void APOLobbyGameMode::OnCountdownFinished()
 {
 	UWorld* World = GetWorld();
@@ -230,7 +245,11 @@ void APOLobbyGameMode::OnCountdownFinished()
 	// ListenServer 최초 open 시 이미 ?listen 사용했으므로 재여행에서는 불필요
 
 	static const FString TargetMapPath = TEXT("/Game/Levels/GameTestStageLevel");
-	const FString TravelURL = TargetMapPath; 
+	
+	const FString ReturnLobbyPath = GetCurrentMapPackagePath(World);
+	
+	const FString TravelURL = FString::Printf(TEXT("%s?Return=%s"), *TargetMapPath, *ReturnLobbyPath);
+
 
 	LOG_NET(POLog, Warning, TEXT("[LobbyGM] Travelling to %s (Players=%d)"), *TravelURL, GetNumPlayers());
 
