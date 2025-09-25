@@ -34,15 +34,18 @@ void UPOKillFeedWidget::AddKillFeedEntry(const FString& KillerName, const FStrin
 	{
 		if (UPOKillFeedElementWidget* NewEntry = CreateWidget<UPOKillFeedElementWidget>(this, KillFeedEntryClass))
 		{
+			FTimerHandle KillFeedTimer;
+			
 			NewEntry->SetKillFeedTexts(FText::FromString(KillerName), FText::FromString(VictimName));
 			KillFeedList->AddChild(NewEntry);
 
 			GetWorld()->GetTimerManager().SetTimer(
 				KillFeedTimer,
-				[NewEntry]()
+				[this, NewEntry]()
 				{
 					if (NewEntry)
 					{
+						KillFeedList->RemoveChild(NewEntry);
 						NewEntry->RemoveKillFeedEntry();
 					}
 				},

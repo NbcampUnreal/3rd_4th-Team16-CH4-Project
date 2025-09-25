@@ -20,5 +20,6 @@ void UPOKillFeedElementWidget::SetKillFeedTexts(const FText& InKillerText, const
 
 void UPOKillFeedElementWidget::RemoveKillFeedEntry()
 {
-	RemoveFromParent();	
+	RemoveFromParent();
+	
 }

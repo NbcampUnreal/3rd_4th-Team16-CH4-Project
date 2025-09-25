@@ -23,20 +23,19 @@ public:
 	virtual void NativeDestruct() override;
 
 	void AddKillFeedEntry(const FString& KillerName, const FString& VictimName);
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PlayerStateList")
+	TSubclassOf<UPOKillFeedElementWidget> KillFeedEntryClass;
 
 protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UScrollBox> KillFeedList;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PlayerStateList")
-	TSubclassOf<UPOKillFeedElementWidget> KillFeedEntryClass;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "KillFeed")
 	float KillFeedDuration = 5.0f;
 
 private:
-	FTimerHandle KillFeedTimer;
-
 	/*테스트 용 코드 */
 	FTimerHandle TestAddKillFeedEntry;
 };
