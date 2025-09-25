@@ -12,6 +12,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
+#include "UI/PlayerStateList/POPlayerStateListWidget.h"
 
 class UEnhancedInputLocalPlayerSubsystem;
 
@@ -179,4 +180,43 @@ void APOPlayerController::SpectatorNextTarget()
 void APOPlayerController::SpectatorPreviousTarget()
 {
 	CycleSpectator(-1);
+}
+
+void APOPlayerController::EnsureListWidgetCreated()
+{
+	if (PlayerStateListWidget == nullptr)
+	{
+		if (!PlayerStateListWidgetClass)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("PlayerStateListWidgetClass is not set on %s"), *GetName());
+			return;
+		}
+
+		PlayerStateListWidget = CreateWidget<UPOPlayerStateListWidget>(this, PlayerStateListWidgetClass);
+		if (!PlayerStateListWidget)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Failed to create PlayerStateListWidget"));
+		}
+	}
+}
+
+void APOPlayerController::ShowListWidget()
+{
+	EnsureListWidgetCreated();
+	if (PlayerStateListWidget)
+	{
+		if (!PlayerStateListWidget->IsInViewport())
+		{
+			PlayerStateListWidget->AddToViewport();
+		}
+		PlayerStateListWidget->SetVisibility(ESlateVisibility::Visible);
+	}
+}
+
+void APOPlayerController::HideListWidget()
+{
+	if (PlayerStateListWidget)
+	{
+		PlayerStateListWidget->SetVisibility(ESlateVisibility::Collapsed);
+	}
 }
