@@ -16,23 +16,4 @@ UCLASS()
 class ONLYONE_API APOUITestPlayerController : public APlayerController
 {
 	GENERATED_BODY()
-
-public:
-	virtual void SetupInputComponent() override;
-
-protected:
-	// Tab 키 동작
-	void OnTabPressed();
-	void OnTabReleased();
-
-	// 위젯 생성/표시/숨김
-	void EnsureListWidgetCreated();
-	void ShowListWidget();
-	void HideListWidget();
-
-	UPROPERTY(EditAnywhere, Category = "UI")
-	TSubclassOf<UPOPlayerStateListWidget> PlayerStateListWidgetClass;
-
-	UPROPERTY(Transient)
-	UPOPlayerStateListWidget* PlayerStateListWidget;
 };
