@@ -28,10 +28,15 @@ public:
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void SetGenericTeamId(const FGenericTeamId& NewTeamID) override;
+	
 	virtual FGenericTeamId GetGenericTeamId() const override;
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	virtual UPawnCombatComponent* GetPawnCombatComponent() const override;
+	
 	void InitializeAbilitySystemFromDataAsset();
+	void SetIsDead(bool bNewIsDead);
+	
+	FORCEINLINE bool IsDead() const { return bIsDead; }
 
 protected:
 	virtual void PossessedBy(AController* NewController) override;
@@ -44,6 +49,12 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "CharacterData | DataAsset")
 	TSoftObjectPtr<UPODataAsset_StartupDataBase> CharacterStartUpData;
+	
+	UPROPERTY(ReplicatedUsing = OnRep_IsDead)
+	bool bIsDead = false;
+	
+	UFUNCTION()
+	void OnRep_IsDead();
 
 private:
 	void ServerSideInit();

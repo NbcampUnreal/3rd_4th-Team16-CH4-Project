@@ -2,8 +2,10 @@
 
 
 #include "Characters/POCharacterBase.h"
+#include "Controllers/POPlayerController.h"
 #include "GameAbilitySystem/POAbilitySystemComponent.h"
 #include "GameAbilitySystem/POAttributeSet.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Net/UnrealNetwork.h"
 
 APOCharacterBase::APOCharacterBase()
@@ -51,6 +53,42 @@ void APOCharacterBase::InitializeAbilitySystemFromDataAsset()
 	ensureMsgf(!CharacterStartUpData.IsNull(), TEXT("start up 데이터를 character에 할당하는 것을 잊었습니다 %s!"), *GetName());
 }
 
+void APOCharacterBase::SetIsDead(bool bNewIsDead)
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+	
+	if (bIsDead)
+	{
+		return;
+	}
+
+	// 사망 상태를 true로 설정 (이것이 클라이언트로 복제)
+	bIsDead = bNewIsDead;
+	OnRep_IsDead();
+}
+
+void APOCharacterBase::OnRep_IsDead()
+{
+	// 이 캐릭터를 관전하고 있을 수 있는 모든 플레이어 컨트롤러를 확인하여 관전 대상을 갱신하도록 요청
+	if (GetWorld())
+	{
+		for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+		{
+			if (APOPlayerController* PlayerController = Cast<APOPlayerController>(*It))
+			{
+				// 만약 어떤 플레이어가 이 죽은 캐릭터를 보고 있었다면, 다음 관전 대상을 자동 탐색
+				if (PlayerController->GetViewTarget() == this)
+				{
+					PlayerController->SpectatorNextTarget();
+				}
+			}
+		}
+	}
+}
+
 void APOCharacterBase::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
@@ -65,7 +103,6 @@ void APOCharacterBase::PossessedBy(AController* NewController)
 
 void APOCharacterBase::ServerSideInit()
 {
-	// TODO: 서버사이드에 추가 로직 추가 예정
 	if (POAbilitySystemComponent)
 	{
 		POAbilitySystemComponent->InitAbilityActorInfo(this, this);
