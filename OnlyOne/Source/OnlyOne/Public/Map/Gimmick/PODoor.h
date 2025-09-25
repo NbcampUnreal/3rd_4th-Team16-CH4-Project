@@ -43,13 +43,13 @@ protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	UFUNCTION(Server, Reliable)
-	void Server_ToggleDoor(AActor* InstigatorActor);
+	void ServerToggleDoor(AActor* InstigatorActor);
 	UFUNCTION()
-	void Server_TestAutoToggle();
+	void ServerTestAutoToggle();
 	
 private:
-	void ToggleDoor_Internal(AActor* InstigatorActor);
-	void SetDoorOpen_Internal(bool bOpen, AActor* InstigatorActor);
+	void PerformToggleDoor(AActor* InstigatorActor);
+	void SetDoorState(bool bOpen, AActor* InstigatorActor);
 #pragma endregion
 	
 #pragma region Interact

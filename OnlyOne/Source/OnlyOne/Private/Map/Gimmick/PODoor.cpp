@@ -37,7 +37,7 @@ void APODoor::BeginPlay()
 		GetWorldTimerManager().SetTimer(
 			TestToggle,
 			this,
-			&APODoor::Server_TestAutoToggle,
+			&APODoor::ServerTestAutoToggle,
 			2.0f,
 			true,
 			1.0f);
@@ -70,11 +70,11 @@ void APODoor::Interact(AActor* Interactor)
 {
 	if (!HasAuthority())
 	{
-		Server_ToggleDoor(Interactor);
+		ServerToggleDoor(Interactor);
 		return;
 	}
 
-	ToggleDoor_Internal(Interactor);
+	PerformToggleDoor(Interactor);
 }
 
 bool APODoor::IsInteractable() const
@@ -91,19 +91,19 @@ void APODoor::HideInteractionUI()
 }
 
 // 서버에서 주기적으로 문 상태를 자동 토글
-void APODoor::Server_TestAutoToggle()
+void APODoor::ServerTestAutoToggle()
 {
-	ToggleDoor_Internal(nullptr);
+	PerformToggleDoor(nullptr);
 }
 
 //현 상태를 반전시켜 토글 수행
-void APODoor::ToggleDoor_Internal(AActor* InstigatorActor)
+void APODoor::PerformToggleDoor(AActor* InstigatorActor)
 {
-	SetDoorOpen_Internal(!bIsOpen, InstigatorActor);
+	SetDoorState(!bIsOpen, InstigatorActor);
 }
 
 // 문 상태 실제 반영 및 열림/닫힘 연출 호출
-void APODoor::SetDoorOpen_Internal(bool bOpen, AActor* InstigatorActor)
+void APODoor::SetDoorState(bool bOpen, AActor* InstigatorActor)
 {
 	if (bIsOpen ==bOpen)
 	{
@@ -121,9 +121,9 @@ void APODoor::SetDoorOpen_Internal(bool bOpen, AActor* InstigatorActor)
 	}
 }
 // 서버 RPC로 전달된 토글 요청 처리
-void APODoor::Server_ToggleDoor_Implementation(AActor* InstigatorActor)
+void APODoor::ServerToggleDoor_Implementation(AActor* InstigatorActor)
 {
-	ToggleDoor_Internal(InstigatorActor);
+	PerformToggleDoor(InstigatorActor);
 }
 
 
