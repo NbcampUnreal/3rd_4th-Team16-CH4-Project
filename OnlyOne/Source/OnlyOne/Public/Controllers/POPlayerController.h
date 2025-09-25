@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -6,8 +6,11 @@
 #include "POCharacterControllerBase.h"
 #include "POPlayerController.generated.h"
 
+class UPOPlayerStateListWidget;
 class UPODataAsset_InputConfig;
 class APOPlayerCharacter;
+
+DECLARE_MULTICAST_DELEGATE_ThreeParams(FPOOnSetPlayerStateEntry, const FString& /*Nickname*/, bool /*bIsAlive*/, int32 /*KillCount*/);
 
 UCLASS()
 class ONLYONE_API APOPlayerController : public APOCharacterControllerBase
@@ -49,6 +52,7 @@ private:
 
 	UPROPERTY(Replicated)
 	FGenericTeamId TeamID;
+  
 #pragma endregion
 
 #pragma region Spectator Internals
@@ -66,4 +70,20 @@ private:
 	void BuildSpectatorTargets();
 	void CycleSpectator(int32 Direction); // 순환 로직을 처리할 공통 함수 추가
 #pragma endregion
+
+	/* UI 섹션 */
+public:
+	// NOTE: 외부에서 Broadcast하여 리스트를 갱신할 수 있는 델리게이트
+	FPOOnSetPlayerStateEntry OnSetPlayerStateEntry;
+	
+	// 위젯 생성/표시/숨김
+	void EnsureListWidgetCreated();
+	void ShowListWidget();
+	void HideListWidget();
+
+	UPROPERTY(EditAnywhere, Category = "UI")
+	TSubclassOf<UPOPlayerStateListWidget> PlayerStateListWidgetClass;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UPOPlayerStateListWidget> PlayerStateListWidget;
 };
