@@ -148,7 +148,8 @@ void APOStageGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
 void APOStageGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
-	
+
+	// TODO: 중간 입장 시 관전 분기 연결 후 실제 관전 전환 테스트 예정
 	if (ShouldEnterSpectatorOnJoin())
 	{
 		EnterSpectatorForMidJoin(NewPlayer);
@@ -270,6 +271,7 @@ bool APOStageGameMode::ShouldEnterSpectatorOnJoin() const
 		return false;
 	}
 
+	// TODO: 중간 입장 관전 전환 기준(Phase) 확정 후 실제 진입 플로우 테스트 예정
 	const EPOStagePhase P = GS->GetPhase();
 	return (P == EPOStagePhase::Active || P == EPOStagePhase::RoundEnd || P == EPOStagePhase::GameEnd); // ★ Step6
 }
@@ -281,6 +283,7 @@ void APOStageGameMode::EnterSpectatorForMidJoin(APlayerController* PC)
 		return;
 	}
 
+	// TODO: PC가 관전 UI/입력(Q/E 전환 등)과 정상 연동되는지 후속 테스트 예정
 	if (APOLobbyPlayerState* PS = ToLobbyPS(PC))
 	{
 		PS->SetAlive_ServerOnly(false);
@@ -353,7 +356,8 @@ void APOStageGameMode::NotifyCharacterDied(AController* VictimController, AContr
 	{
 		return;
 	}
-	
+
+	// TODO: 피해 로그/킬 피드 연동 후 KillerPS AddKill 및 로그 출력 테스트 예정
 	APOLobbyPlayerState* VictimPS = ToLobbyPS(VictimController);
 	APOLobbyPlayerState* KillerPS = ToLobbyPS(KillerController);
 
@@ -387,6 +391,7 @@ void APOStageGameMode::CompactAlivePlayers()
 
 void APOStageGameMode::TryDecideWinner()
 {
+	// TODO: 킬/사망/생존 집합/승자 확정까지 통합 시나리오 테스트 예정
 	int32 Count = 0;
 	APOLobbyPlayerState* LastAlive = nullptr;
 

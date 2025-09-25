@@ -312,6 +312,7 @@ void APOLobbyPlayerState::AddKill_ServerOnly(int32 Delta)
 		return;
 	}
 
+	//TODO: 킬 이벤트 연결 후 테스트 예정
 	KillScore = FMath::Max(0, KillScore + Delta);
 	OnRep_KillScore();
 }
