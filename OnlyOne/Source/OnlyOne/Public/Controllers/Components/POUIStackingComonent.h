@@ -18,6 +18,7 @@ public:
 	void PushWidget(UUserWidget* Widget);
 	void PopWidget();
 	void PopToWidget(UUserWidget* Widget);
+	void SetDefaultWidget(UUserWidget* Widget, bool bInputModeUIOnly = true);
 	void ClearStack();
 	
 	FORCEINLINE UUserWidget* GetTopWidget() const { return UIStack.Num() > 0 ? UIStack.Last() : nullptr; }
@@ -28,4 +29,7 @@ protected:
 	
 	UPROPERTY()
 	TArray<TObjectPtr<UUserWidget>> UIStack;
+
+private:
+	bool bIsInputModeUIOnly;
 };

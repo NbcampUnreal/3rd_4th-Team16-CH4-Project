@@ -7,7 +7,8 @@
 
 UPOUIStackingComonent::UPOUIStackingComonent()
 {
-	
+	bIsInputModeUIOnly = false;
+	UIStack.Add(nullptr);
 }
 
 void UPOUIStackingComonent::PushWidget(UUserWidget* Widget)
@@ -22,24 +23,14 @@ void UPOUIStackingComonent::PushWidget(UUserWidget* Widget)
 		UIStack.Last()->SetVisibility(ESlateVisibility::Collapsed);
 	}
 
-	if (UIStack.Num() <= 0)
-	{
-		if (APlayerController* PC = GetOwner<APlayerController>())
-		{
-			PC->SetInputMode(FInputModeUIOnly());
-			PC->bShowMouseCursor = true;
-		}
-	}
-
 	UIStack.Add(Widget);
 	Widget->AddToViewport();
 	Widget->SetVisibility(ESlateVisibility::Visible);
-
 }
 
 void UPOUIStackingComonent::PopWidget()
 {
-	if (UIStack.IsEmpty()) return;
+	if (UIStack.IsEmpty() || UIStack.Num() <= 1) return;
 
 	UUserWidget* TopWidget = UIStack.Pop();
 	TopWidget->RemoveFromParent();
@@ -48,12 +39,20 @@ void UPOUIStackingComonent::PopWidget()
 	{
 		UIStack.Last()->SetVisibility(ESlateVisibility::Visible);
 	}
-	else if (UIStack.IsEmpty())
+	else if (UIStack.Num() <= 1) // 스택이 비었고 UI 전용 모드인 경우 게임 모드로 전환
 	{
 		if (APlayerController* PC = GetOwner<APlayerController>())
 		{
-			PC->SetInputMode(FInputModeGameOnly());
-			PC->bShowMouseCursor = false;
+			if (bIsInputModeUIOnly)
+			{
+				PC->SetInputMode(FInputModeUIOnly());
+				PC->bShowMouseCursor = true;
+			}
+			else
+			{
+				PC->SetInputMode(FInputModeGameOnly());
+				PC->bShowMouseCursor = false;
+			}
 		}
 	}
 }
@@ -63,6 +62,21 @@ void UPOUIStackingComonent::PopToWidget(UUserWidget* Widget)
 	while (!UIStack.IsEmpty() && UIStack.Last() != Widget)
 	{
 		PopWidget();
+	}
+}
+
+void UPOUIStackingComonent::SetDefaultWidget(UUserWidget* Widget, bool bInputModeUIOnly)
+{
+	UIStack[0] = Widget;
+	bIsInputModeUIOnly = bInputModeUIOnly;
+	
+	if (bInputModeUIOnly)
+	{
+		if (APlayerController* PC = GetOwner<APlayerController>())
+		{
+			PC->SetInputMode(FInputModeUIOnly());
+			PC->bShowMouseCursor = true;
+		}
 	}
 }
 
