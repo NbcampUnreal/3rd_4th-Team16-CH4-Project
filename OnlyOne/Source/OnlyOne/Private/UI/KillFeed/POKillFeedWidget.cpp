@@ -10,16 +10,6 @@ void UPOKillFeedWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 	// TODO: 위젯 초기화 코드 작성
-	// 테스트용 더미 데이터 시간 마다 추가
-	GetWorld()->GetTimerManager().SetTimer(
-		TestAddKillFeedEntry,
-		[this]()
-		{
-			AddKillFeedEntry(TEXT("Killer"), TEXT("Victim"));
-		},
-		4.0f,
-		true
-	);
 }
 
 void UPOKillFeedWidget::NativeDestruct()

@@ -14,8 +14,6 @@ void UPOKillFeedElementWidget::SetKillFeedTexts(const FText& InKillerText, const
 	{
 		VictimText->SetText(InVictimText);
 	}
-
-	AddToViewport();
 }
 
 void UPOKillFeedElementWidget::RemoveKillFeedEntry()
