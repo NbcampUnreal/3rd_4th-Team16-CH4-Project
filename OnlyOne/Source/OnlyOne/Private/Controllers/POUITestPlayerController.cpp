@@ -15,12 +15,12 @@ void APOUITestPlayerController::BeginPlay()
 		return;
 	}
 
-	if (KillFeedWidgetClass && !KillFeedWidget)
+	if (HUDWidgetClass && !HUDWidgetInstance)
 	{
-		KillFeedWidget = CreateWidget<UPOKillFeedWidget>(this, KillFeedWidgetClass);
-		if (KillFeedWidget)
+		HUDWidgetInstance = CreateWidget<UUserWidget>(this, HUDWidgetClass);
+		if (HUDWidgetInstance)
 		{
-			KillFeedWidget->AddToViewport(/*ZOrder=*/50);
+			HUDWidgetInstance->AddToViewport(/*ZOrder=*/10);
 		}
 	}
 }
