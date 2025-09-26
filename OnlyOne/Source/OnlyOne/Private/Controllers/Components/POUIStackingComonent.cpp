@@ -78,6 +78,9 @@ void UPOUIStackingComonent::SetDefaultWidget(UUserWidget* Widget, bool bInputMod
 			PC->bShowMouseCursor = true;
 		}
 	}
+	
+	Widget->AddToViewport();
+	Widget->SetVisibility(ESlateVisibility::Visible);
 }
 
 void UPOUIStackingComonent::ClearStack()

@@ -43,7 +43,7 @@ void APOMainMenuPlayerController::ShowMainMenu()
 
 		if (MainMenuWidget)
 		{
-			UIStackingComponent->PushWidget(MainMenuWidget);
+			UIStackingComponent->SetDefaultWidget(MainMenuWidget);
 		}
 	}
 }
