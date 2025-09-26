@@ -35,7 +35,6 @@ void ANLP_PODoor::OpenDoor(AActor* MovingActor, const FVector& DestinationPoint)
 			TargetDoorActor->Interact(NPC);
 
 			FTimerHandle ResumeTimer;
-			// TODO: 문 열리는 시간에 맞춰서 조정 필요
 			GetWorld()->GetTimerManager().SetTimer(ResumeTimer, [this, MovingActor, DestinationPoint]() { ResumeNPC(MovingActor, DestinationPoint); }, 1.0f, false);
 		}
 	}
