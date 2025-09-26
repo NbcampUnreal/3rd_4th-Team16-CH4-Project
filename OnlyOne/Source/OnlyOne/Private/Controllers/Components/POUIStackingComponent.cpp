@@ -1,17 +1,17 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Controllers/Components/POUIStackingComonent.h"
+#include "Controllers/Components/POUIStackingComponent.h"
 
 #include "Blueprint/UserWidget.h"
 
-UPOUIStackingComonent::UPOUIStackingComonent()
+UPOUIStackingComponent::UPOUIStackingComponent()
 {
 	bIsInputModeUIOnly = false;
 	UIStack.Add(nullptr);
 }
 
-void UPOUIStackingComonent::PushWidget(UUserWidget* Widget)
+void UPOUIStackingComponent::PushWidget(UUserWidget* Widget)
 {
 	if (!Widget) 
 	{
@@ -28,7 +28,7 @@ void UPOUIStackingComonent::PushWidget(UUserWidget* Widget)
 	Widget->SetVisibility(ESlateVisibility::Visible);
 }
 
-void UPOUIStackingComonent::PopWidget()
+void UPOUIStackingComponent::PopWidget()
 {
 	if (UIStack.IsEmpty() || UIStack.Num() <= 1) return;
 
@@ -57,7 +57,7 @@ void UPOUIStackingComonent::PopWidget()
 	}
 }
 
-void UPOUIStackingComonent::PopToWidget(UUserWidget* Widget)
+void UPOUIStackingComponent::PopToWidget(UUserWidget* Widget)
 {
 	while (!UIStack.IsEmpty() && UIStack.Last() != Widget)
 	{
@@ -65,7 +65,7 @@ void UPOUIStackingComonent::PopToWidget(UUserWidget* Widget)
 	}
 }
 
-void UPOUIStackingComonent::SetDefaultWidget(UUserWidget* Widget, bool bInputModeUIOnly)
+void UPOUIStackingComponent::SetDefaultWidget(UUserWidget* Widget, bool bInputModeUIOnly)
 {
 	UIStack[0] = Widget;
 	bIsInputModeUIOnly = bInputModeUIOnly;
@@ -83,7 +83,7 @@ void UPOUIStackingComonent::SetDefaultWidget(UUserWidget* Widget, bool bInputMod
 	Widget->SetVisibility(ESlateVisibility::Visible);
 }
 
-void UPOUIStackingComonent::ClearStack()
+void UPOUIStackingComponent::ClearStack()
 {
 	while (!UIStack.IsEmpty())
 	{
@@ -91,7 +91,7 @@ void UPOUIStackingComonent::ClearStack()
 	}
 }
 
-void UPOUIStackingComonent::BeginPlay()
+void UPOUIStackingComponent::BeginPlay()
 {
 	Super::BeginPlay();
 

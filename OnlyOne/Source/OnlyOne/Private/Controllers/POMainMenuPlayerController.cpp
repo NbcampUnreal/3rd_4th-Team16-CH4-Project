@@ -4,7 +4,7 @@
 #include "UI/MainMenu/POMainMenuWidget.h"
 #include "Components/Widget.h"
 #include "Blueprint/UserWidget.h"
-#include "Controllers/Components/POUIStackingComonent.h"
+#include "Controllers/Components/POUIStackingComponent.h"
 #include "Engine/Engine.h"
 #include "Framework/Application/SlateApplication.h"
 #include "OnlyOne/OnlyOne.h"
@@ -19,7 +19,7 @@ APOMainMenuPlayerController::APOMainMenuPlayerController()
 	bEnableClickEvents = true;
 	bEnableMouseOverEvents = true;
 
-	UIStackingComponent = CreateDefaultSubobject<UPOUIStackingComonent>(TEXT("UI Stacking Component"));
+	UIStackingComponent = CreateDefaultSubobject<UPOUIStackingComponent>(TEXT("UI Stacking Component"));
 }
 
 void APOMainMenuPlayerController::BeginPlay()
