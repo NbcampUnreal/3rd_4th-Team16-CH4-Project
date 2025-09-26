@@ -2,6 +2,25 @@
 
 
 #include "Controllers/POUITestPlayerController.h"
-#include "UI/PlayerStateList/POPlayerStateListWidget.h"
+#include "UI/KillFeed/POKillFeedWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "InputCoreTypes.h"
+
+void APOUITestPlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (!IsLocalController())
+	{
+		return;
+	}
+
+	if (KillFeedWidgetClass && !KillFeedWidget)
+	{
+		KillFeedWidget = CreateWidget<UPOKillFeedWidget>(this, KillFeedWidgetClass);
+		if (KillFeedWidget)
+		{
+			KillFeedWidget->AddToViewport(/*ZOrder=*/50);
+		}
+	}
+}
