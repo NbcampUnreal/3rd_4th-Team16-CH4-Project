@@ -21,7 +21,7 @@ APONPCCharacter::APONPCCharacter()
 	GetCharacterMovement()->MaxWalkSpeed = 300.0f;
 
 	GetCharacterMovement()->bUseRVOAvoidance = true;
-	GetCharacterMovement()->AvoidanceConsiderationRadius = 10.0f; // 서로 감지할 반경
+	GetCharacterMovement()->AvoidanceConsiderationRadius = 10.0f;
 	GetCharacterMovement()->AvoidanceWeight = 0.5f;
 
 	NpcCombatComponent = CreateDefaultSubobject<UNpcCombatComponent>(TEXT("NPC Combat Component"));
