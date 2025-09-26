@@ -85,10 +85,7 @@ void UPOUIStackingComponent::SetDefaultWidget(UUserWidget* Widget, bool bInputMo
 
 void UPOUIStackingComponent::ClearStack()
 {
-	while (!UIStack.IsEmpty())
-	{
-		PopWidget();
-	}
+	UIStack.Empty();
 }
 
 void UPOUIStackingComponent::BeginPlay()
