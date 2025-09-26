@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "POGameMode.h"
 #include "POStageGameState.h"
-#include "GameFramework/GameMode.h"
 #include "POStageGameMode.generated.h"
 
 class APOLobbyPlayerState;
@@ -13,7 +13,7 @@ class APOLobbyPlayerState;
  * 
  */
 UCLASS()
-class ONLYONE_API APOStageGameMode : public AGameMode
+class ONLYONE_API APOStageGameMode : public APOGameMode
 {
 	GENERATED_BODY()
 
