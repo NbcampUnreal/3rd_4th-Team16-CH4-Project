@@ -110,6 +110,22 @@ void APOStageGameMode::PostLogin(APlayerController* NewPlayer)
 	}
 }
 
+void APOStageGameMode::Logout(AController* Exiting)
+{
+	if (Exiting)
+	{
+		if (APOLobbyPlayerState* PS = Cast<APOLobbyPlayerState>(Exiting->PlayerState))
+		{
+			PS->ServerSetAlive(false);
+
+			LOG_NET(POLog, Warning, TEXT("[StageGM] Logout: Mark DEAD %s (Id=%d)"),
+				*PS->GetPlayerName(), PS->GetPlayerId());
+		}
+	}
+	
+	Super::Logout(Exiting);
+}
+
 UClass* APOStageGameMode::GetDefaultPawnClassForController_Implementation(AController* InController)
 {
 	return PlayerPawnClass
