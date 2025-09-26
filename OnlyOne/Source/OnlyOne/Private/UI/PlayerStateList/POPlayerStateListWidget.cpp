@@ -19,6 +19,12 @@ void UPOPlayerStateListWidget::NativeConstruct()
 			PC->OnSetPlayerStateEntry.AddUObject(this, &UPOPlayerStateListWidget::SetPlayerStateEntry);
 		}
 	}
+
+	
+	SetPlayerStateEntry(TEXT("Player1"), true, 3 );
+	SetPlayerStateEntry(TEXT("Player2"), false, 1 );
+	SetPlayerStateEntry(TEXT("Player3"), true, 0 );
+	
 }
 
 void UPOPlayerStateListWidget::NativeDestruct()
