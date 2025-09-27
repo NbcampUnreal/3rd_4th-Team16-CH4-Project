@@ -90,6 +90,7 @@ void APOPlayerController::BeginPlay()
 
 	SetInputMode(FInputModeGameOnly());
 	SetShowMouseCursor(false);
+	ShowHUDWidget();
 
 	
 	if (InputConfigDataAsset)
@@ -219,4 +220,21 @@ void APOPlayerController::HideListWidget()
 	{
 		PlayerStateListWidget->SetVisibility(ESlateVisibility::Collapsed);
 	}
+}
+
+void APOPlayerController::ShowHUDWidget()
+{
+	//TODO: UI Stacking 수정 후 리팩토링 필요
+	if (HUDWidgetClass && !HUDWidgetInstance)
+	{
+		HUDWidgetInstance = CreateWidget<UUserWidget>(this, HUDWidgetClass);
+		if (HUDWidgetInstance)
+		{
+			HUDWidgetInstance->AddToViewport(/*ZOrder=*/10);
+		}
+	}
+}
+
+void APOPlayerController::HideHUDWidget()
+{
 }

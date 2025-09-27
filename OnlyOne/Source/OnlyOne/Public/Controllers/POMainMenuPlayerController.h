@@ -7,7 +7,7 @@
 #include "Interfaces/POUIStackingInterface.h"
 #include "POMainMenuPlayerController.generated.h"
 
-class UPOUIStackingComonent;
+class UPOUIStackingComponent;
 class UPOHostServerWidget;
 class UPOJoinServerWidget;
 class UPOMainMenuWidget;
@@ -49,13 +49,13 @@ public:
 	UFUNCTION()
 	void OnHostServer(FJoinServerData& HostServerData);
 
-	FORCEINLINE virtual UPOUIStackingComonent* GetUIStackingComponent() const override { return UIStackingComponent; }
+	FORCEINLINE virtual UPOUIStackingComponent* GetUIStackingComponent() const override { return UIStackingComponent; }
 	
 protected:
 	virtual void BeginPlay() override;
 
 	UPROPERTY()
-	TObjectPtr<UPOUIStackingComonent> UIStackingComponent;
+	TObjectPtr<UPOUIStackingComponent> UIStackingComponent;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
 	TSubclassOf<UPOMainMenuWidget> MainMenuWidgetClass;

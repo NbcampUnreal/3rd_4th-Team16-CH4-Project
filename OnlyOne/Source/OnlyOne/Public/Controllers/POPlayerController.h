@@ -80,10 +80,20 @@ public:
 	void EnsureListWidgetCreated();
 	void ShowListWidget();
 	void HideListWidget();
+	void ShowHUDWidget();
+	void HideHUDWidget();
 
+	// Player State List Widget
 	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<UPOPlayerStateListWidget> PlayerStateListWidgetClass;
 
 	UPROPERTY(Transient)
 	TObjectPtr<UPOPlayerStateListWidget> PlayerStateListWidget;
+
+	//HUD Widget
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="UI")
+	TSubclassOf<UUserWidget> HUDWidgetClass;
+
+	UPROPERTY()
+	TObjectPtr<UUserWidget> HUDWidgetInstance;
 };
