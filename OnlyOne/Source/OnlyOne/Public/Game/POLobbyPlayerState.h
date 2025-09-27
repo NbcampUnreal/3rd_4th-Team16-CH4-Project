@@ -63,6 +63,14 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastPlayerLeftLobby(const FString& InName);
 
+	/* Server-only */
+public:
+	UFUNCTION(Category="PO|Stats")
+	void AddKill_ServerOnly(int32 Delta = 1);
+	
+	UFUNCTION(Category="PO|Stats")
+	void SetAlive_ServerOnly(bool bInAlive);
+
 protected:
 	/* UE Lifecycle */
 	virtual void BeginPlay() override;

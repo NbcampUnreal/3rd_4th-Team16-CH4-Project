@@ -340,6 +340,34 @@ void APOLobbyPlayerState::OnRep_DisplayNickname()
 	PushSnapshotToLocalUI();
 }
 
+void APOLobbyPlayerState::AddKill_ServerOnly(int32 Delta)
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	//TODO: 킬 이벤트 연결 후 테스트 예정
+	KillScore = FMath::Max(0, KillScore + Delta);
+	OnRep_KillScore();
+}
+
+void APOLobbyPlayerState::SetAlive_ServerOnly(bool bInAlive)
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	if (bIsAlive == bInAlive)
+	{
+		return;
+	}
+
+	bIsAlive = bInAlive;
+	OnRep_IsAlive();
+}
+
 void APOLobbyPlayerState::OnRep_KillScore()
 {
 	LOG_NET(POLog, Warning, TEXT("Player %d OnRep_KillScore -> %d"),
