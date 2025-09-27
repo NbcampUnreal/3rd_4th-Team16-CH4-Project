@@ -82,6 +82,9 @@ protected:
 	void OnRep_IsReady();
 
 	UFUNCTION()
+	void OnRep_DisplayNickname();
+
+	UFUNCTION()
 	void OnRep_KillScore();
 
 	UFUNCTION()
@@ -95,7 +98,7 @@ protected:
 	UPROPERTY(Replicated)
 	FString BaseNickname;
 
-	UPROPERTY(Replicated)
+	UPROPERTY(ReplicatedUsing=OnRep_DisplayNickname)
 	FString DisplayNickname;
 
 	/* Stage Stats */
@@ -107,6 +110,7 @@ protected:
 
 private:
 	void InitializeExistingPlayers();
+	void PushSnapshotToLocalUI() const;
 	
 	FString SanitizeNickname_Server(const FString& InRaw) const;
 };

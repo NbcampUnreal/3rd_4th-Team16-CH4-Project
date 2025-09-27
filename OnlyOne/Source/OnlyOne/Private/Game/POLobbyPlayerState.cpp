@@ -4,6 +4,7 @@
 
 #include "Controllers/POServerLobbyPlayerController.h"
 #include "Controllers/POMainMenuPlayerController.h"
+#include "Controllers/POPlayerController.h"
 #include "Net/UnrealNetwork.h"
 #include "game/POGameInstance.h"
 #include "game/POBadWords.h"
@@ -120,6 +121,7 @@ void APOLobbyPlayerState::ServerSetNicknameOnce_Implementation(const FString& In
 		UE_LOG(POLog, Warning, TEXT("Player %d ServerSetNicknameOnce_Implementation: Base was empty, using default 'Player'"), GetPlayerId());
 	}
 	*/
+	
 	const FString Base = InNickname.IsEmpty() ? TEXT("Player") : InNickname;
 	const int32 Tag = GetPlayerId() % 10000;
 	const FString TagStr = FString::Printf(TEXT("#%04d"), Tag);
@@ -130,6 +132,7 @@ void APOLobbyPlayerState::ServerSetNicknameOnce_Implementation(const FString& In
 	LOG_NET(POLog, Warning, TEXT("Player %d set nickname: %s"), GetPlayerId(), *DisplayNickname);
 
 	MulticastPlayerJoinedLobby(BaseNickname);
+	OnRep_DisplayNickname();
 }
 
 void APOLobbyPlayerState::ServerSetReady_Implementation()
@@ -271,6 +274,31 @@ FString APOLobbyPlayerState::SanitizeNickname_Server(const FString& InRaw) const
 	return S;
 }
 
+void APOLobbyPlayerState::PushSnapshotToLocalUI() const
+{
+	if (DisplayNickname.IsEmpty())
+	{
+		return;
+	}
+
+	LOG_NET(POLog, Warning, TEXT("[PS] PushSnapshotToLocalUI -> Nick=%s, Alive=%s, Kill=%d, Id=%d"),
+	*DisplayNickname,
+	bIsAlive ? TEXT("true") : TEXT("false"),
+	KillScore,
+	GetPlayerId());
+
+	if (UWorld* World = GetWorld())
+	{
+		if (APlayerController* LocalPCBase = UGameplayStatics::GetPlayerController(World, 0))
+		{
+			if (APOPlayerController* LocalPC = Cast<APOPlayerController>(LocalPCBase))
+			{
+				LocalPC->OnSetPlayerStateEntry.Broadcast(DisplayNickname, bIsAlive, KillScore);
+			}
+		}
+	}
+}
+
 void APOLobbyPlayerState::ServerResetForMatchStart()
 {
 	if (!HasAuthority())
@@ -304,6 +332,13 @@ void APOLobbyPlayerState::ServerSetAlive_Implementation(bool bInAlive)
 	bIsAlive = bInAlive;
 	OnRep_IsAlive();
 }
+void APOLobbyPlayerState::OnRep_DisplayNickname()
+{
+	LOG_NET(POLog, Warning, TEXT("Player %d OnRep_DisplayNickname -> %s"),
+	GetPlayerId(), *DisplayNickname);
+	
+	PushSnapshotToLocalUI();
+}
 
 void APOLobbyPlayerState::AddKill_ServerOnly(int32 Delta)
 {
@@ -335,12 +370,18 @@ void APOLobbyPlayerState::SetAlive_ServerOnly(bool bInAlive)
 
 void APOLobbyPlayerState::OnRep_KillScore()
 {
-	// HUD/위젯 갱신 필요 시 브로드캐스트
+	LOG_NET(POLog, Warning, TEXT("Player %d OnRep_KillScore -> %d"),
+	GetPlayerId(), KillScore);
+	
+	PushSnapshotToLocalUI();
 }
 
 void APOLobbyPlayerState::OnRep_IsAlive()
 {
-	// 이름표 색상(사망시 회색) 등 갱신 필요 시 처리
+	LOG_NET(POLog, Warning, TEXT("Player %d OnRep_IsAlive -> %s"),
+	GetPlayerId(), bIsAlive ? TEXT("true") : TEXT("false"));
+	
+	PushSnapshotToLocalUI();
 }
 
 
