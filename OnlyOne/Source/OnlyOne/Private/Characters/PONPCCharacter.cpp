@@ -16,7 +16,13 @@ APONPCCharacter::APONPCCharacter()
 	AIControllerClass = APONPCController::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
+	GetCapsuleComponent()->InitCapsuleSize(28.f, 88.f);
+
 	GetCharacterMovement()->MaxWalkSpeed = 300.0f;
+
+	GetCharacterMovement()->bUseRVOAvoidance = true;
+	GetCharacterMovement()->AvoidanceConsiderationRadius = 10.0f;
+	GetCharacterMovement()->AvoidanceWeight = 0.5f;
 
 	NpcCombatComponent = CreateDefaultSubobject<UNpcCombatComponent>(TEXT("NPC Combat Component"));
 }

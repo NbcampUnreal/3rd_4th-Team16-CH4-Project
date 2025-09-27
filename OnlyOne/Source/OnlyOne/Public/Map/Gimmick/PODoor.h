@@ -27,10 +27,9 @@ protected:
 
 #pragma endregion
 
-	
 	UPROPERTY(ReplicatedUsing=OnRep_IsOpen, BlueprintReadOnly, Category="Door")
 	bool bIsOpen = false;
-	
+
 	UFUNCTION()
 	void OnRep_IsOpen();
 
@@ -60,6 +59,6 @@ public:
 	virtual void HideInteractionUI()override;
 #pragma endregion 
 
-	
-
+public:
+	bool IsOpen() const { return bIsOpen; }
 };
