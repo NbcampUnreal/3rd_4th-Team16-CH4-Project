@@ -53,6 +53,7 @@ void APOStageGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	DOREPLIFETIME(APOStageGameState, Phase);
 	DOREPLIFETIME(APOStageGameState, PrepRemainingSeconds);
 	DOREPLIFETIME(APOStageGameState, StageRemainingSeconds);
+	DOREPLIFETIME(APOStageGameState, WinnerPS);
 }
 
 void APOStageGameState::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -66,6 +67,34 @@ void APOStageGameState::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	LOG_NET(POLog, Log, TEXT("[StageGS] EndPlay (Reason=%d)"), (int32)EndPlayReason);
 
 	Super::EndPlay(EndPlayReason);
+}
+
+void APOStageGameState::ServerSetPhase_Implementation(EPOStagePhase NewPhase)
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	Phase = NewPhase;
+	OnRep_Phase();
+}
+
+void APOStageGameState::ServerSetWinner_Implementation(APlayerState* InWinner)
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+	WinnerPS = InWinner;
+	OnRep_WinnerPS();
+}
+
+void APOStageGameState::ServerClearWinner_Implementation()
+{
+	if (!HasAuthority()) return;
+	WinnerPS = nullptr;
+	OnRep_WinnerPS();
 }
 
 void APOStageGameState::ServerStartPrepCountdown(int32 InSeconds)
@@ -236,4 +265,11 @@ void APOStageGameState::OnRep_StageRemainingSeconds()
 		StageRemainingSeconds,
 		HasAuthority() ? TEXT("Server") : TEXT("Client")
 	);
+}
+
+void APOStageGameState::OnRep_WinnerPS()
+{
+	LOG_NET(POLog, Warning, TEXT("[StageGS] OnRep_WinnerPS: %s"),
+		WinnerPS ? *WinnerPS->GetPlayerName() : TEXT("None"));
+	OnWinnerDecided.Broadcast(WinnerPS);
 }
