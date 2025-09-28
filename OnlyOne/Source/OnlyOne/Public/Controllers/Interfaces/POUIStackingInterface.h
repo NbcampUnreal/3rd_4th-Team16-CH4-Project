@@ -6,7 +6,7 @@
 #include "UObject/Interface.h"
 #include "POUIStackingInterface.generated.h"
 
-class UPOUIStackingComonent;
+class UPOUIStackingComponent;
 // This class does not need to be modified.
 UINTERFACE()
 class UPOUIStackingInterface : public UInterface
@@ -22,5 +22,5 @@ class ONLYONE_API IPOUIStackingInterface
 	GENERATED_BODY()
 
 public:
-	virtual UPOUIStackingComonent* GetUIStackingComponent() const = 0;
+	virtual UPOUIStackingComponent* GetUIStackingComponent() const = 0;
 };

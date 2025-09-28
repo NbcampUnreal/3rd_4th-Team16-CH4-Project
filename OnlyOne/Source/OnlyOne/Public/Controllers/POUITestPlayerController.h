@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 
+class UPOKillFeedWidget;
 class UPOPlayerStateListWidget;
 
 #include "POUITestPlayerController.generated.h"
@@ -21,11 +22,11 @@ public:
 	virtual void BeginPlay() override;
 
 protected:
-	// KillFeed 위젯 블루프린트 클래스 지정용
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="UI|KillFeed")
-	TSubclassOf<class UPOKillFeedWidget> KillFeedWidgetClass;
 
-	// 생성된 KillFeed 위젯 인스턴스
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="UI|KillFeed")
+	TSubclassOf<UUserWidget> HUDWidgetClass;
+
 	UPROPERTY()
-	TObjectPtr<class UPOKillFeedWidget> KillFeedWidget;
+	TObjectPtr<UUserWidget> HUDWidgetInstance;
 };
