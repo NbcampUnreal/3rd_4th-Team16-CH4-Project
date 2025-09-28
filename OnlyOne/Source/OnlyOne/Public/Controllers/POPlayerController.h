@@ -4,8 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "POCharacterControllerBase.h"
+#include "Interfaces/POUIStackingInterface.h"
 #include "POPlayerController.generated.h"
 
+class UPOUIStackingComponent;
 class UPOPlayerStateListWidget;
 class UPODataAsset_InputConfig;
 class APOPlayerCharacter;
@@ -23,7 +25,7 @@ struct FPOPlayerStateEntry
 };
 
 UCLASS()
-class ONLYONE_API APOPlayerController : public APOCharacterControllerBase
+class ONLYONE_API APOPlayerController : public APOCharacterControllerBase, public IPOUIStackingInterface
 {
 	GENERATED_BODY()
 
@@ -93,7 +95,12 @@ public:
 	void ShowHUDWidget();
 	void HideHUDWidget();
 
+	virtual UPOUIStackingComponent* GetUIStackingComponent() const override;
+
 protected:
+	UPROPERTY(EditAnywhere, Category = "UI")
+	TObjectPtr<UPOUIStackingComponent> UIStackingComponent;
+	
 	// Player State List Widget
 	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<UPOPlayerStateListWidget> PlayerStateListWidgetClass;

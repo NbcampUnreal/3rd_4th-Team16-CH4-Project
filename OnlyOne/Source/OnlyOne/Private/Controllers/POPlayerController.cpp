@@ -10,6 +10,7 @@
 #include "GameFramework/PlayerState.h"
 #include "POGameplayTags.h"
 #include "EnhancedInputSubsystems.h"
+#include "Controllers/Components/POUIStackingComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "UI/PlayerStateList/POPlayerStateListWidget.h"
@@ -19,6 +20,7 @@ class UEnhancedInputLocalPlayerSubsystem;
 APOPlayerController::APOPlayerController()
 {
 	PlayerUIComponent = CreateDefaultSubobject<UPlayerUIComponent>(TEXT("Player UI Component"));
+	UIStackingComponent = CreateDefaultSubobject<UPOUIStackingComponent>(TEXT("UI Stacking Component"));
 	OnSetPlayerStateEntry.AddUObject(this, &ThisClass::OnPlayerStateUpdated);
 }
 
@@ -248,13 +250,18 @@ void APOPlayerController::ShowHUDWidget()
 		HUDWidgetInstance = CreateWidget<UUserWidget>(this, HUDWidgetClass);
 		if (HUDWidgetInstance)
 		{
-			HUDWidgetInstance->AddToViewport(/*ZOrder=*/10);
+			UIStackingComponent->SetDefaultWidget(HUDWidgetInstance, false);
 		}
 	}
 }
 
 void APOPlayerController::HideHUDWidget()
 {
+}
+
+UPOUIStackingComponent* APOPlayerController::GetUIStackingComponent() const
+{
+	return UIStackingComponent;
 }
 
 void APOPlayerController::OnPlayerStateUpdated(const FString& Nickname, bool bIsAlive, int32 KillCount)
