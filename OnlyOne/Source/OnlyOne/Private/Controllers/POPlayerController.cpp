@@ -82,6 +82,14 @@ void APOPlayerController::SetupInputComponent()
 		POInputComponent->BindNativeInputAction(InputConfigDataAsset, POGameplayTags::InputTag_Spectator_Next, ETriggerEvent::Completed, this, &ThisClass::SpectatorNextTarget);
 		POInputComponent->BindNativeInputAction(InputConfigDataAsset, POGameplayTags::InputTag_Spectator_Previous, ETriggerEvent::Completed, this, &ThisClass::SpectatorPreviousTarget);
 	}
+
+	// 테스트용: Tab 키 Press/Release로 플레이어 상태 리스트 표시/숨김
+	// Enhanced Input DataAsset 설정 없이 직접 키 바인딩 (임시)
+	if (InputComponent)
+	{
+		InputComponent->BindKey(EKeys::Tab, EInputEvent::IE_Pressed, this, &ThisClass::ShowListWidget);
+		InputComponent->BindKey(EKeys::Tab, EInputEvent::IE_Released, this, &ThisClass::HideListWidget);
+	}
 }
 
 void APOPlayerController::BeginPlay()
