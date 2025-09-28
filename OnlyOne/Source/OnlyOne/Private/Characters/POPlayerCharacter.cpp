@@ -15,6 +15,7 @@
 #include "POFunctionLibrary.h"
 #include "POGameplayTags.h"
 #include "Components/Interact/POInteractManagerComponent.h"
+#include "InputCoreTypes.h"
 
 APOPlayerCharacter::APOPlayerCharacter()
 {
@@ -78,8 +79,10 @@ void APOPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	POInputComponent->BindNativeInputAction(InputConfigDataAsset, POGameplayTags::InputTag_Jump, ETriggerEvent::Triggered, this, &ThisClass::Jump);
 	POInputComponent->BindNativeInputAction(InputConfigDataAsset, POGameplayTags::InputTag_Walk, ETriggerEvent::Triggered, this, &ThisClass::Input_Walk);
 	POInputComponent->BindNativeInputAction(InputConfigDataAsset, POGameplayTags::InputTag_Sprint, ETriggerEvent::Triggered, this, &ThisClass::Input_Sprint);
-	
 	POInputComponent->BindAbilityInputAction(InputConfigDataAsset, this, &ThisClass::Input_AbilityInputPressed, &ThisClass::Input_AbilityInputReleased);
+
+	// 테스트용: E 키로 상호작용 시도
+	PlayerInputComponent->BindKey(EKeys::E, IE_Pressed, this, &ThisClass::Input_TestInteract);
 }
 
 void APOPlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -331,4 +334,13 @@ void APOPlayerCharacter::UpdateMovementSpeed()
 	}
 
 	SetMovementSpeed(Speed);
+}
+
+void APOPlayerCharacter::Input_TestInteract()
+{
+	if (InteractManagerComponent)
+	{
+		InteractManagerComponent->TryInteract();
+		UE_LOG(LogTemp, Log, TEXT("E Key Pressed - TryInteract called") );
+	}
 }

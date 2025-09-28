@@ -138,7 +138,10 @@ public:
 	virtual void TryInteract(AActor* TargetActor) override;
 	
 protected:
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interact", meta = (AllowPrivate))
 	TObjectPtr<UPOInteractManagerComponent> InteractManagerComponent;
-};
 
+private:
+	// 테스트용 상호작용 입력(E 키) 처리 함수
+	void Input_TestInteract();
+};

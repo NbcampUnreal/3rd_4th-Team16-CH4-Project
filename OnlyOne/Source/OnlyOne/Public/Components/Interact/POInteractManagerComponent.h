@@ -61,6 +61,10 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Interaction")
 	bool HasInteractable() const { return CurrentInteractable != nullptr; }
 
+	// 서버 검증용 상호작용 요청 (클라이언트가 카메라 정보 전달)
+	UFUNCTION(Server, Reliable)
+	void ServerTryInteract(FVector_NetQuantize Start, FVector_NetQuantizeNormal Direction);
+
 protected:
 	// 상호작용 입력 처리 함수
 	void OnInteractPressed(const FInputActionValue& Value);
@@ -72,5 +76,4 @@ protected:
 
 public:
 	void CheckInteractableUnderRay();
-	
 };

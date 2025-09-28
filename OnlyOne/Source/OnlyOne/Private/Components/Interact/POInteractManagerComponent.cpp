@@ -56,29 +56,9 @@ void UPOInteractManagerComponent::TryInteract()
 		return;
 	}
 
-	// 상호작용 시도 시 Ray 캐스팅 실행
-	CheckAndSetForInteractable();
-	
-	if (CurrentInteractable)
-	{
-		// 상호작용 실행
-		if (CurrentInteractable->Interact(OwnerPawn))
-		{
-			if (IPOInteractManagerHandlerInterface* TryInteractInterface = Cast<IPOInteractManagerHandlerInterface>(OwnerPawn))
-			{
-				TryInteractInterface->TryInteract(CurrentInteractable->GetOwner());
-				UE_LOG(LogTemp, Warning, TEXT("Interacted with: %s"), *CurrentInteractable->GetOwner()->GetName());
-			}
-			else
-			{
-				UE_LOG(LogTemp, Warning, TEXT("Owner Pawn does not implement IPETryInteract interface!"));
-			}
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Log, TEXT("No interactable object found"));
-	}
+	FVector CameraLocation; FRotator CameraRotation;
+	OwnerPawn->GetActorEyesViewPoint(CameraLocation, CameraRotation);
+	ServerTryInteract(CameraLocation, CameraRotation.Vector());
 }
 
 void UPOInteractManagerComponent::CheckAndSetForInteractable()
@@ -220,4 +200,35 @@ void UPOInteractManagerComponent::CheckInteractableUnderRay()
 		LastHighlightedComp = nullptr;
 	}
 
+}
+
+void UPOInteractManagerComponent::ServerTryInteract_Implementation(FVector_NetQuantize Start, FVector_NetQuantizeNormal Direction)
+{
+	if (!OwnerPawn)
+	{
+		OwnerPawn = Cast<APawn>(GetOwner());
+	}
+	if (!OwnerPawn)
+	{
+		return;
+	}
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		return;
+	}
+
+	FVector End = Start + FVector(Direction) * InteractionRange;
+	FHitResult Hit;
+	FCollisionQueryParams Params; Params.AddIgnoredActor(OwnerPawn);
+	if (World->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, Params))
+	{
+		if (AActor* HitActor = Hit.GetActor())
+		{
+			if (UPOInteractableComponent* InterComp = HitActor->FindComponentByClass<UPOInteractableComponent>())
+			{
+				InterComp->Interact(OwnerPawn);
+			}
+		}
+	}
 }
