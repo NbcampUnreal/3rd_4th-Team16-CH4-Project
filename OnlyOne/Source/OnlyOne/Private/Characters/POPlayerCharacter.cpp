@@ -14,6 +14,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "POFunctionLibrary.h"
 #include "POGameplayTags.h"
+#include "Components/Interact/POInteractManagerComponent.h"
 
 APOPlayerCharacter::APOPlayerCharacter()
 {
@@ -44,6 +45,9 @@ APOPlayerCharacter::APOPlayerCharacter()
 	AttackHitCollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("Attack Hit Collision Box"));
 	AttackHitCollisionBox->SetupAttachment(GetMesh());
 
+	// Interact Component 세팅
+	InteractManagerComponent = CreateDefaultSubobject<UPOInteractManagerComponent>(TEXT("Interact Manager Component"));
+	
 	GetMesh()->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
 }
 
@@ -143,6 +147,11 @@ void APOPlayerCharacter::UnbindSlowTagDelegate()
 	}
 
 	bSlowTagBind = false;
+}
+
+void APOPlayerCharacter::TryInteract(AActor* TargetActor)
+{
+	// TODO: 상호작용 시 캐릭터에 애니메이션 재생이 필요하면 추가
 }
 
 void APOPlayerCharacter::Server_SetWalking_Implementation(bool bNewIsWalking)
