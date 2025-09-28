@@ -12,6 +12,16 @@ class APOPlayerCharacter;
 
 DECLARE_MULTICAST_DELEGATE_ThreeParams(FPOOnSetPlayerStateEntry, const FString& /*Nickname*/, bool /*bIsAlive*/, int32 /*KillCount*/);
 
+USTRUCT()
+struct FPOPlayerStateEntry
+{
+	GENERATED_BODY()
+
+	FString Nickname;
+	bool bIsAlive = true;
+	int32 KillCount = 0;
+};
+
 UCLASS()
 class ONLYONE_API APOPlayerController : public APOCharacterControllerBase
 {
@@ -83,6 +93,7 @@ public:
 	void ShowHUDWidget();
 	void HideHUDWidget();
 
+protected:
 	// Player State List Widget
 	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<UPOPlayerStateListWidget> PlayerStateListWidgetClass;
@@ -90,10 +101,15 @@ public:
 	UPROPERTY(Transient)
 	TObjectPtr<UPOPlayerStateListWidget> PlayerStateListWidget;
 
+	TQueue<FPOPlayerStateEntry> PlayerStateQueue;
+
 	//HUD Widget
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="UI")
 	TSubclassOf<UUserWidget> HUDWidgetClass;
 
 	UPROPERTY()
 	TObjectPtr<UUserWidget> HUDWidgetInstance;
+
+private:
+	void OnPlayerStateUpdated(const FString& Nickname, bool bIsAlive, int32 KillCount);
 };

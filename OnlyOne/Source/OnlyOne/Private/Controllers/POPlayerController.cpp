@@ -19,6 +19,7 @@ class UEnhancedInputLocalPlayerSubsystem;
 APOPlayerController::APOPlayerController()
 {
 	PlayerUIComponent = CreateDefaultSubobject<UPlayerUIComponent>(TEXT("Player UI Component"));
+	OnSetPlayerStateEntry.AddUObject(this, &ThisClass::OnPlayerStateUpdated);
 }
 
 UPawnUIComponent* APOPlayerController::GetPawnUIComponent() const
@@ -202,6 +203,7 @@ void APOPlayerController::EnsureListWidgetCreated()
 		}
 
 		PlayerStateListWidget = CreateWidget<UPOPlayerStateListWidget>(this, PlayerStateListWidgetClass);
+		//OnSetPlayerStateEntry.AddUObject(PlayerStateListWidget, &UPOPlayerStateListWidget::SetPlayerStateEntry);
 		if (!PlayerStateListWidget)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Failed to create PlayerStateListWidget"));
@@ -217,6 +219,14 @@ void APOPlayerController::ShowListWidget()
 		if (!PlayerStateListWidget->IsInViewport())
 		{
 			PlayerStateListWidget->AddToViewport();
+		}
+		if (!PlayerStateQueue.IsEmpty())
+		{
+			FPOPlayerStateEntry Entry;
+			while (PlayerStateQueue.Dequeue(Entry))
+			{
+				PlayerStateListWidget->SetPlayerStateEntry(Entry.Nickname, Entry.bIsAlive, Entry.KillCount);
+			}
 		}
 		PlayerStateListWidget->SetVisibility(ESlateVisibility::Visible);
 	}
@@ -245,4 +255,21 @@ void APOPlayerController::ShowHUDWidget()
 
 void APOPlayerController::HideHUDWidget()
 {
+}
+
+void APOPlayerController::OnPlayerStateUpdated(const FString& Nickname, bool bIsAlive, int32 KillCount)
+{
+	FPOPlayerStateEntry Entry;
+	Entry.Nickname = Nickname;
+	Entry.bIsAlive = bIsAlive;
+	Entry.KillCount = KillCount;
+
+	if (PlayerStateListWidget && PlayerStateListWidget->IsInViewport() && PlayerStateListWidget->GetVisibility() == ESlateVisibility::Visible)
+	{
+		PlayerStateListWidget->SetPlayerStateEntry(Nickname, bIsAlive, KillCount);
+	}
+	else
+	{
+		PlayerStateQueue.Enqueue(Entry);
+	}
 }
