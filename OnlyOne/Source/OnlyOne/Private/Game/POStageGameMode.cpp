@@ -169,17 +169,25 @@ void APOStageGameMode::PostLogin(APlayerController* NewPlayer)
 
 void APOStageGameMode::Logout(AController* Exiting)
 {
-	if (APOLobbyPlayerState* PS = ToLobbyPS(Exiting))
+	if (Exiting)
 	{
-		AlivePlayers.Remove(PS);
-		LOG_NET(POLog, Log, TEXT("[StageGM] Logout: Remove Alive %s"), *PS->GetPlayerName());
-		CompactAlivePlayers();
-		TryDecideWinner();
+		if (APOLobbyPlayerState* PS = ToLobbyPS(Exiting))
+		{
+			PS->ServerSetAlive(false);
+			LOG_NET(POLog, Warning, TEXT("[StageGM] Logout: Mark DEAD %s (Id=%d)"),
+				*PS->GetPlayerName(), PS->GetPlayerId());
+
+			const bool bRemoved = (AlivePlayers.Remove(PS) > 0);
+			LOG_NET(POLog, Log, TEXT("[StageGM] Logout: Remove Alive %s (removed=%s)"),
+				*PS->GetPlayerName(), bRemoved ? TEXT("true") : TEXT("false"));
+
+			CompactAlivePlayers();
+			TryDecideWinner();
+		}
 	}
 
 	Super::Logout(Exiting);
 }
-
 
 UClass* APOStageGameMode::GetDefaultPawnClassForController_Implementation(AController* InController)
 {
