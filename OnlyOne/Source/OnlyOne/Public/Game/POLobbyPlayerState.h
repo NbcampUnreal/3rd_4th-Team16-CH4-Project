@@ -63,6 +63,14 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastPlayerLeftLobby(const FString& InName);
 
+	/* Server-only */
+public:
+	UFUNCTION(Category="PO|Stats")
+	void AddKill_ServerOnly(int32 Delta = 1);
+	
+	UFUNCTION(Category="PO|Stats")
+	void SetAlive_ServerOnly(bool bInAlive);
+
 protected:
 	/* UE Lifecycle */
 	virtual void BeginPlay() override;
@@ -72,6 +80,9 @@ protected:
 	/* RepNotifies */
 	UFUNCTION()
 	void OnRep_IsReady();
+
+	UFUNCTION()
+	void OnRep_DisplayNickname();
 
 	UFUNCTION()
 	void OnRep_KillScore();
@@ -87,7 +98,7 @@ protected:
 	UPROPERTY(Replicated)
 	FString BaseNickname;
 
-	UPROPERTY(Replicated)
+	UPROPERTY(ReplicatedUsing=OnRep_DisplayNickname)
 	FString DisplayNickname;
 
 	/* Stage Stats */
@@ -99,6 +110,7 @@ protected:
 
 private:
 	void InitializeExistingPlayers();
+	void PushSnapshotToLocalUI() const;
 	
 	FString SanitizeNickname_Server(const FString& InRaw) const;
 };

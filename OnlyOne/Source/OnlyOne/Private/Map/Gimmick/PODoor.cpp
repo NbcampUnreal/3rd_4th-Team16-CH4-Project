@@ -33,14 +33,14 @@ void APODoor::BeginPlay()
 		{
 			PlayClose();
 		}
-		FTimerHandle TestToggle;
+		/*FTimerHandle TestToggle;
 		GetWorldTimerManager().SetTimer(
 			TestToggle,
 			this,
 			&APODoor::ServerTestAutoToggle,
 			2.0f,
 			true,
-			1.0f);
+			1.0f);*/
 	}
 	
 }

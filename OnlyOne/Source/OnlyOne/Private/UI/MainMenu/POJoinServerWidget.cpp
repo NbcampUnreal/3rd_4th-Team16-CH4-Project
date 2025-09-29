@@ -6,7 +6,7 @@
 #include "Components/Button.h"
 #include "Components/EditableTextBox.h"
 #include "Controllers/POMainMenuPlayerController.h"
-#include "Controllers/Components/POUIStackingComonent.h"
+#include "Controllers/Components/POUIStackingComponent.h"
 #include "OnlyOne/OnlyOne.h"
 #include "UI/Common/POBaseWindow.h"
 
