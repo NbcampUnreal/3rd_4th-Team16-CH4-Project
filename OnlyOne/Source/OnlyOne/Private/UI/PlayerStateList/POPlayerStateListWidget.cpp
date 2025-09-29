@@ -11,7 +11,7 @@
 void UPOPlayerStateListWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-
+	
 	if (APOPlayerController* PC = GetOwningPlayer<APOPlayerController>())
 	{
 		if (!PC->OnSetPlayerStateEntry.IsBoundToObject(this))

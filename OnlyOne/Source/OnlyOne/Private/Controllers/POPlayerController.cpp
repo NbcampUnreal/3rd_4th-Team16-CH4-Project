@@ -10,6 +10,7 @@
 #include "GameFramework/PlayerState.h"
 #include "POGameplayTags.h"
 #include "EnhancedInputSubsystems.h"
+#include "Controllers/Components/POUIStackingComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "UI/PlayerStateList/POPlayerStateListWidget.h"
@@ -19,6 +20,8 @@ class UEnhancedInputLocalPlayerSubsystem;
 APOPlayerController::APOPlayerController()
 {
 	PlayerUIComponent = CreateDefaultSubobject<UPlayerUIComponent>(TEXT("Player UI Component"));
+	UIStackingComponent = CreateDefaultSubobject<UPOUIStackingComponent>(TEXT("UI Stacking Component"));
+	OnSetPlayerStateEntry.AddUObject(this, &ThisClass::OnPlayerStateUpdated);
 }
 
 UPawnUIComponent* APOPlayerController::GetPawnUIComponent() const
@@ -81,6 +84,14 @@ void APOPlayerController::SetupInputComponent()
 	{
 		POInputComponent->BindNativeInputAction(InputConfigDataAsset, POGameplayTags::InputTag_Spectator_Next, ETriggerEvent::Completed, this, &ThisClass::SpectatorNextTarget);
 		POInputComponent->BindNativeInputAction(InputConfigDataAsset, POGameplayTags::InputTag_Spectator_Previous, ETriggerEvent::Completed, this, &ThisClass::SpectatorPreviousTarget);
+	}
+
+	// 테스트용: Tab 키 Press/Release로 플레이어 상태 리스트 표시/숨김
+	// Enhanced Input DataAsset 설정 없이 직접 키 바인딩 (임시)
+	if (InputComponent)
+	{
+		InputComponent->BindKey(EKeys::Tab, EInputEvent::IE_Pressed, this, &ThisClass::ShowListWidget);
+		InputComponent->BindKey(EKeys::Tab, EInputEvent::IE_Released, this, &ThisClass::HideListWidget);
 	}
 }
 
@@ -194,6 +205,7 @@ void APOPlayerController::EnsureListWidgetCreated()
 		}
 
 		PlayerStateListWidget = CreateWidget<UPOPlayerStateListWidget>(this, PlayerStateListWidgetClass);
+		//OnSetPlayerStateEntry.AddUObject(PlayerStateListWidget, &UPOPlayerStateListWidget::SetPlayerStateEntry);
 		if (!PlayerStateListWidget)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Failed to create PlayerStateListWidget"));
@@ -209,6 +221,14 @@ void APOPlayerController::ShowListWidget()
 		if (!PlayerStateListWidget->IsInViewport())
 		{
 			PlayerStateListWidget->AddToViewport();
+		}
+		if (!PlayerStateQueue.IsEmpty())
+		{
+			FPOPlayerStateEntry Entry;
+			while (PlayerStateQueue.Dequeue(Entry))
+			{
+				PlayerStateListWidget->SetPlayerStateEntry(Entry.Nickname, Entry.bIsAlive, Entry.KillCount);
+			}
 		}
 		PlayerStateListWidget->SetVisibility(ESlateVisibility::Visible);
 	}
@@ -230,11 +250,33 @@ void APOPlayerController::ShowHUDWidget()
 		HUDWidgetInstance = CreateWidget<UUserWidget>(this, HUDWidgetClass);
 		if (HUDWidgetInstance)
 		{
-			HUDWidgetInstance->AddToViewport(/*ZOrder=*/10);
+			UIStackingComponent->SetDefaultWidget(HUDWidgetInstance, false);
 		}
 	}
 }
 
 void APOPlayerController::HideHUDWidget()
 {
+}
+
+UPOUIStackingComponent* APOPlayerController::GetUIStackingComponent() const
+{
+	return UIStackingComponent;
+}
+
+void APOPlayerController::OnPlayerStateUpdated(const FString& Nickname, bool bIsAlive, int32 KillCount)
+{
+	FPOPlayerStateEntry Entry;
+	Entry.Nickname = Nickname;
+	Entry.bIsAlive = bIsAlive;
+	Entry.KillCount = KillCount;
+
+	if (PlayerStateListWidget && PlayerStateListWidget->IsInViewport() && PlayerStateListWidget->GetVisibility() == ESlateVisibility::Visible)
+	{
+		PlayerStateListWidget->SetPlayerStateEntry(Nickname, bIsAlive, KillCount);
+	}
+	else
+	{
+		PlayerStateQueue.Enqueue(Entry);
+	}
 }
