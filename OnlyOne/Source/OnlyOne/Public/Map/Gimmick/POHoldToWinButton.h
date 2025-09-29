@@ -4,6 +4,8 @@
 #include "GameFramework/Actor.h"
 #include "Interfaces/POInteractableInterface.h"
 #include "Components/Interact/POInteractableComponent.h"
+#include "game/POStageGameMode.h"
+#include "Components/BoxComponent.h"
 #include "POHoldToWinButton.generated.h"
 
 UCLASS()
@@ -27,7 +29,7 @@ protected:
 
 #pragma endregion
 	UPROPERTY(VisibleAnywhere,category="Hold")
-	float HoldDuration;
+	float HoldDuration = 10.0f;
 
 	UPROPERTY(ReplicatedUsing=OnRep_Holding)
 	bool bHolding = false;
@@ -45,7 +47,7 @@ private:
 	FTimerHandle HoldTimer;
 	
 	void StartHold(APawn* InPawn);
-	void CancleHold();
+	void CancelHold();
 	void EndHold();
 	
 	
@@ -53,6 +55,7 @@ private:
 #pragma region Server
 public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 private:
 	UPROPERTY(Replicated)
 	bool bHoldButton = false;
@@ -62,6 +65,7 @@ private:
 
 	UPROPERTY()
 	APawn* HolderPawn = nullptr;
+
 	
 #pragma endregion
 

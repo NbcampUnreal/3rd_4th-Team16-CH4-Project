@@ -5,6 +5,7 @@
 #include "Net/UnrealNetwork.h"
 #include "Engine/World.h"
 #include "TimerManager.h"
+#include "game/POLobbyPlayerState.h"
 
 
 APOHoldToWinButton::APOHoldToWinButton()
@@ -27,8 +28,7 @@ APOHoldToWinButton::APOHoldToWinButton()
 
 void APOHoldToWinButton::BeginPlay()
 {
-	Super::BeginPlay();
-	
+	Super::BeginPlay()
 }
 
 
@@ -61,12 +61,13 @@ void APOHoldToWinButton::StartHold(APawn* InPawn)
 	StartPress();
 }
 
-void APOHoldToWinButton::CancleHold()
+void APOHoldToWinButton::CancelHold()
 {
 	if (!HasAuthority() || !bHolding)
 	{
 		return;
 	}
+	
 	GetWorldTimerManager().ClearTimer(HoldTimer);
 	bHolding = false;
 	HolderPawn = nullptr;
@@ -83,7 +84,16 @@ void APOHoldToWinButton::EndHold()
 	bHolding = false;
 	if (APOStageGameMode* GM = GetWorld()->GetAuthGameMode<APOStageGameMode>())
 	{
-		//게임 끝나는 함수 
+		// 승자 정하고 끝내려면
+		APOLobbyPlayerState* Winner = nullptr;
+		if (HolderPawn)
+		{
+			if (AController* C = HolderPawn->GetController())
+			{
+				Winner = Cast<APOLobbyPlayerState>(C->PlayerState);
+			}
+		}
+		GM->EndGameForGimmick(Winner);  
 	}
 	HolderPawn = nullptr;
 	EndPress();
@@ -138,5 +148,4 @@ void APOHoldToWinButton::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 
 	DOREPLIFETIME(APOHoldToWinButton, bHolding);
 }
-
 
