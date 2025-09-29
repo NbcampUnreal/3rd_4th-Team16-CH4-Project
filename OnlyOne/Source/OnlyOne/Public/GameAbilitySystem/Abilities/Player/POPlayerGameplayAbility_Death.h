@@ -25,4 +25,7 @@ protected:
 	
 	UFUNCTION()
 	void OnMontageCompleted(FGameplayEventData EventData);
+
+	UFUNCTION()
+	void OnMontageTimerFinished();
 };
