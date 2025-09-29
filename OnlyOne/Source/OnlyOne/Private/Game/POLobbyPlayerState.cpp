@@ -294,6 +294,7 @@ void APOLobbyPlayerState::PushSnapshotToLocalUI() const
 			if (APOPlayerController* LocalPC = Cast<APOPlayerController>(LocalPCBase))
 			{
 				LocalPC->OnSetPlayerStateEntry.Broadcast(DisplayNickname, bIsAlive, KillScore);
+				LOG_NET(POLog, Warning, TEXT("[PS] Broadcasted OnSetPlayerStateEntry for %s"), *DisplayNickname);
 			}
 		}
 	}

@@ -68,12 +68,12 @@ void APODoor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeP
 
 void APODoor::Interact(AActor* Interactor)
 {
+	// 이제 클라이언트는 직접 문에 RPC 호출하지 않고
+	// InteractManagerComponent -> ServerTryInteract 경로에서만 서버가 호출.
 	if (!HasAuthority())
 	{
-		ServerToggleDoor(Interactor);
-		return;
+		return; // 서버가 아니면 무시
 	}
-
 	PerformToggleDoor(Interactor);
 }
 
@@ -120,13 +120,8 @@ void APODoor::SetDoorState(bool bOpen, AActor* InstigatorActor)
 		PlayClose();
 	}
 }
-// 서버 RPC로 전달된 토글 요청 처리
+// 서버 RPC로 전달된 토글 요청 처리 (현재 경로 미사용: InteractManager에서 직접 Perform 호출 구조)
 void APODoor::ServerToggleDoor_Implementation(AActor* InstigatorActor)
 {
 	PerformToggleDoor(InstigatorActor);
 }
-
-
-
-
-

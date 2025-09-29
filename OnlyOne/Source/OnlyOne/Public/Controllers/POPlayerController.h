@@ -4,16 +4,28 @@
 
 #include "CoreMinimal.h"
 #include "POCharacterControllerBase.h"
+#include "Interfaces/POUIStackingInterface.h"
 #include "POPlayerController.generated.h"
 
+class UPOUIStackingComponent;
 class UPOPlayerStateListWidget;
 class UPODataAsset_InputConfig;
 class APOPlayerCharacter;
 
 DECLARE_MULTICAST_DELEGATE_ThreeParams(FPOOnSetPlayerStateEntry, const FString& /*Nickname*/, bool /*bIsAlive*/, int32 /*KillCount*/);
 
+USTRUCT()
+struct FPOPlayerStateEntry
+{
+	GENERATED_BODY()
+
+	FString Nickname;
+	bool bIsAlive = true;
+	int32 KillCount = 0;
+};
+
 UCLASS()
-class ONLYONE_API APOPlayerController : public APOCharacterControllerBase
+class ONLYONE_API APOPlayerController : public APOCharacterControllerBase, public IPOUIStackingInterface
 {
 	GENERATED_BODY()
 
@@ -83,6 +95,12 @@ public:
 	void ShowHUDWidget();
 	void HideHUDWidget();
 
+	virtual UPOUIStackingComponent* GetUIStackingComponent() const override;
+
+protected:
+	UPROPERTY(EditAnywhere, Category = "UI")
+	TObjectPtr<UPOUIStackingComponent> UIStackingComponent;
+	
 	// Player State List Widget
 	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<UPOPlayerStateListWidget> PlayerStateListWidgetClass;
@@ -90,10 +108,15 @@ public:
 	UPROPERTY(Transient)
 	TObjectPtr<UPOPlayerStateListWidget> PlayerStateListWidget;
 
+	TQueue<FPOPlayerStateEntry> PlayerStateQueue;
+
 	//HUD Widget
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="UI")
 	TSubclassOf<UUserWidget> HUDWidgetClass;
 
 	UPROPERTY()
 	TObjectPtr<UUserWidget> HUDWidgetInstance;
+
+private:
+	void OnPlayerStateUpdated(const FString& Nickname, bool bIsAlive, int32 KillCount);
 };

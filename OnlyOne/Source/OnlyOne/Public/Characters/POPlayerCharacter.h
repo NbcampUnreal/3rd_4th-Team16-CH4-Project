@@ -4,8 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "Characters/POCharacterBase.h"
+#include "Interfaces/POInteractManagerHandlerInterface.h"
 #include "POPlayerCharacter.generated.h"
 
+class UPOInteractManagerComponent;
 class UBoxComponent;
 class UPlayerCombatComponent;
 struct FGameplayTag;
@@ -17,7 +19,7 @@ class UPODataAsset_InputConfig;
  * 
  */
 UCLASS()
-class ONLYONE_API APOPlayerCharacter : public APOCharacterBase
+class ONLYONE_API APOPlayerCharacter : public APOCharacterBase, public IPOInteractManagerHandlerInterface
 {
 	GENERATED_BODY()
 
@@ -131,5 +133,15 @@ public:
 	void UnbindSlowTagDelegate();   //바인드 해제 함수 
 #pragma endregion
 
-};
+	/* Interact 섹션 */
+public:
+	virtual void TryInteract(AActor* TargetActor) override;
+	
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interact", meta = (AllowPrivate))
+	TObjectPtr<UPOInteractManagerComponent> InteractManagerComponent;
 
+private:
+	// 테스트용 상호작용 입력(E 키) 처리 함수
+	void Input_TestInteract();
+};
