@@ -6,6 +6,7 @@
 #include "UI/Common/POBaseWidget.h"
 #include "POSettingWidget.generated.h"
 
+class UPOBaseWindow;
 class USlider;
 class UTextBlock;
 
@@ -22,7 +23,9 @@ public:
 	virtual void NativeDestruct() override;
 
 private:
-	// 슬라이더 & 값 표시 텍스트 (UMG에서 Bind)
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UPOBaseWindow> WindowUI;
+	
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<USlider> MouseSensitivitySlider;
 	
@@ -44,6 +47,8 @@ private:
 	void OnMouseSensitivityChanged(float NewValue);
 	UFUNCTION()
 	void OnVolumeChanged(float NewValue);
+	UFUNCTION()
+	void OnCloseWindow();
 
 	void ApplyMouseSensitivity(float Normalized01);
 	void ApplyVolume(float Normalized01);

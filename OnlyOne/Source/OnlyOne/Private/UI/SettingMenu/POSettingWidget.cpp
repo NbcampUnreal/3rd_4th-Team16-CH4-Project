@@ -1,13 +1,22 @@
 ﻿#include "UI/SettingMenu/POSettingWidget.h"
 #include "Components/Slider.h"
 #include "Components/TextBlock.h"
+#include "Controllers/Components/POUIStackingComponent.h"
+#include "Controllers/Interfaces/POUIStackingInterface.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
+#include "UI/Common/POBaseWindow.h"
+#include "UI/MainMenu/POJoinServerWidget.h"
 
 void UPOSettingWidget::NativeConstruct()
 {
     Super::NativeConstruct();
-
+    
+    if (WindowUI && !WindowUI->OnCloseWindow.IsAlreadyBound(this, &UPOSettingWidget::OnCloseWindow))
+    {
+        WindowUI->OnCloseWindow.AddDynamic(this, &UPOSettingWidget::OnCloseWindow);
+    }
+    
     // 초기 슬라이더 값 (0~100 범위를 0~1로 정규화)
     if (MouseSensitivitySlider)
     {
@@ -36,6 +45,11 @@ void UPOSettingWidget::NativeConstruct()
 
 void UPOSettingWidget::NativeDestruct()
 {
+    if (WindowUI && WindowUI->OnCloseWindow.IsAlreadyBound(this, &UPOSettingWidget::OnCloseWindow))
+    {
+        WindowUI->OnCloseWindow.RemoveDynamic(this, &UPOSettingWidget::OnCloseWindow);
+    }
+    
     if (MouseSensitivitySlider)
     {
         MouseSensitivitySlider->OnValueChanged.RemoveDynamic(this, &UPOSettingWidget::OnMouseSensitivityChanged);
@@ -69,6 +83,14 @@ void UPOSettingWidget::OnVolumeChanged(float NewValue)
     }
 
     ApplyVolume(NewValue);
+}
+
+void UPOSettingWidget::OnCloseWindow()
+{
+    if (IPOUIStackingInterface* UIStackingInterface = Cast<IPOUIStackingInterface>(GetOwningPlayer()))
+    {
+        UIStackingInterface->GetUIStackingComponent()->PopWidget();
+    }
 }
 
 void UPOSettingWidget::ApplyMouseSensitivity(float Normalized01)
