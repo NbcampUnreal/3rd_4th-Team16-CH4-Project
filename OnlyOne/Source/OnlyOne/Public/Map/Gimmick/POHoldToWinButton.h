@@ -6,6 +6,9 @@
 #include "Components/Interact/POInteractableComponent.h"
 #include "game/POStageGameMode.h"
 #include "Components/BoxComponent.h"
+#include "GameplayTagContainer.h"
+#include "AbilitySystemInterface.h"
+#include "AbilitySystemComponent.h"
 #include "POHoldToWinButton.generated.h"
 
 UCLASS()
@@ -17,6 +20,7 @@ public:
 	
 	APOHoldToWinButton();
 
+	
 protected:
 	virtual void BeginPlay() override;
 #pragma region Components
@@ -34,6 +38,17 @@ protected:
 	UPROPERTY(ReplicatedUsing=OnRep_Holding)
 	bool bHolding = false;
 
+	UPROPERTY(EditAnywhere, Category="HoldToWin|Movement")
+	float MoveCancelRadius = 80.f;
+
+	// 이동/상태 체크 주기
+	UPROPERTY(EditAnywhere, Category="HoldToWin|Movement")
+	float MoveCheckInterval = 0.05f;
+
+	UPROPERTY()
+	TWeakObjectPtr<UAbilitySystemComponent> HolderAsc;
+	FDelegateHandle DeadAbilityTagHandle;
+	
 	UFUNCTION()
 	void OnRep_Holding();
 
@@ -41,10 +56,16 @@ protected:
 	void StartPress();
 	UFUNCTION(BlueprintImplementableEvent)
 	void EndPress();
+
+	void TickHoldCheck();
+	
+	UFUNCTION()
+	void OnDeathTagChanged(const FGameplayTag Tag, int32 NewCount);
 	
 private:
 
 	FTimerHandle HoldTimer;
+	FTimerHandle MoveCheckTimer;
 	
 	void StartHold(APawn* InPawn);
 	void CancelHold();
@@ -56,15 +77,17 @@ private:
 public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	UFUNCTION(Server, Reliable)
+	void ServerStartHold(APawn* InPawn);
+
 private:
 	UPROPERTY(Replicated)
 	bool bHoldButton = false;
 	
-	UFUNCTION(Server, Reliable)
-	void ServerStartHold(APawn* InPawn);
-
 	UPROPERTY()
 	APawn* HolderPawn = nullptr;
+	UPROPERTY()
+	FVector AnchorLocation = FVector::ZeroVector;
 
 	
 #pragma endregion
