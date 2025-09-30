@@ -11,6 +11,7 @@ class UPOUIStackingComponent;
 class UPOHostServerWidget;
 class UPOJoinServerWidget;
 class UPOMainMenuWidget;
+class UPOSettingWidget; // 추가
 
 /**
  * 
@@ -42,6 +43,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	bool HideLastUI();
+
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	void ShowSettings(); // 설정 위젯 표시 함수 추가
 	
 	UFUNCTION()
 	void OnJoinServer(FJoinServerData& JoinServerData);
@@ -74,6 +78,12 @@ protected:
 	
 	UPROPERTY()
 	TObjectPtr<UPOHostServerWidget> HostServerWidget;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
+	TSubclassOf<UPOSettingWidget> SettingWidgetClass; // 설정 위젯 클래스
+
+	UPROPERTY()
+	TObjectPtr<UPOSettingWidget> SettingWidget; // 설정 위젯 인스턴스
 	
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void ShowMainMenu();

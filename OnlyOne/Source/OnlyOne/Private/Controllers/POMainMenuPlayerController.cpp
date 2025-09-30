@@ -12,6 +12,7 @@
 #include "Game/POGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "UI/MainMenu/POHostServerWidget.h"
+#include "UI/SettingMenu/POSettingWidget.h" // 추가
 
 APOMainMenuPlayerController::APOMainMenuPlayerController()
 {
@@ -84,6 +85,21 @@ void APOMainMenuPlayerController::ShowHostServer()
 		if (HostServerWidget)
 		{
 			UIStackingComponent->PushWidget(HostServerWidget);
+		}
+	}
+}
+
+void APOMainMenuPlayerController::ShowSettings()
+{
+	if (SettingWidgetClass)
+	{
+		if (!SettingWidget)
+		{
+			SettingWidget = CreateWidget<UPOSettingWidget>(this, SettingWidgetClass);
+		}
+		if (SettingWidget)
+		{
+			UIStackingComponent->PushWidget(SettingWidget);
 		}
 	}
 }
