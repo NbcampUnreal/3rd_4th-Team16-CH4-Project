@@ -386,6 +386,7 @@ void APOStageGameMode::NotifyCharacterDied(AController* VictimController, AContr
 	TryDecideWinner();
 }
 
+
 void APOStageGameMode::CompactAlivePlayers()
 {
 	for (auto It = AlivePlayers.CreateIterator(); It; ++It)
@@ -642,4 +643,13 @@ void APOStageGameMode::DoReturnToLobby()
 	{
 		W->ServerTravel(URL, false);
 	}
+}
+
+void APOStageGameMode::EndGameForGimmick(APlayerState* WinnerPS)
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+	BeginGameEndPhase(WinnerPS);
 }
