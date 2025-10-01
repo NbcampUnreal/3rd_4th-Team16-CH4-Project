@@ -47,6 +47,10 @@ public:
 	
 	UFUNCTION(BlueprintCallable, Category="PO|Rules")
 	void NotifyCharacterDied(AController* VictimController, AController* KillerController);
+
+	UFUNCTION(BlueprintCallable)
+	void EndGameForGimmick(APlayerState* WinnerPS);
+	
 	/* ===== protected: Unreal Lifecycle ===== */
 protected:
 	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;

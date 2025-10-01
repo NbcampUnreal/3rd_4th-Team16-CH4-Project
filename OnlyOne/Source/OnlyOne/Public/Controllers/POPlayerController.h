@@ -84,6 +84,10 @@ private:
 #pragma endregion
 
 	/* UI 섹션 */
+private:
+	bool bIsListVisible = false;
+
+	/* UI 섹션 */
 public:
 	// NOTE: 외부에서 Broadcast하여 리스트를 갱신할 수 있는 델리게이트
 	FPOOnSetPlayerStateEntry OnSetPlayerStateEntry;
@@ -94,6 +98,7 @@ public:
 	void HideListWidget();
 	void ShowHUDWidget();
 	void HideHUDWidget();
+	void ToggleListWidget();
 
 	virtual UPOUIStackingComponent* GetUIStackingComponent() const override;
 

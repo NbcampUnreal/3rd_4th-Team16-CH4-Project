@@ -2,6 +2,8 @@
 
 
 #include "Characters/POPlayerCharacter.h"
+
+#include "DebugHelper.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Components/Input/POInputComponent.h"
@@ -79,10 +81,9 @@ void APOPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	POInputComponent->BindNativeInputAction(InputConfigDataAsset, POGameplayTags::InputTag_Jump, ETriggerEvent::Triggered, this, &ThisClass::Jump);
 	POInputComponent->BindNativeInputAction(InputConfigDataAsset, POGameplayTags::InputTag_Walk, ETriggerEvent::Triggered, this, &ThisClass::Input_Walk);
 	POInputComponent->BindNativeInputAction(InputConfigDataAsset, POGameplayTags::InputTag_Sprint, ETriggerEvent::Triggered, this, &ThisClass::Input_Sprint);
+	POInputComponent->BindNativeInputAction(InputConfigDataAsset, POGameplayTags::InputTag_Interaction, ETriggerEvent::Triggered, this, &ThisClass::Input_Interaction);
+	
 	POInputComponent->BindAbilityInputAction(InputConfigDataAsset, this, &ThisClass::Input_AbilityInputPressed, &ThisClass::Input_AbilityInputReleased);
-
-	// 테스트용: E 키로 상호작용 시도
-	PlayerInputComponent->BindKey(EKeys::E, IE_Pressed, this, &ThisClass::Input_TestInteract);
 }
 
 void APOPlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -239,6 +240,15 @@ void APOPlayerCharacter::Input_Sprint(const FInputActionValue& InputActionValue)
 	}
 }
 
+void APOPlayerCharacter::Input_Interaction(const FInputActionValue& InputActionValue)
+{
+	if (InteractManagerComponent)
+	{
+		InteractManagerComponent->TryInteract();
+		Debug::Print(TEXT("Input_Interaction"), FColor::Green);
+	}
+}
+
 void APOPlayerCharacter::Input_AbilityInputPressed(const FGameplayTag InInputTag)
 {
 	if (POAbilitySystemComponent)
@@ -343,4 +353,37 @@ void APOPlayerCharacter::Input_TestInteract()
 		InteractManagerComponent->TryInteract();
 		UE_LOG(LogTemp, Log, TEXT("E Key Pressed - TryInteract called") );
 	}
+}
+
+void APOPlayerCharacter::PlayMontageWithCallback(UAnimMontage* MontageToPlay, const FTimerDelegate& OnMontageEnded)
+{
+	if (MontageToPlay)
+	{
+		if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
+		{
+			// 지정된 몽타주를 재생하고, 재생된 몽타주의 길이(초)를 반환
+			const float MontageLength = AnimInstance->Montage_Play(MontageToPlay);
+			if (MontageLength > 0.f && OnMontageEnded.IsBound())
+			{
+				// 타이머 핸들을 생성 (타이머 매니저가 관리하는 고유 ID 역할)
+				FTimerHandle MontageTimer;
+
+				// 1. 월드의 타이머 매니저를 통해 MontageLength(재생 시간) 후에
+				// 2. OnMontageEnded 델리게이트를 호출하도록 타이머를 설정
+				// 3. 마지막 false → 반복 실행하지 않고 1회만 실행
+				GetWorld()->GetTimerManager().SetTimer(MontageTimer, OnMontageEnded, MontageLength, false);
+			}
+		}
+	}
+}
+
+void APOPlayerCharacter::Multicast_PlayMontage_Implementation(UAnimMontage* Montage)
+{
+	// 로컬 플레이어가 직접 조종하는 캐릭터가 아니라면, 즉시 재생
+	if (GetLocalRole() == ROLE_Authority && IsLocallyControlled())
+	{
+		return;
+	}
+
+	PlayMontageWithCallback(Montage, FTimerDelegate());
 }

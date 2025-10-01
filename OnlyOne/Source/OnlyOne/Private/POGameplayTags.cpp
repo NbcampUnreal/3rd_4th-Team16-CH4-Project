@@ -14,6 +14,10 @@ namespace POGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Spectator_Next, "InputTag.Spectator.Next")
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Spectator_Previous, "InputTag.Spectator.Previous")
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_SmokeGrenade, "InputTag.SmokeGrenade")
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_Interaction, "InputTag.Interaction")
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_ListWidget, "InputTag.ListWidget");
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_ListWidget_Show, "InputTag.ListWidget.Show")
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_ListWidget_Hide, "InputTag.ListWidget.Hide")
 
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Attack, "InputTag.Attack")
 

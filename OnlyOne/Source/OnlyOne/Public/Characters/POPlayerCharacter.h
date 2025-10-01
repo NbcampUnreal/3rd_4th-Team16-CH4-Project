@@ -82,6 +82,7 @@ private:
 	void Input_Look(const FInputActionValue& InputActionValue);
 	void Input_Walk(const FInputActionValue& InputActionValue);
 	void Input_Sprint(const FInputActionValue& InputActionValue);
+	void Input_Interaction(const FInputActionValue& InputActionValue);
 	void Input_AbilityInputPressed(const FGameplayTag InInputTag);
 	void Input_AbilityInputReleased(const FGameplayTag InInputTag);
 	void SetMovementSpeed(const float NewMaxWalkSpeed);
@@ -144,4 +145,12 @@ protected:
 private:
 	// 테스트용 상호작용 입력(E 키) 처리 함수
 	void Input_TestInteract();
+
+public:
+	// 서버가 호출하여 모든 클라이언트에게 몽타주 재생을 지시하는 함수
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_PlayMontage(UAnimMontage* Montage);
+
+	// 몽타주를 재생하고, 끝났을 때 특정 동작을 수행하기 위한 함수
+	void PlayMontageWithCallback(UAnimMontage* MontageToPlay, const FTimerDelegate& OnMontageEnded);
 };

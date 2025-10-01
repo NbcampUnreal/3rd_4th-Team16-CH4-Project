@@ -1,7 +1,7 @@
 #include "Map/Gimmick/PODoor.h"
 #include "Components/StaticMeshComponent.h"
 #include "Net/UnrealNetwork.h"
-#include "Components/StaticMeshComponent.h"
+
 
 APODoor::APODoor()
 {
