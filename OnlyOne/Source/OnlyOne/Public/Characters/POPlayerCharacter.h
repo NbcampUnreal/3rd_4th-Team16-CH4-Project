@@ -82,6 +82,7 @@ private:
 	void Input_Look(const FInputActionValue& InputActionValue);
 	void Input_Walk(const FInputActionValue& InputActionValue);
 	void Input_Sprint(const FInputActionValue& InputActionValue);
+	void Input_Interaction(const FInputActionValue& InputActionValue);
 	void Input_AbilityInputPressed(const FGameplayTag InInputTag);
 	void Input_AbilityInputReleased(const FGameplayTag InInputTag);
 	void SetMovementSpeed(const float NewMaxWalkSpeed);

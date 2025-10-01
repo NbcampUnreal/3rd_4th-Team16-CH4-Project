@@ -2,6 +2,8 @@
 
 
 #include "Characters/POPlayerCharacter.h"
+
+#include "DebugHelper.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Components/Input/POInputComponent.h"
@@ -79,10 +81,9 @@ void APOPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	POInputComponent->BindNativeInputAction(InputConfigDataAsset, POGameplayTags::InputTag_Jump, ETriggerEvent::Triggered, this, &ThisClass::Jump);
 	POInputComponent->BindNativeInputAction(InputConfigDataAsset, POGameplayTags::InputTag_Walk, ETriggerEvent::Triggered, this, &ThisClass::Input_Walk);
 	POInputComponent->BindNativeInputAction(InputConfigDataAsset, POGameplayTags::InputTag_Sprint, ETriggerEvent::Triggered, this, &ThisClass::Input_Sprint);
+	POInputComponent->BindNativeInputAction(InputConfigDataAsset, POGameplayTags::InputTag_Interaction, ETriggerEvent::Triggered, this, &ThisClass::Input_Interaction);
+	
 	POInputComponent->BindAbilityInputAction(InputConfigDataAsset, this, &ThisClass::Input_AbilityInputPressed, &ThisClass::Input_AbilityInputReleased);
-
-	// 테스트용: E 키로 상호작용 시도
-	PlayerInputComponent->BindKey(EKeys::E, IE_Pressed, this, &ThisClass::Input_TestInteract);
 }
 
 void APOPlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -236,6 +237,15 @@ void APOPlayerCharacter::Input_Sprint(const FInputActionValue& InputActionValue)
 	if (IsInputPressed(InputActionValue))
 	{
 		Server_SetSprinting(!bIsSprinting);
+	}
+}
+
+void APOPlayerCharacter::Input_Interaction(const FInputActionValue& InputActionValue)
+{
+	if (InteractManagerComponent)
+	{
+		InteractManagerComponent->TryInteract();
+		Debug::Print(TEXT("Input_Interaction"), FColor::Green);
 	}
 }
 
