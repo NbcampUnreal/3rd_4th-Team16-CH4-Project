@@ -163,6 +163,19 @@ void APOStageGameMode::PreLogin(const FString& Options, const FString& Address, 
 	if (GS)
 	{
 		const EPOStagePhase Phase = GS->GetPhase();
+		
+		if (Phase == EPOStagePhase::Prep)
+		{
+			const int32 MaxPlayers = GameSession ? GameSession->MaxPlayers : MaxPlayersInStage;
+			const int32 Current    = GetNumPlayers() + NumTravellingPlayers;
+
+			if (Current >= MaxPlayers)
+			{
+				ErrorMessage = TEXT("Stage is full.");
+				return;
+			}
+		}
+		
 		const bool bBlockMidJoin =
 			(Phase == EPOStagePhase::Active)   ||
 			(Phase == EPOStagePhase::RoundEnd) ||
