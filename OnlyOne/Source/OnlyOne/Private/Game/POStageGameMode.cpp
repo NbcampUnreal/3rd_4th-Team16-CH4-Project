@@ -478,18 +478,6 @@ void APOStageGameMode::HandlePhaseChanged(EPOStagePhase NewPhase)
 			GS->ServerStartStageCountdown(StageSeconds);
 		}
 	}
-	// ★ 임시 테스트 코드 (RoundEnd 진입 → 10초 뒤 첫 번째 Player 승리 처리)
-	if (NewPhase == EPOStagePhase::RoundEnd)
-	{
-		FTimerHandle Dummy;
-		GetWorldTimerManager().SetTimer(Dummy, [this]()
-		{
-			if (GameState && GameState->PlayerArray.Num() > 0)
-			{
-				NotifySpecialVictory(GameState->PlayerArray[0]);
-			}
-		}, 10.f, false);
-	}
 }
 
 void APOStageGameMode::HandleStageTimeExpired()
