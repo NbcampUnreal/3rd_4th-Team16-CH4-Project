@@ -14,10 +14,6 @@ UPOPlayerGameplayAbility_Death::UPOPlayerGameplayAbility_Death()
 {
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
 	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::ServerOnly;
-	
-	FGameplayTagContainer Tags;
-	Tags.AddTag(POGameplayTags::Shared_Ability_Death);
-	SetAssetTags(Tags);
 
 	CancelAbilitiesWithTag.AddTag(POGameplayTags::Player_Ability);
 	BlockAbilitiesWithTag.AddTag(POGameplayTags::Player_Ability);
@@ -93,7 +89,7 @@ void UPOPlayerGameplayAbility_Death::OnMontageCompleted(FGameplayEventData Event
 	// 컨트롤러의 관전 모드를 시작
 	if (APOPlayerController* PlayerController = GetPlayerControllerFromActorInfo())
 	{
-		PlayerController->UnPossess();
+		// PlayerController->UnPossess();
 		PlayerController->StartSpectating(DeadPlayerCharacter);
 	}
 

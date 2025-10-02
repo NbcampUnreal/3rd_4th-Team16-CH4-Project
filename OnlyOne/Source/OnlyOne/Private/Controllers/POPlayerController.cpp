@@ -125,6 +125,10 @@ void APOPlayerController::StartSpectating(const APawn* DeadCharacter)
 		CurrentSpectatorIndex = 0;
 		SetViewTargetWithBlend(SpectatorTargets[CurrentSpectatorIndex], 0.5f);
 	}
+	else
+	{
+		SetViewTargetWithBlend(this, 0.5f);
+	}
 }
 
 void APOPlayerController::BuildSpectatorTargets()
@@ -140,12 +144,14 @@ void APOPlayerController::BuildSpectatorTargets()
 		if (!TargetPlayerCharacter)
 		{
 			continue;
-		} 
+		}
 		
-		const bool bIsAlive = TargetPlayerCharacter->GetPOAbilitySystemComponent() && !TargetPlayerCharacter->GetPOAbilitySystemComponent()->HasMatchingGameplayTag(POGameplayTags::Shared_Status_Death);
-		const bool bIsNotSelf = !DiedPlayerState || TargetPlayerCharacter->GetPlayerState() != DiedPlayerState;
+		APlayerState* TargetPlayerState = TargetPlayerCharacter->GetPlayerState();
+		
+		const bool bIsNotSelf = !DiedPlayerState || TargetPlayerState != DiedPlayerState;
+		const bool bIsAliveAndNotSpectating = TargetPlayerState && !TargetPlayerState->IsSpectator();
 
-		if (bIsAlive && bIsNotSelf)
+		if (bIsAliveAndNotSpectating && bIsNotSelf)
 		{
 			SpectatorTargets.Add(TargetPlayerCharacter);
 		}
