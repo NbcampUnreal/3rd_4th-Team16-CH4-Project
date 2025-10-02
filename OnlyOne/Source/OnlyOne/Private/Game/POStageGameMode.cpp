@@ -428,6 +428,35 @@ void APOStageGameMode::TryDecideWinner()
 	}
 }
 
+void APOStageGameMode::NotifySpecialVictory(APlayerState* WinnerPS)
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+	
+	if (bGameEndStarted)
+	{
+		LOG_NET(POLog, Log, TEXT("[StageGM] NotifySpecialVictory: Already in GameEnd."));
+		return;
+	}
+	
+	if (WinnerPS && GameState && !GameState->PlayerArray.Contains(WinnerPS))
+	{
+		LOG_NET(POLog, Warning, TEXT("[StageGM] NotifySpecialVictory: Winner not in PlayerArray. Ignored."));
+		return;
+	}
+
+	LOG_NET(
+		POLog,
+		Warning,
+		TEXT("[StageGM] SpecialVictory triggered: Winner=%s"),
+		WinnerPS ? *WinnerPS->GetPlayerName() : TEXT("None")
+	);
+	
+	BeginGameEndPhase(WinnerPS);
+}
+
 void APOStageGameMode::HandlePhaseChanged(EPOStagePhase NewPhase)
 {
 	if (!HasAuthority())
@@ -448,6 +477,18 @@ void APOStageGameMode::HandlePhaseChanged(EPOStagePhase NewPhase)
 		{
 			GS->ServerStartStageCountdown(StageSeconds);
 		}
+	}
+	// ★ 임시 테스트 코드 (RoundEnd 진입 → 10초 뒤 첫 번째 Player 승리 처리)
+	if (NewPhase == EPOStagePhase::RoundEnd)
+	{
+		FTimerHandle Dummy;
+		GetWorldTimerManager().SetTimer(Dummy, [this]()
+		{
+			if (GameState && GameState->PlayerArray.Num() > 0)
+			{
+				NotifySpecialVictory(GameState->PlayerArray[0]);
+			}
+		}, 10.f, false);
 	}
 }
 
