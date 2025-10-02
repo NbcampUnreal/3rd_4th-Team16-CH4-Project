@@ -428,6 +428,35 @@ void APOStageGameMode::TryDecideWinner()
 	}
 }
 
+void APOStageGameMode::NotifySpecialVictory(APlayerState* WinnerPS)
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+	
+	if (bGameEndStarted)
+	{
+		LOG_NET(POLog, Log, TEXT("[StageGM] NotifySpecialVictory: Already in GameEnd."));
+		return;
+	}
+	
+	if (WinnerPS && GameState && !GameState->PlayerArray.Contains(WinnerPS))
+	{
+		LOG_NET(POLog, Warning, TEXT("[StageGM] NotifySpecialVictory: Winner not in PlayerArray. Ignored."));
+		return;
+	}
+
+	LOG_NET(
+		POLog,
+		Warning,
+		TEXT("[StageGM] SpecialVictory triggered: Winner=%s"),
+		WinnerPS ? *WinnerPS->GetPlayerName() : TEXT("None")
+	);
+	
+	BeginGameEndPhase(WinnerPS);
+}
+
 void APOStageGameMode::HandlePhaseChanged(EPOStagePhase NewPhase)
 {
 	if (!HasAuthority())
