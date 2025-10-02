@@ -89,7 +89,7 @@ void UPOPlayerGameplayAbility_Death::OnMontageCompleted(FGameplayEventData Event
 	// 컨트롤러의 관전 모드를 시작
 	if (APOPlayerController* PlayerController = GetPlayerControllerFromActorInfo())
 	{
-		// PlayerController->UnPossess();
+		PlayerController->UnPossess();
 		PlayerController->StartSpectating(DeadPlayerCharacter);
 	}
 

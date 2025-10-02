@@ -63,6 +63,11 @@ protected:
 	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
 	virtual void RestartPlayerAtPlayerStart(AController* NewPlayer, AActor* StartSpot) override;
 
+	// [ADDED] 스폰 경로 차단용 오버라이드들
+	virtual void HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer) override; // [ADDED]
+	virtual void RestartPlayer(AController* NewPlayer) override;                                  // [ADDED]
+	virtual bool PlayerCanRestart_Implementation(APlayerController* Player) override; 
+
 	/* ===== protected: Game Rules & Flow ===== */
 protected:
 	TSet<TWeakObjectPtr<APlayerState>> AlivePlayers;
@@ -95,4 +100,6 @@ private:
 	bool IsSpawnPointFree(AActor* SpawnPoint) const;
 	APOLobbyPlayerState* ToLobbyPS(AController* C) const;
 	APOLobbyPlayerState* ToLobbyPS(AActor* A) const;
+
+	bool CanSpawnNow(const AController* C) const; // [ADDED]
 };
