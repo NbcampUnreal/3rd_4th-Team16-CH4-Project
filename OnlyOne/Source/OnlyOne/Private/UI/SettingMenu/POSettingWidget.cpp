@@ -64,7 +64,6 @@ void UPOSettingWidget::NativeDestruct()
 
 void UPOSettingWidget::OnMouseSensitivityChanged(float NewValue)
 {
-    // 슬라이더 값은 0~1, 표시/저장 범위 0~100 변환
     MouseSensitivityValue = FMath::Clamp(NewValue * 100.f, 0.f, 100.f);
     if (MouseSensitivityValueText)
     {
@@ -107,7 +106,10 @@ void UPOSettingWidget::ApplyVolume(float Normalized01)
 
 void UPOSettingWidget::UpdateValueText(UTextBlock* TextWidget, float Value01To100) const
 {
-    if (!TextWidget) return;
+    if (!TextWidget)
+    {
+        return;
+    }
     const int32 DisplayInt = FMath::RoundToInt(Value01To100);
     TextWidget->SetText(FText::AsNumber(DisplayInt));
 }

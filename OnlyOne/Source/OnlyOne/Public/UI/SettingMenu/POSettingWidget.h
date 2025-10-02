@@ -39,8 +39,8 @@ private:
 	TObjectPtr<UTextBlock> VolumeValueText;
 
 	// 현재 값 캐시
-	float MouseSensitivityValue = 50.f; // 0~100
-	float VolumeValue = 50.f; // 0~100
+	float MouseSensitivityValue = 50.f;
+	float VolumeValue = 50.f; 
 
 private:
 	UFUNCTION()
