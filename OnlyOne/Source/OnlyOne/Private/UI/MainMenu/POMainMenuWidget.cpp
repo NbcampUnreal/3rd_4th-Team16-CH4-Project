@@ -87,8 +87,11 @@ void UPOMainMenuWidget::OnJoinServerClicked(UPOCustomButton* ClickedButton)
 
 void UPOMainMenuWidget::OnSettingsClicked(UPOCustomButton* ClickedButton)
 {
-	// TODO: 설정 화면 열기 로직 구현
 	UE_LOG(LogTemp, Warning, TEXT("Settings Clicked"));
+	if (APOMainMenuPlayerController* PC = Cast<APOMainMenuPlayerController>(GetOwningPlayer()))
+	{
+		PC->ShowSettings();
+	}
 }
 
 void UPOMainMenuWidget::OnQuitClicked(UPOCustomButton* ClickedButton)

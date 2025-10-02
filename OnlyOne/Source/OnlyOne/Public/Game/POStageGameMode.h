@@ -75,6 +75,7 @@ protected:
 	void BeginGameEndPhase(APlayerState* InWinnerPS);
 	void CompactAlivePlayers();
 	void TryDecideWinner();
+	void NotifySpecialVictory(APlayerState* WinnerPS);
 	void WipeAllAIsOnStage();
 	bool ShouldEnterSpectatorOnJoin() const;
 	void EnterSpectatorForMidJoin(APlayerController* PC);
