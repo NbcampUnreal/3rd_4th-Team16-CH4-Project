@@ -177,6 +177,7 @@ void APOStageGameMode::PreLogin(const FString& Options, const FString& Address, 
 	}
 
 	const int32 CurrentPlayers = GetNumPlayers() + NumTravellingPlayers;
+	if (CurrentPlayers >= MaxPlayersInStage)
 	{
 		ErrorMessage = TEXT("Server is full (stage max players reached).");
 		return;
