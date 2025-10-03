@@ -176,11 +176,33 @@ void APOStageGameMode::PreLogin(const FString& Options, const FString& Address, 
 		return;
 	}
 
-	const int32 CurrentPlayers = GetNumPlayers() + NumTravellingPlayers;
-	if (CurrentPlayers >= MaxPlayersInStage)
+	const APOStageGameState* GS = GetGameState<APOStageGameState>();
+	if (GS)
 	{
-		ErrorMessage = TEXT("Server is full (stage max players reached).");
-		return;
+		const EPOStagePhase Phase = GS->GetPhase();
+		
+		if (Phase == EPOStagePhase::Prep)
+		{
+			const int32 MaxPlayers = GameSession ? GameSession->MaxPlayers : MaxPlayersInStage;
+			const int32 Current    = GetNumPlayers() + NumTravellingPlayers;
+
+			if (Current >= MaxPlayers)
+			{
+				ErrorMessage = TEXT("Stage is full.");
+				return;
+			}
+		}
+		
+		const bool bBlockMidJoin =
+			(Phase == EPOStagePhase::Active)   ||
+			(Phase == EPOStagePhase::RoundEnd) ||
+			(Phase == EPOStagePhase::GameEnd);
+
+		if (bBlockMidJoin)
+		{
+			ErrorMessage = TEXT("Mid-join is temporarily disabled on Stage.");
+			return;
+		}
 	}
 }
 
