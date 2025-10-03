@@ -8,6 +8,7 @@
 
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerStart.h"
+#include "GameFramework/GameSession.h"
 #include "EngineUtils.h"
 #include "NavigationSystem.h"
 #include "AIController.h"
@@ -60,6 +61,11 @@ void APOStageGameMode::InitGame(const FString& MapName, const FString& Options, 
 	else
 	{
 		LOG_NET(POLog, Warning, TEXT("[StageGM] InitGame: No Return option. Using default LobbyMapURL=%s"), *LobbyMapURL); // [ADD]
+	}
+
+	if (GameSession)
+	{
+		GameSession->MaxPlayers = MaxPlayersInStage;
 	}
 }
 
@@ -160,6 +166,21 @@ void APOStageGameMode::HandleStartingNewPlayer_Implementation(APlayerController*
 	}
 
 	Super::HandleStartingNewPlayer_Implementation(NewPlayer); // [ADDED]
+}
+
+void APOStageGameMode::PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)
+{
+	Super::PreLogin(Options, Address, UniqueId, ErrorMessage);
+	if (!ErrorMessage.IsEmpty())
+	{
+		return;
+	}
+
+	const int32 CurrentPlayers = GetNumPlayers() + NumTravellingPlayers;
+	{
+		ErrorMessage = TEXT("Server is full (stage max players reached).");
+		return;
+	}
 }
 
 void APOStageGameMode::PostLogin(APlayerController* NewPlayer)
@@ -502,6 +523,35 @@ void APOStageGameMode::TryDecideWinner()
 		LOG_NET(POLog, Warning, TEXT("[StageGM] TryDecideWinner: No survivors → draw"));
 		BeginGameEndPhase(nullptr);
 	}
+}
+
+void APOStageGameMode::NotifySpecialVictory(APlayerState* WinnerPS)
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+	
+	if (bGameEndStarted)
+	{
+		LOG_NET(POLog, Log, TEXT("[StageGM] NotifySpecialVictory: Already in GameEnd."));
+		return;
+	}
+	
+	if (WinnerPS && GameState && !GameState->PlayerArray.Contains(WinnerPS))
+	{
+		LOG_NET(POLog, Warning, TEXT("[StageGM] NotifySpecialVictory: Winner not in PlayerArray. Ignored."));
+		return;
+	}
+
+	LOG_NET(
+		POLog,
+		Warning,
+		TEXT("[StageGM] SpecialVictory triggered: Winner=%s"),
+		WinnerPS ? *WinnerPS->GetPlayerName() : TEXT("None")
+	);
+	
+	BeginGameEndPhase(WinnerPS);
 }
 
 void APOStageGameMode::HandlePhaseChanged(EPOStagePhase NewPhase)

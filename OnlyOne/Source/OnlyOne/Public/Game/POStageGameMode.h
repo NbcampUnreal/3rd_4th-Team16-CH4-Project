@@ -54,6 +54,7 @@ public:
 	/* ===== protected: Unreal Lifecycle ===== */
 protected:
 	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
+	virtual void PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage) override;
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void PostLogin(APlayerController* NewPlayer) override;
@@ -62,6 +63,7 @@ protected:
 	virtual UClass* GetDefaultPawnClassForController_Implementation(AController* InController) override;
 	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
 	virtual void RestartPlayerAtPlayerStart(AController* NewPlayer, AActor* StartSpot) override;
+	
 
 	// [ADDED] 스폰 경로 차단용 오버라이드들
 	virtual void HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer) override; // [ADDED]
@@ -80,6 +82,7 @@ protected:
 	void BeginGameEndPhase(APlayerState* InWinnerPS);
 	void CompactAlivePlayers();
 	void TryDecideWinner();
+	void NotifySpecialVictory(APlayerState* WinnerPS);
 	void WipeAllAIsOnStage();
 	bool ShouldEnterSpectatorOnJoin() const;
 	void EnterSpectatorForMidJoin(APlayerController* PC);
@@ -102,4 +105,7 @@ private:
 	APOLobbyPlayerState* ToLobbyPS(AActor* A) const;
 
 	bool CanSpawnNow(const AController* C) const; // [ADDED]
+public:
+	UPROPERTY(EditDefaultsOnly, Category="PO|Stage", meta=(ClampMin="2", ClampMax="16", UIMin="2", UIMax="16")) // [ADDED]
+	int32 MaxPlayersInStage = 8;
 };

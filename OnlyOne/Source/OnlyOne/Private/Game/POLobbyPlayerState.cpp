@@ -128,13 +128,30 @@ void APOLobbyPlayerState::ServerSetNicknameOnce_Implementation(const FString& In
 	*/
 	
 	const FString Base = InNickname.IsEmpty() ? TEXT("Player") : InNickname;
-	const int32 Tag = GetPlayerId() % 10000;
-	const FString TagStr = FString::Printf(TEXT("#%04d"), Tag);
+	int32 TagNum = 0;
+	if (APlayerController* PC = Cast<APlayerController>(GetOwner()))
+	{
+		if (UNetConnection* Conn = PC->NetConnection)
+		{
+			FString IdStr = Conn->PlayerId.IsValid() ? Conn->PlayerId->ToString() : TEXT("Invalid");
+			TagNum = static_cast<int32>(FCrc::StrCrc32(*IdStr) % 10000);
+		}
+	}
+	
+	FString NumStr = FString::FromInt(FMath::Abs(TagNum) % 10000);
+	const int32 Digits = 4;
+	if (NumStr.Len() < Digits)
+	{
+		NumStr = FString::ChrN(Digits - NumStr.Len(), TEXT('0')) + NumStr;
+	}
+	const FString TagStr = TEXT("#") + NumStr;
 
-	BaseNickname = Base;
-	DisplayNickname = FString::Printf(TEXT("%s%s"), *BaseNickname, *TagStr);
+	DisplayNickname = FString::Printf(TEXT("%s%s"), *Base, *TagStr);
 
-	LOG_NET(POLog, Warning, TEXT("Player %d set nickname: %s"), GetPlayerId(), *DisplayNickname);
+	BaseNickname = DisplayNickname;
+	
+	UE_LOG(POLog, Warning, TEXT("Set nickname: %s (Tag=%s, PSId=%d)"),
+		*DisplayNickname, *TagStr, GetPlayerId());
 
 	MulticastPlayerJoinedLobby(BaseNickname);
 	OnRep_DisplayNickname();
@@ -164,7 +181,6 @@ void APOLobbyPlayerState::OnRep_IsReady()
 
 	if (APOServerLobbyPlayerController* PC = Cast<APOServerLobbyPlayerController>(UGameplayStatics::GetPlayerController(this, 0)))
 	{
-		// TODO: FJoinServerData 통합 시 변경
 		FJoinServerData PlayerData;
 		PlayerData.Name = BaseNickname;
 		PlayerData.DisplayNickname = DisplayNickname;
