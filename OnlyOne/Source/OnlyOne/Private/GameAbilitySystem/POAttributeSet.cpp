@@ -26,6 +26,7 @@ void UPOAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	DOREPLIFETIME_CONDITION_NOTIFY(UPOAttributeSet, MaxHealth, COND_None, REPNOTIFY_Always)
 	DOREPLIFETIME_CONDITION_NOTIFY(UPOAttributeSet, BaseDamage, COND_None, REPNOTIFY_Always)
 	DOREPLIFETIME_CONDITION_NOTIFY(UPOAttributeSet, DamageTaken, COND_None, REPNOTIFY_Always)
+	DOREPLIFETIME_CONDITION_NOTIFY(UPOAttributeSet, SmokeGrenadeCount, COND_None, REPNOTIFY_Always)
 }
 
 void UPOAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)
@@ -125,3 +126,8 @@ void UPOAttributeSet::OnRep_DamageTaken(const FGameplayAttributeData& OldValue)
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UPOAttributeSet, DamageTaken, OldValue);
 }
+
+	void UPOAttributeSet::OnRep_SmokeGrenadeCount(const FGameplayAttributeData& OldValue)
+	{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UPOAttributeSet, SmokeGrenadeCount, OldValue);
+	}
