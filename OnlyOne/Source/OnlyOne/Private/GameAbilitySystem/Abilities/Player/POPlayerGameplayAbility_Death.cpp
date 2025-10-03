@@ -14,10 +14,6 @@ UPOPlayerGameplayAbility_Death::UPOPlayerGameplayAbility_Death()
 {
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
 	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::ServerOnly;
-	
-	FGameplayTagContainer Tags;
-	Tags.AddTag(POGameplayTags::Shared_Ability_Death);
-	SetAssetTags(Tags);
 
 	CancelAbilitiesWithTag.AddTag(POGameplayTags::Player_Ability);
 	BlockAbilitiesWithTag.AddTag(POGameplayTags::Player_Ability);
