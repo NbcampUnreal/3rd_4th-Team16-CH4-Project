@@ -110,13 +110,8 @@ void APOPlayerController::BeginPlay()
 
 void APOPlayerController::StartSpectating(const APawn* DeadCharacter)
 {
-	if (!DeadCharacter)
-	{
-		return;		
-	}
-
-	// Pawn은 Destroy될 수 있으므로 PlayerState만 저장
-	DiedPlayerState = DeadCharacter->GetPlayerState();
+	// Pawn은 Destroy될 수 있으므로 PlayerState만 저장 & nullptr 허용
+	DiedPlayerState = DeadCharacter ? DeadCharacter->GetPlayerState() : nullptr;
 
 	PlayerState->SetIsSpectator(true);
 	ChangeState(NAME_Spectating);
@@ -129,6 +124,10 @@ void APOPlayerController::StartSpectating(const APawn* DeadCharacter)
 	{
 		CurrentSpectatorIndex = 0;
 		SetViewTargetWithBlend(SpectatorTargets[CurrentSpectatorIndex], 0.5f);
+	}
+	else
+	{
+		SetViewTargetWithBlend(this, 0.5f);
 	}
 }
 
@@ -145,13 +144,14 @@ void APOPlayerController::BuildSpectatorTargets()
 		if (!TargetPlayerCharacter)
 		{
 			continue;
-		} 
+		}
+		
+		APlayerState* TargetPlayerState = TargetPlayerCharacter->GetPlayerState();
+		
+		const bool bIsNotSelf = !DiedPlayerState || TargetPlayerState != DiedPlayerState;
+		const bool bIsAliveAndNotSpectating = TargetPlayerState && !TargetPlayerState->IsSpectator();
 
-		// 캐릭터가 살아있는지, 그리고 방금 죽은 자기 자신이 아닌지 확인
-		const bool bIsAlive = TargetPlayerCharacter->GetPOAbilitySystemComponent() && !TargetPlayerCharacter->GetPOAbilitySystemComponent()->HasMatchingGameplayTag(POGameplayTags::Shared_Status_Death);
-		const bool bIsNotSelf = TargetPlayerCharacter->GetPlayerState() != DiedPlayerState;
-
-		if (bIsAlive && bIsNotSelf)
+		if (bIsAliveAndNotSpectating && bIsNotSelf)
 		{
 			SpectatorTargets.Add(TargetPlayerCharacter);
 		}
