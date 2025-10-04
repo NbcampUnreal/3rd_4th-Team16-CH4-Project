@@ -53,5 +53,6 @@ private:
 	void ApplyMouseSensitivity(float Normalized01);
 	void ApplyVolume(float Normalized01);
 	void UpdateValueText(UTextBlock* TextWidget, float Value01To100) const;
+	void LoadUserSettings();
 };
 
