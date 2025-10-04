@@ -20,8 +20,6 @@ class ONLYONE_API UPOInGameMenuWidget : public UPOBaseWidget
 public:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
-	// ESC 등 키 입력을 처리하기 위해 오버라이드
-	virtual FReply NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent) override;
 
 protected:
 	UPROPERTY(meta = (BindWidget))

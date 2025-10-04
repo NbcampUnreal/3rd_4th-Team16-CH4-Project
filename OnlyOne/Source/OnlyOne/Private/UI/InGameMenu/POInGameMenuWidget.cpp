@@ -10,28 +10,28 @@ void UPOInGameMenuWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	// ESC 키 입력을 받을 수 있도록 포커스 가능하게 설정
+	// 포커스 가능 설정은 유지
 	SetIsFocusable(true);
 
-	if (BackToGameButton)
+	if (BackToGameButton && !BackToGameButton->OnCustomButtonClicked.IsAlreadyBound(this, &UPOInGameMenuWidget::OnBackToGameClicked))
 	{
 		BackToGameButton->SetButtonText(FText::FromString(TEXT("Back to Game")));
 		BackToGameButton->OnCustomButtonClicked.AddDynamic(this, &UPOInGameMenuWidget::OnBackToGameClicked);
 	}
 
-	if (SettingsButton)
+	if (SettingsButton && !SettingsButton->OnCustomButtonClicked.IsAlreadyBound(this, &UPOInGameMenuWidget::OnSettingsClicked))
 	{
 		SettingsButton->SetButtonText(FText::FromString(TEXT("Settings")));
 		SettingsButton->OnCustomButtonClicked.AddDynamic(this, &UPOInGameMenuWidget::OnSettingsClicked);
 	}
 
-	if (BackToMainMenuButton)
+	if (BackToMainMenuButton && !BackToMainMenuButton->OnCustomButtonClicked.IsAlreadyBound(this, &UPOInGameMenuWidget::OnBackToMainMenuClicked))
 	{
 		BackToMainMenuButton->SetButtonText(FText::FromString(TEXT("Back to Main Menu")));
 		BackToMainMenuButton->OnCustomButtonClicked.AddDynamic(this, &UPOInGameMenuWidget::OnBackToMainMenuClicked);
 	}
 
-	if (QuitButton)
+	if (QuitButton && !QuitButton->OnCustomButtonClicked.IsAlreadyBound(this, &UPOInGameMenuWidget::OnQuitClicked))
 	{
 		QuitButton->SetButtonText(FText::FromString(TEXT("Quit")));
 		QuitButton->OnCustomButtonClicked.AddDynamic(this, &UPOInGameMenuWidget::OnQuitClicked);
@@ -60,24 +60,6 @@ void UPOInGameMenuWidget::NativeDestruct()
 	Super::NativeDestruct();
 }
 
-FReply UPOInGameMenuWidget::NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
-{
-	const FKey Key = InKeyEvent.GetKey();
-	if (Key == EKeys::Escape)
-	{
-		if (APOPlayerController* PC = Cast<APOPlayerController>(GetOwningPlayer()))
-		{
-			if (UPOUIStackingComponent* Stacking = PC->GetUIStackingComponent())
-			{
-				Stacking->PopWidget();
-				return FReply::Handled();
-			}
-		}
-	}
-
-	return Super::NativeOnKeyDown(InGeometry, InKeyEvent);
-}
-
 void UPOInGameMenuWidget::OnBackToGameClicked(UPOCustomButton* ClickedButton)
 {
 	UE_LOG(LogTemp, Log, TEXT("InGameMenu: Back to Game clicked"));
@@ -93,6 +75,10 @@ void UPOInGameMenuWidget::OnBackToGameClicked(UPOCustomButton* ClickedButton)
 void UPOInGameMenuWidget::OnSettingsClicked(UPOCustomButton* ClickedButton)
 {
 	UE_LOG(LogTemp, Log, TEXT("InGameMenu: Settings clicked"));
+	if (APOPlayerController* PC = Cast<APOPlayerController>(GetOwningPlayer()))
+	{
+		PC->ShowSettingWidget();
+	}
 }
 
 void UPOInGameMenuWidget::OnBackToMainMenuClicked(UPOCustomButton* ClickedButton)
