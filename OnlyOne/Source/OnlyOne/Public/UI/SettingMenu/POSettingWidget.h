@@ -54,3 +54,4 @@ private:
 	void ApplyVolume(float Normalized01);
 	void UpdateValueText(UTextBlock* TextWidget, float Value01To100) const;
 };
+

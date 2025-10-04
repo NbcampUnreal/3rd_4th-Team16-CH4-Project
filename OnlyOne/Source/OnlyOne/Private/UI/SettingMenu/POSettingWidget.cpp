@@ -3,10 +3,10 @@
 #include "Components/TextBlock.h"
 #include "Controllers/Components/POUIStackingComponent.h"
 #include "Controllers/Interfaces/POUIStackingInterface.h"
-#include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
 #include "UI/Common/POBaseWindow.h"
 #include "UI/MainMenu/POJoinServerWidget.h"
+#include "Game/POGameInstance.h"
 
 void UPOSettingWidget::NativeConstruct()
 {
@@ -41,6 +41,10 @@ void UPOSettingWidget::NativeConstruct()
     {
         UpdateValueText(VolumeValueText, VolumeValue);
     }
+
+    // 시작 시 값 적용
+    ApplyMouseSensitivity(MouseSensitivityValue / 100.f);
+    ApplyVolume(VolumeValue / 100.f);
 }
 
 void UPOSettingWidget::NativeDestruct()
@@ -86,6 +90,7 @@ void UPOSettingWidget::OnVolumeChanged(float NewValue)
 
 void UPOSettingWidget::OnCloseWindow()
 {
+    // 종료 시 한번 더 저장 보장
     if (IPOUIStackingInterface* UIStackingInterface = Cast<IPOUIStackingInterface>(GetOwningPlayer()))
     {
         UIStackingInterface->GetUIStackingComponent()->PopWidget();
@@ -113,4 +118,3 @@ void UPOSettingWidget::UpdateValueText(UTextBlock* TextWidget, float Value01To10
     const int32 DisplayInt = FMath::RoundToInt(Value01To100);
     TextWidget->SetText(FText::AsNumber(DisplayInt));
 }
-
