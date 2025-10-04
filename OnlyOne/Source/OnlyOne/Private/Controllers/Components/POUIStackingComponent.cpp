@@ -76,17 +76,16 @@ void UPOUIStackingComponent::PopWidget()
             // 디폴트만 남았고 UIOnly를 원하면 UIOnly로, 그 외에는 GameAndUI로 포커스 복구
             if (UIStack.Num() == 1 && bIsInputModeUIOnly)
             {
-                FInputModeUIOnly InputMode;
+                FInputModeGameAndUI InputMode;
                 InputMode.SetWidgetToFocus(NewTop->TakeWidget());
                 PC->SetInputMode(InputMode);
                 PC->bShowMouseCursor = true;
             }
             else
             {
-                FInputModeGameAndUI InputMode;
-                InputMode.SetWidgetToFocus(NewTop->TakeWidget());
+                FInputModeGameOnly InputMode;
                 PC->SetInputMode(InputMode);
-                PC->bShowMouseCursor = true;
+                PC->bShowMouseCursor = false;
             }
         }
         else
