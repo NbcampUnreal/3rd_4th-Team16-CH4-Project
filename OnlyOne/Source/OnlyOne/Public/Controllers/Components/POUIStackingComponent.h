@@ -23,6 +23,7 @@ public:
 	
 	FORCEINLINE UUserWidget* GetTopWidget() const { return UIStack.Num() > 0 ? UIStack.Last() : nullptr; }
 	FORCEINLINE bool IsEmpty() const { return UIStack.IsEmpty(); }
+	FORCEINLINE int32 GetStackSize() const { return UIStack.Num(); }
 
 protected:
 	virtual void BeginPlay() override;

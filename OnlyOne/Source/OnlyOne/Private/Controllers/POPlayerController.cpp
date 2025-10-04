@@ -15,13 +15,17 @@
 #include "Controllers/Components/POUIStackingComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
+#include "OnlyOne/OnlyOne.h"
+#include "UI/InGameMenu/POInGameMenuWidget.h"
 #include "UI/PlayerStateList/POPlayerStateListWidget.h"
+#include "UI/SettingMenu/POSettingWidget.h"
 
 class UEnhancedInputLocalPlayerSubsystem;
 
 APOPlayerController::APOPlayerController()
 {
 	PlayerUIComponent = CreateDefaultSubobject<UPlayerUIComponent>(TEXT("Player UI Component"));
+	
 	UIStackingComponent = CreateDefaultSubobject<UPOUIStackingComponent>(TEXT("UI Stacking Component"));
 	OnSetPlayerStateEntry.AddUObject(this, &ThisClass::OnPlayerStateUpdated);
 }
@@ -87,6 +91,7 @@ void APOPlayerController::SetupInputComponent()
 		POInputComponent->BindNativeInputAction(InputConfigDataAsset, POGameplayTags::InputTag_Spectator_Next, ETriggerEvent::Completed, this, &ThisClass::SpectatorNextTarget);
 		POInputComponent->BindNativeInputAction(InputConfigDataAsset, POGameplayTags::InputTag_Spectator_Previous, ETriggerEvent::Completed, this, &ThisClass::SpectatorPreviousTarget);
 		POInputComponent->BindNativeInputAction(InputConfigDataAsset, POGameplayTags::InputTag_ListWidget, ETriggerEvent::Triggered, this, &ThisClass::ToggleListWidget);
+		POInputComponent->BindNativeInputAction(InputConfigDataAsset, POGameplayTags::InputTag_EscapeMenu, ETriggerEvent::Triggered, this, &ThisClass::OnEscapeMenu);
 	}
 }
 
@@ -239,7 +244,6 @@ void APOPlayerController::HideListWidget()
 
 void APOPlayerController::ShowHUDWidget()
 {
-	//TODO: UI Stacking 수정 후 리팩토링 필요
 	if (HUDWidgetClass && !HUDWidgetInstance)
 	{
 		HUDWidgetInstance = CreateWidget<UUserWidget>(this, HUDWidgetClass);
@@ -266,6 +270,64 @@ void APOPlayerController::ToggleListWidget()
 	}
 
 	bIsListVisible = !bIsListVisible;
+}
+
+void APOPlayerController::ShowInGameMenuWidget()
+{
+	if (InGameMenuWidgetClass)
+	{
+		if (!InGameMenuWidgetInstance)
+		{
+			InGameMenuWidgetInstance = CreateWidget<UPOInGameMenuWidget>(this, InGameMenuWidgetClass);
+			if (InGameMenuWidgetInstance)
+			{
+				UIStackingComponent->PushWidget(InGameMenuWidgetInstance);
+			}
+		}
+		else
+		{
+			UIStackingComponent->PushWidget(InGameMenuWidgetInstance);
+		}
+	}
+}
+
+void APOPlayerController::ShowSettingWidget()
+{
+	if (SettingWidgetClass)
+	{
+		if (!SettingWidgetInstance)
+		{
+			SettingWidgetInstance = CreateWidget<UPOSettingWidget>(this, SettingWidgetClass);
+			if (SettingWidgetInstance)
+			{
+				UIStackingComponent->PushWidget(SettingWidgetInstance);
+			}
+		}
+		else
+		{
+			UIStackingComponent->PushWidget(SettingWidgetInstance);
+		}
+	}
+}
+
+void APOPlayerController::ShowQuitGameWidget()
+{
+}
+
+void APOPlayerController::ShowRetunToLobbyWidget()
+{
+}
+
+void APOPlayerController::OnEscapeMenu()
+{
+	if (UIStackingComponent->GetStackSize() <= 1)
+	{
+		ShowInGameMenuWidget();
+	}
+	else
+	{
+		UIStackingComponent->PopWidget();
+	}
 }
 
 UPOUIStackingComponent* APOPlayerController::GetUIStackingComponent() const

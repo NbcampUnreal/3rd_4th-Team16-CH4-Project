@@ -7,6 +7,8 @@
 #include "Interfaces/POUIStackingInterface.h"
 #include "POPlayerController.generated.h"
 
+class UPOSettingWidget;
+class UPOInGameMenuWidget;
 class UPOUIStackingComponent;
 class UPOPlayerStateListWidget;
 class UPODataAsset_InputConfig;
@@ -87,7 +89,6 @@ private:
 private:
 	bool bIsListVisible = false;
 
-	/* UI 섹션 */
 public:
 	// NOTE: 외부에서 Broadcast하여 리스트를 갱신할 수 있는 델리게이트
 	FPOOnSetPlayerStateEntry OnSetPlayerStateEntry;
@@ -99,6 +100,12 @@ public:
 	void ShowHUDWidget();
 	void HideHUDWidget();
 	void ToggleListWidget();
+	void ShowInGameMenuWidget();
+	void ShowSettingWidget();
+	void ShowQuitGameWidget();
+	void ShowRetunToLobbyWidget();
+
+	void OnEscapeMenu();
 
 	virtual UPOUIStackingComponent* GetUIStackingComponent() const override;
 
@@ -109,18 +116,28 @@ protected:
 	// Player State List Widget
 	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<UPOPlayerStateListWidget> PlayerStateListWidgetClass;
-
-	UPROPERTY(Transient)
+	UPROPERTY()
 	TObjectPtr<UPOPlayerStateListWidget> PlayerStateListWidget;
-
+	
 	TQueue<FPOPlayerStateEntry> PlayerStateQueue;
 
 	//HUD Widget
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="UI")
 	TSubclassOf<UUserWidget> HUDWidgetClass;
-
 	UPROPERTY()
 	TObjectPtr<UUserWidget> HUDWidgetInstance;
+
+	// InGame Menu Widget
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="UI")
+	TSubclassOf<UPOInGameMenuWidget> InGameMenuWidgetClass;
+	UPROPERTY()
+	TObjectPtr<UPOInGameMenuWidget> InGameMenuWidgetInstance;
+
+	// Setting Widget
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="UI")
+	TSubclassOf<UPOSettingWidget> SettingWidgetClass;
+	UPROPERTY()
+	TObjectPtr<UPOSettingWidget> SettingWidgetInstance;
 
 private:
 	void OnPlayerStateUpdated(const FString& Nickname, bool bIsAlive, int32 KillCount);

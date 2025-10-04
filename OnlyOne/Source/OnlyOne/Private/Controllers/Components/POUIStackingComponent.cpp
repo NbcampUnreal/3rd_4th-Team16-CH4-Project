@@ -20,12 +20,22 @@ void UPOUIStackingComponent::PushWidget(UUserWidget* Widget)
 
 	if (!UIStack.IsEmpty())
 	{
-		UIStack.Last()->SetVisibility(ESlateVisibility::Collapsed);
+		if (UUserWidget* Last = UIStack.Last())
+		{
+			Last->SetVisibility(ESlateVisibility::Collapsed);
+		}
 	}
 
 	UIStack.Add(Widget);
 	Widget->AddToViewport();
 	Widget->SetVisibility(ESlateVisibility::Visible);
+	if (APlayerController* PC = GetOwner<APlayerController>())
+	{
+		FInputModeUIOnly InputMode;
+		InputMode.SetWidgetToFocus(Widget->TakeWidget());
+		PC->SetInputMode(InputMode);
+		PC->bShowMouseCursor = true;
+	}
 }
 
 void UPOUIStackingComponent::PopWidget()
@@ -35,17 +45,34 @@ void UPOUIStackingComponent::PopWidget()
 	UUserWidget* TopWidget = UIStack.Pop();
 	TopWidget->RemoveFromParent();
 	
-	if (!UIStack.IsEmpty()) // 이전 위젯 다시 표시
+	if (APlayerController* PC = GetOwner<APlayerController>())
 	{
-		UIStack.Last()->SetVisibility(ESlateVisibility::Visible);
-	}
-	else if (UIStack.Num() <= 1) // 스택이 비었고 UI 전용 모드인 경우 게임 모드로 전환
-	{
-		if (APlayerController* PC = GetOwner<APlayerController>())
+		if (UIStack.Num() > 1)
 		{
+			// 이전 위젯 다시 표시 (여전히 오버레이 UI가 존재)
+			UIStack.Last()->SetVisibility(ESlateVisibility::Visible);
+			// 상단 위젯에 포커스 전달
+			FInputModeUIOnly InputMode;
+			InputMode.SetWidgetToFocus(UIStack.Last()->TakeWidget());
+			PC->SetInputMode(InputMode);
+			PC->bShowMouseCursor = true;
+		}
+		else // UI 스택에 기본 위젯만 남은 경우 입력 모드 복구
+		{
+			// 기본 위젯 다시 표시
+			if (UIStack.Last())
+			{
+				UIStack.Last()->SetVisibility(ESlateVisibility::Visible);
+			}
+
 			if (bIsInputModeUIOnly)
 			{
-				PC->SetInputMode(FInputModeUIOnly());
+				FInputModeUIOnly InputMode;
+				if (UIStack.Last())
+				{
+					InputMode.SetWidgetToFocus(UIStack.Last()->TakeWidget());
+				}
+				PC->SetInputMode(InputMode);
 				PC->bShowMouseCursor = true;
 			}
 			else
