@@ -15,6 +15,7 @@ class UPODataAsset_InputConfig;
 class APOPlayerCharacter;
 
 DECLARE_MULTICAST_DELEGATE_ThreeParams(FPOOnSetPlayerStateEntry, const FString& /*Nickname*/, bool /*bIsAlive*/, int32 /*KillCount*/);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPOOnTimerChanged, int32, NewTimeSeconds);
 
 USTRUCT()
 struct FPOPlayerStateEntry
@@ -92,6 +93,10 @@ private:
 public:
 	// NOTE: 외부에서 Broadcast하여 리스트를 갱신할 수 있는 델리게이트
 	FPOOnSetPlayerStateEntry OnSetPlayerStateEntry;
+
+	// Timer 변경을 알리는 델리게이트 (BP에서 바인드 가능)
+	UPROPERTY(BlueprintAssignable, Category = "Timer")
+	FPOOnTimerChanged OnPreTimerChanged;
 	
 	// 위젯 생성/표시/숨김
 	void EnsureListWidgetCreated();
