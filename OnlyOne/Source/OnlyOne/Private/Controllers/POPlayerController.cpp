@@ -13,12 +13,14 @@
 #include "POGameplayTags.h"
 #include "EnhancedInputSubsystems.h"
 #include "Controllers/Components/POUIStackingComponent.h"
+#include "Game/POStageGameState.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "OnlyOne/OnlyOne.h"
 #include "UI/InGameMenu/POInGameMenuWidget.h"
 #include "UI/PlayerStateList/POPlayerStateListWidget.h"
 #include "UI/SettingMenu/POSettingWidget.h"
+#include "UI/Timer/POPrevTimerWidget.h"
 
 class UEnhancedInputLocalPlayerSubsystem;
 
@@ -103,6 +105,10 @@ void APOPlayerController::BeginPlay()
 	SetShowMouseCursor(false);
 	ShowHUDWidget();
 
+	if (APOStageGameState* StageGS = GetWorld() ? GetWorld()->GetGameState<APOStageGameState>() : nullptr)
+	{
+		StageGS->OnPhaseChanged.AddUObject(this, &ThisClass::OnChangeGamePhase);
+	}
 	
 	if (InputConfigDataAsset)
 	{
@@ -192,6 +198,18 @@ void APOPlayerController::SpectatorNextTarget()
 void APOPlayerController::SpectatorPreviousTarget()
 {
 	CycleSpectator(-1);
+}
+
+void APOPlayerController::OnChangeGamePhase(EPOStagePhase NewPhase)
+{
+	if (NewPhase == EPOStagePhase::Prep)
+	{
+		ShowPrevTimerWidget();
+	}
+	else
+	{
+		HidePrevTimerWidget();
+	}
 }
 
 void APOPlayerController::EnsureListWidgetCreated()
@@ -316,6 +334,33 @@ void APOPlayerController::ShowQuitGameWidget()
 
 void APOPlayerController::ShowRetunToLobbyWidget()
 {
+}
+
+void APOPlayerController::ShowPrevTimerWidget()
+{
+	if (PrevTimerWidgetClass)
+	{
+		if (!PrevTimerWidgetInstance)
+		{
+			PrevTimerWidgetInstance = CreateWidget<UPOPrevTimerWidget>(this, PrevTimerWidgetClass);
+			if (PrevTimerWidgetInstance)
+			{
+				PrevTimerWidgetInstance->AddToViewport();
+			}
+		}
+		else
+		{
+			PrevTimerWidgetInstance->AddToViewport();
+		}
+	}
+}
+
+void APOPlayerController::HidePrevTimerWidget()
+{
+	if (PrevTimerWidgetInstance)
+	{
+		PrevTimerWidgetInstance->RemoveFromParent();
+	}
 }
 
 void APOPlayerController::OnEscapeMenu()

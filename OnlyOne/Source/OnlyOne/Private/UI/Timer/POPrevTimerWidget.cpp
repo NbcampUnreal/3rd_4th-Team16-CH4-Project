@@ -24,3 +24,8 @@ void UPOPrevTimerWidget::NativeDestruct()
 	
 	Super::NativeDestruct();
 }
+
+void UPOPrevTimerWidget::SetTimerText(int32 NewTimeSeconds)
+{
+	Super::SetTimerText(NewTimeSeconds);
+}

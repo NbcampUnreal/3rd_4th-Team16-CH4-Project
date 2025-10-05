@@ -18,9 +18,9 @@ class ONLYONE_API UPOTimerWidget : public UPOBaseWidget
 
 public:
 	UFUNCTION(BlueprintCallable, Category="Timer")
-	void SetTimerText(int32 NewTimeSeconds);
+	virtual void SetTimerText(int32 NewTimeSeconds);
 
-	void SetTimerText(const FText& InText);
+	virtual void SetTimerText(const FText& InText);
 
 protected:
 	UPROPERTY(meta = (BindWidget), BlueprintReadOnly, Category="Timer")

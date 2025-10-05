@@ -7,6 +7,8 @@
 #include "Interfaces/POUIStackingInterface.h"
 #include "POPlayerController.generated.h"
 
+enum class EPOStagePhase : uint8;
+class UPOPrevTimerWidget;
 class UPOSettingWidget;
 class UPOInGameMenuWidget;
 class UPOUIStackingComponent;
@@ -97,6 +99,8 @@ public:
 	// Timer 변경을 알리는 델리게이트 (BP에서 바인드 가능)
 	UPROPERTY(BlueprintAssignable, Category = "Timer")
 	FPOOnTimerChanged OnPreTimerChanged;
+
+	void OnChangeGamePhase(EPOStagePhase NewPhase);
 	
 	// 위젯 생성/표시/숨김
 	void EnsureListWidgetCreated();
@@ -109,6 +113,8 @@ public:
 	void ShowSettingWidget();
 	void ShowQuitGameWidget();
 	void ShowRetunToLobbyWidget();
+	void ShowPrevTimerWidget();
+	void HidePrevTimerWidget();
 
 	void OnEscapeMenu();
 
@@ -143,6 +149,12 @@ protected:
 	TSubclassOf<UPOSettingWidget> SettingWidgetClass;
 	UPROPERTY()
 	TObjectPtr<UPOSettingWidget> SettingWidgetInstance;
+
+	// Prev Timer Widget
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="UI")
+	TSubclassOf<UPOPrevTimerWidget> PrevTimerWidgetClass;
+	UPROPERTY()
+	TObjectPtr<UPOPrevTimerWidget> PrevTimerWidgetInstance;
 
 private:
 	void OnPlayerStateUpdated(const FString& Nickname, bool bIsAlive, int32 KillCount);

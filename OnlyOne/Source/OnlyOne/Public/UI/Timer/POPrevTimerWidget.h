@@ -17,4 +17,5 @@ class ONLYONE_API UPOPrevTimerWidget : public UPOTimerWidget
 public:
 	virtual void NativeOnInitialized() override;
 	virtual void NativeDestruct() override;
+	virtual void SetTimerText(int32 NewTimeSeconds) override;
 };
