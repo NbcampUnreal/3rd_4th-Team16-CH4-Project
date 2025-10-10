@@ -27,9 +27,41 @@ protected:
 
 #pragma endregion
 
+#pragma region New 
+	UPROPERTY(ReplicatedUsing=OnRep_Holding)
+	bool bHolding = false;
+	UFUNCTION()
+	void OnRep_Holding(){}
+
+	//  추가: 대기 시간
+	UPROPERTY(EditAnywhere, Category="Hold")
+	float HoldDuration = 0.1f;
+
+	// 타이머 핸들/완료 콜백
+	FTimerHandle HoldTimer;
+	void OnHoldComplete(AActor* InstigatorActor);
+
+	//  서버에서 시작하도록 RPC
+	UFUNCTION(Server, Reliable)
+	void ServerStartHold(AActor* InstigatorActor);
+
+	// 내부 진입점
+	void StartHold(AActor* InstigatorActor);
+
+	// 자동 닫힘 옵션 & 타이머
+	UPROPERTY(EditAnywhere, Category="Door|AutoClose")
+	bool bAutoCloseAfterOpen = true;
+
+	UPROPERTY(EditAnywhere, Category="Door|AutoClose", meta=(EditCondition="bAutoCloseAfterOpen", ClampMin="0.0"))
+	float AutoCloseDelay = 3.0f;
+
+	FTimerHandle AutoCloseTimer;
+	
+#pragma endregion
 	UPROPERTY(ReplicatedUsing=OnRep_IsOpen, BlueprintReadOnly, Category="Door")
 	bool bIsOpen = false;
 
+	
 	UFUNCTION()
 	void OnRep_IsOpen();
 
@@ -43,9 +75,6 @@ protected:
 
 	UFUNCTION(Server, Reliable)
 	void ServerToggleDoor(AActor* InstigatorActor);
-	UFUNCTION()
-	void ServerTestAutoToggle();
-	
 private:
 	void PerformToggleDoor(AActor* InstigatorActor);
 	void SetDoorState(bool bOpen, AActor* InstigatorActor);

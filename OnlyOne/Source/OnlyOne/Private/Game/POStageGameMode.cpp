@@ -680,5 +680,5 @@ void APOStageGameMode::EndGameForGimmick(APlayerState* WinnerPS)
 	{
 		return;
 	}
-	BeginGameEndPhase(WinnerPS);
+	NotifySpecialVictory(WinnerPS);
 }
