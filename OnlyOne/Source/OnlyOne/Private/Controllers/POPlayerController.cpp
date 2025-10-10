@@ -72,6 +72,9 @@ void APOPlayerController::OnPossess(APawn* InPawn)
 			POCharacterBase->SetGenericTeamId(TeamID);
 		}
 	}
+
+	// 새로 소유(리스폰 등)되면 스펙테이터 도움말은 숨긴다
+	HideSpectatorHelpWidget();
 }
 
 ETeamAttitude::Type APOPlayerController::GetTeamAttitudeTowards(const AActor& Other) const
@@ -126,6 +129,9 @@ void APOPlayerController::StartSpectating(const APawn* DeadCharacter)
 
 	PlayerState->SetIsSpectator(true);
 	ChangeState(NAME_Spectating);
+
+	// 관전 정보 UI 표시
+	ShowSpectatorHelpWidget();
 
 	// 관전 대상 초기화 (죽을 때 한 번만)
 	BuildSpectatorTargets();
@@ -360,6 +366,38 @@ void APOPlayerController::HidePrevTimerWidget()
 	if (PrevTimerWidgetInstance)
 	{
 		PrevTimerWidgetInstance->RemoveFromParent();
+	}
+}
+
+// 스펙테이터 도움말 위젯 표시/숨김
+void APOPlayerController::ShowSpectatorHelpWidget()
+{
+	if (!IsLocalController())
+	{
+		return;
+	}
+	if (SpectatorHelpWidgetClass)
+	{
+		if (!SpectatorHelpWidget)
+		{
+			SpectatorHelpWidget = CreateWidget<UUserWidget>(this, SpectatorHelpWidgetClass);
+		}
+		if (SpectatorHelpWidget && !SpectatorHelpWidget->IsInViewport())
+		{
+			SpectatorHelpWidget->AddToViewport();
+		}
+	}
+}
+
+void APOPlayerController::HideSpectatorHelpWidget()
+{
+	if (!IsLocalController())
+	{
+		return;
+	}
+	if (SpectatorHelpWidget)
+	{
+		SpectatorHelpWidget->RemoveFromParent();
 	}
 }
 

@@ -116,6 +116,10 @@ public:
 	void ShowPrevTimerWidget();
 	void HidePrevTimerWidget();
 
+	// 사망 시 표시되는 스펙테이터 도움말 위젯
+	void ShowSpectatorHelpWidget();
+	void HideSpectatorHelpWidget();
+
 	void OnEscapeMenu();
 
 	virtual UPOUIStackingComponent* GetUIStackingComponent() const override;
@@ -156,6 +160,13 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UPOPrevTimerWidget> PrevTimerWidgetInstance;
 
+	// Spectator Help Widget (WBP 할당 필요)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="UI")
+	TSubclassOf<UUserWidget> SpectatorHelpWidgetClass;
+	UPROPERTY()
+	TObjectPtr<UUserWidget> SpectatorHelpWidget;
+
 private:
 	void OnPlayerStateUpdated(const FString& Nickname, bool bIsAlive, int32 KillCount);
 };
+
