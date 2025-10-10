@@ -6,6 +6,7 @@
 #include "GameplayEffectExtension.h"
 #include "POGameplayTags.h"
 #include "AbilitySystemBlueprintLibrary.h"
+#include "game/POStageGameMode.h"
 #include "GameAbilitySystem/POAbilitySystemComponent.h"
 
 UPOAttributeSet::UPOAttributeSet()
@@ -25,6 +26,7 @@ void UPOAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	DOREPLIFETIME_CONDITION_NOTIFY(UPOAttributeSet, MaxHealth, COND_None, REPNOTIFY_Always)
 	DOREPLIFETIME_CONDITION_NOTIFY(UPOAttributeSet, BaseDamage, COND_None, REPNOTIFY_Always)
 	DOREPLIFETIME_CONDITION_NOTIFY(UPOAttributeSet, DamageTaken, COND_None, REPNOTIFY_Always)
+	DOREPLIFETIME_CONDITION_NOTIFY(UPOAttributeSet, SmokeGrenadeCount, COND_None, REPNOTIFY_Always)
 }
 
 void UPOAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)
@@ -62,6 +64,36 @@ void UPOAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallback
 			AActor* OwnerActor = AbilitySystemComponent->GetAvatarActor();
 			if (OwnerActor)
 			{
+				// 기존 코드 흐름을 유지하면서 GameMode에 사망을 알리는 기능만 추가
+				if (OwnerActor->HasAuthority())
+				{
+					APOStageGameMode* StageGameMode = nullptr;
+					AController* VictimController = nullptr;
+					AController* KillerController = nullptr;
+
+					if (const UWorld* World = OwnerActor->GetWorld())
+					{
+						StageGameMode = Cast<APOStageGameMode>(World->GetAuthGameMode());
+
+						// Victim Controller
+						if (const APawn* OwnerPawn = Cast<APawn>(OwnerActor))
+						{
+							VictimController = OwnerPawn->GetController();
+						}
+
+						// Killer Controller
+						if (AActor* Instigator = Data.EffectSpec.GetEffectContext().GetInstigator())
+						{
+							if (const APawn* InstigatorPawn = Cast<APawn>(Instigator))
+							{
+								KillerController = InstigatorPawn->GetController();
+							}
+						}
+					}
+					
+					StageGameMode->NotifyCharacterDied(VictimController, KillerController);
+				}
+				
 				// 사망 상태 태그를 부여
 				AbilitySystemComponent->AddLooseGameplayTag(POGameplayTags::Shared_Ability_Death);
 
@@ -94,3 +126,8 @@ void UPOAttributeSet::OnRep_DamageTaken(const FGameplayAttributeData& OldValue)
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UPOAttributeSet, DamageTaken, OldValue);
 }
+
+	void UPOAttributeSet::OnRep_SmokeGrenadeCount(const FGameplayAttributeData& OldValue)
+	{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UPOAttributeSet, SmokeGrenadeCount, OldValue);
+	}

@@ -8,6 +8,7 @@
 
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerStart.h"
+#include "GameFramework/GameSession.h"
 #include "EngineUtils.h"
 #include "NavigationSystem.h"
 #include "AIController.h"
@@ -29,6 +30,10 @@ APOStageGameMode::APOStageGameMode()
 	GameStateClass = APOStageGameState::StaticClass();
 
 	bUseSeamlessTravel = true;
+
+	// [ADDED] 자동 스폰 억제: 매치 시작 전에는 전원 관전자 + 딜레이드 스타트
+	bStartPlayersAsSpectators = true; // [ADDED]
+	bDelayedStart = true;             // [ADDED]
 }
 
 APOLobbyPlayerState* APOStageGameMode::ToLobbyPS(AController* C) const
@@ -56,6 +61,11 @@ void APOStageGameMode::InitGame(const FString& MapName, const FString& Options, 
 	else
 	{
 		LOG_NET(POLog, Warning, TEXT("[StageGM] InitGame: No Return option. Using default LobbyMapURL=%s"), *LobbyMapURL); // [ADD]
+	}
+
+	if (GameSession)
+	{
+		GameSession->MaxPlayers = MaxPlayersInStage;
 	}
 }
 
@@ -145,6 +155,57 @@ void APOStageGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	Super::EndPlay(EndPlayReason);
 }
 
+void APOStageGameMode::HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer) // [ADDED]
+{
+	if (!NewPlayer) return;
+
+	if (!CanSpawnNow(NewPlayer))
+	{
+		LOG_NET(POLog, Warning, TEXT("[StageGM] HandleStartingNewPlayer: blocked for %s"), *NewPlayer->GetName());
+		return; // [ADDED] Super 호출 금지 → 자동 스폰 경로 차단
+	}
+
+	Super::HandleStartingNewPlayer_Implementation(NewPlayer); // [ADDED]
+}
+
+void APOStageGameMode::PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)
+{
+	Super::PreLogin(Options, Address, UniqueId, ErrorMessage);
+	if (!ErrorMessage.IsEmpty())
+	{
+		return;
+	}
+
+	const APOStageGameState* GS = GetGameState<APOStageGameState>();
+	if (GS)
+	{
+		const EPOStagePhase Phase = GS->GetPhase();
+		
+		if (Phase == EPOStagePhase::Prep)
+		{
+			const int32 MaxPlayers = GameSession ? GameSession->MaxPlayers : MaxPlayersInStage;
+			const int32 Current    = GetNumPlayers() + NumTravellingPlayers;
+
+			if (Current >= MaxPlayers)
+			{
+				ErrorMessage = TEXT("Stage is full.");
+				return;
+			}
+		}
+		
+		const bool bBlockMidJoin =
+			(Phase == EPOStagePhase::Active)   ||
+			(Phase == EPOStagePhase::RoundEnd) ||
+			(Phase == EPOStagePhase::GameEnd);
+
+		if (bBlockMidJoin)
+		{
+			ErrorMessage = TEXT("Mid-join is temporarily disabled on Stage.");
+			return;
+		}
+	}
+}
+
 void APOStageGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
@@ -163,7 +224,15 @@ void APOStageGameMode::PostLogin(APlayerController* NewPlayer)
 			PS->SetAlive_ServerOnly(true);
 			LOG_NET(POLog, Log, TEXT("[StageGM] PostLogin: Add Alive %s"), *PS->GetPlayerName());
 		}
-		RestartPlayer(NewPlayer);
+		
+		if (CanSpawnNow(NewPlayer)) // [ADDED]
+		{
+			RestartPlayer(NewPlayer); // [CHANGED]
+		}
+		else
+		{
+			LOG_NET(POLog, Warning, TEXT("[StageGM] PostLogin: spawn blocked for %s"), *NewPlayer->GetName()); // [ADDED]
+		}
 	}
 }
 
@@ -191,6 +260,12 @@ void APOStageGameMode::Logout(AController* Exiting)
 
 UClass* APOStageGameMode::GetDefaultPawnClassForController_Implementation(AController* InController)
 {
+	// [CHANGED] 최후 안전망: 관전자면 어떤 경로로도 PawnClass 제공하지 않음
+	if (InController && InController->PlayerState && InController->PlayerState->IsSpectator())
+	{
+		return nullptr; // [ADDED]
+	}
+	
 	return PlayerPawnClass
 		? *PlayerPawnClass
 		: Super::GetDefaultPawnClassForController_Implementation(InController);
@@ -314,6 +389,51 @@ void APOStageGameMode::RestartPlayerAtPlayerStart(AController* NewPlayer, AActor
 		UsedPlayerStarts.Add(StartSpot);
 	}
 }
+
+// [ADDED] 최종 가드: 관전자/금지 페이즈에서는 리스폰 불가
+void APOStageGameMode::RestartPlayer(AController* NewPlayer) // [ADDED]
+{
+	if (!NewPlayer) return;
+
+	if (!CanSpawnNow(NewPlayer))
+	{
+		LOG_NET(POLog, Warning, TEXT("[StageGM] RestartPlayer: blocked for %s"), *NewPlayer->GetName());
+		return; // [ADDED]
+	}
+
+	Super::RestartPlayer(NewPlayer);
+}
+
+// [ADDED] UI에서 재시작 요청 등 엔진이 물어볼 때도 동일 정책 적용
+bool APOStageGameMode::PlayerCanRestart_Implementation(APlayerController* Player) // [ADDED]
+{
+	return CanSpawnNow(Player); // [ADDED]
+}
+
+// [ADDED] 스폰 허용 여부(관전자 여부 + 페이즈)를 일원화
+bool APOStageGameMode::CanSpawnNow(const AController* C) const // [ADDED]
+{
+	if (!C || !C->PlayerState) return false;
+
+	// 관전자는 스폰 불가
+	if (C->PlayerState->IsSpectator())
+	{
+		return false;
+	}
+
+	// 페이즈 확인 (활성 라운드 외에는 스폰 금지)
+	if (const APOStageGameState* GS = GetGameState<APOStageGameState>())
+	{
+		const EPOStagePhase P = GS->GetPhase();
+		if (P == EPOStagePhase::RoundEnd || P == EPOStagePhase::GameEnd)
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
 
 void APOStageGameMode::CachePlayerStarts()
 {
