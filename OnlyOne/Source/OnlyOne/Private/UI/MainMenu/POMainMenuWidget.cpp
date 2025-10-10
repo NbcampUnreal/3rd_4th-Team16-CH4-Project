@@ -38,6 +38,12 @@ void UPOMainMenuWidget::NativeConstruct()
 		QuitButton->SetButtonText(FText::FromString("Quit"));
 		QuitButton->OnCustomButtonClicked.AddDynamic(this, &UPOMainMenuWidget::OnQuitClicked);
 	}
+
+	if (HowToPlayButton)
+	{
+		HowToPlayButton->SetButtonText(FText::FromString("How To Play"));
+		HowToPlayButton->OnCustomButtonClicked.AddDynamic(this, &UPOMainMenuWidget::OnHowToPlayClicked);
+	}
 }
 
 void UPOMainMenuWidget::NativeDestruct()
@@ -60,6 +66,11 @@ void UPOMainMenuWidget::NativeDestruct()
 	if (QuitButton)
 	{
 		QuitButton->OnCustomButtonClicked.RemoveDynamic(this, &UPOMainMenuWidget::OnQuitClicked);
+	}
+
+	if (HowToPlayButton)
+	{
+		HowToPlayButton->OnCustomButtonClicked.RemoveDynamic(this, &UPOMainMenuWidget::OnHowToPlayClicked);
 	}
 	
 	Super::NativeDestruct();
@@ -100,5 +111,13 @@ void UPOMainMenuWidget::OnQuitClicked(UPOCustomButton* ClickedButton)
 	if (UWorld* World = GetWorld())
 	{
 		UKismetSystemLibrary::QuitGame(World, nullptr, EQuitPreference::Quit, false);
+	}
+}
+
+void UPOMainMenuWidget::OnHowToPlayClicked(UPOCustomButton* ClickedButton)
+{
+	if (APOMainMenuPlayerController* PC = Cast<APOMainMenuPlayerController>(GetOwningPlayer()))
+	{
+		PC->OnHowToPlay();
 	}
 }

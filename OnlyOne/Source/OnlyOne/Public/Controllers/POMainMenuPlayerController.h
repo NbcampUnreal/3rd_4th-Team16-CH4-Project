@@ -7,6 +7,7 @@
 #include "Interfaces/POUIStackingInterface.h"
 #include "POMainMenuPlayerController.generated.h"
 
+class UPOBaseWidget;
 class UPOUIStackingComponent;
 class UPOHostServerWidget;
 class UPOJoinServerWidget;
@@ -53,6 +54,9 @@ public:
 	UFUNCTION()
 	void OnHostServer(FJoinServerData& HostServerData);
 
+	UFUNCTION()
+	void OnHowToPlay();
+
 	FORCEINLINE virtual UPOUIStackingComponent* GetUIStackingComponent() const override { return UIStackingComponent; }
 	
 protected:
@@ -84,6 +88,12 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<UPOSettingWidget> SettingWidget; // 설정 위젯 인스턴스
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
+	TSubclassOf<UUserWidget> HowToPlayWidgetClass; // 도움말 위젯 클래스
+
+	UPROPERTY()
+	TObjectPtr<UUserWidget> HowToPlayerWidget; // 도움말 위젯 인스턴스
 	
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void ShowMainMenu();

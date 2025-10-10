@@ -160,3 +160,18 @@ void APOMainMenuPlayerController::OnHostServer(FJoinServerData& HostServerData)
 		UGameplayStatics::OpenLevel(World, TEXT("L_ServerLobby"), true, TEXT("listen"));
 	}
 }
+
+void APOMainMenuPlayerController::OnHowToPlay()
+{
+	if (HowToPlayWidgetClass)
+	{
+		if (!HowToPlayerWidget)
+		{
+			HowToPlayerWidget = CreateWidget<UUserWidget>(this, HowToPlayWidgetClass);
+		}
+		if (HowToPlayerWidget)
+		{
+			UIStackingComponent->PushWidget(HowToPlayerWidget);
+		}
+	}
+}
