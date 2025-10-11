@@ -11,6 +11,7 @@
 #include "UI/MainMenu/POJoinServerWidget.h"
 #include "Game/POGameInstance.h"
 #include "Kismet/GameplayStatics.h"
+#include "UI/Common/POExitGameWidget.h"
 #include "UI/MainMenu/POHostServerWidget.h"
 #include "UI/SettingMenu/POSettingWidget.h" // 추가
 
@@ -173,5 +174,24 @@ void APOMainMenuPlayerController::OnHowToPlay()
 		{
 			UIStackingComponent->PushWidget(HowToPlayerWidget);
 		}
+	}
+}
+
+void APOMainMenuPlayerController::OnExitGame()
+{
+	if (ExitGameWidgetClass)
+	{
+		if (!ExitGameWidget)
+		{
+			ExitGameWidget = CreateWidget<UPOExitGameWidget>(this, ExitGameWidgetClass);
+		}
+		if (ExitGameWidget)
+		{
+			UIStackingComponent->PushWidget(ExitGameWidget);
+		}
+	}
+	else
+	{
+		FGenericPlatformMisc::RequestExit(false);
 	}
 }

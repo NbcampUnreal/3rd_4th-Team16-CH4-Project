@@ -7,6 +7,8 @@
 #include "Interfaces/POUIStackingInterface.h"
 #include "POPlayerController.generated.h"
 
+class UPOReturnLobbyWidget;
+class UPOExitGameWidget;
 enum class EPOStagePhase : uint8;
 class UPOPrevTimerWidget;
 class UPOSettingWidget;
@@ -115,6 +117,7 @@ public:
 	void ShowRetunToLobbyWidget();
 	void ShowPrevTimerWidget();
 	void HidePrevTimerWidget();
+	void ShowExitGameWidget();
 
 	// 사망 시 표시되는 스펙테이터 도움말 위젯
 	void ShowSpectatorHelpWidget();
@@ -165,6 +168,18 @@ protected:
 	TSubclassOf<UUserWidget> SpectatorHelpWidgetClass;
 	UPROPERTY()
 	TObjectPtr<UUserWidget> SpectatorHelpWidget;
+
+	// 게임 종료 확인 위젯
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
+	TSubclassOf<UPOExitGameWidget> ExitGameWidgetClass; // 게임 종료 확인 위젯 클래스
+	UPROPERTY()
+	TObjectPtr<UPOExitGameWidget> ExitGameWidget; // 게임 종료 확인 위젯 인스턴스
+
+	// 메인 메뉴로 돌아가기 확인 위젯
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
+	TSubclassOf<UPOReturnLobbyWidget> ReturnToLobbyWidgetClass; // 메인 메뉴
+	UPROPERTY()
+	TObjectPtr<UPOReturnLobbyWidget> ReturnToLobbyWidgetInstance; // 메인 메뉴로 돌아
 
 private:
 	void OnPlayerStateUpdated(const FString& Nickname, bool bIsAlive, int32 KillCount);

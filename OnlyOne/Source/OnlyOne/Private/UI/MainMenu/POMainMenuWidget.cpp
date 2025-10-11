@@ -107,7 +107,10 @@ void UPOMainMenuWidget::OnSettingsClicked(UPOCustomButton* ClickedButton)
 
 void UPOMainMenuWidget::OnQuitClicked(UPOCustomButton* ClickedButton)
 {
-	//TODO: 게임 종료 박스 생성
+	if (APOMainMenuPlayerController* PC = Cast<APOMainMenuPlayerController>(GetOwningPlayer()))
+	{
+		PC->OnExitGame();
+	}
 }
 
 void UPOMainMenuWidget::OnHowToPlayClicked(UPOCustomButton* ClickedButton)

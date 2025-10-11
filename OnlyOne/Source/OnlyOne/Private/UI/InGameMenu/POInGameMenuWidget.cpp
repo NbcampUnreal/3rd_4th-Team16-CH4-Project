@@ -83,10 +83,16 @@ void UPOInGameMenuWidget::OnSettingsClicked(UPOCustomButton* ClickedButton)
 
 void UPOInGameMenuWidget::OnBackToMainMenuClicked(UPOCustomButton* ClickedButton)
 {
-	UE_LOG(LogTemp, Log, TEXT("InGameMenu: Back to Main Menu clicked"));
+	if (APOPlayerController* PC = Cast<APOPlayerController>(GetOwningPlayer()))
+	{
+		PC->ShowRetunToLobbyWidget();
+	}
 }
 
 void UPOInGameMenuWidget::OnQuitClicked(UPOCustomButton* ClickedButton)
 {
-	UE_LOG(LogTemp, Log, TEXT("InGameMenu: Quit clicked"));
+	if (APOPlayerController* PC = Cast<APOPlayerController>(GetOwningPlayer()))
+	{
+		PC->ShowExitGameWidget();
+	}
 }

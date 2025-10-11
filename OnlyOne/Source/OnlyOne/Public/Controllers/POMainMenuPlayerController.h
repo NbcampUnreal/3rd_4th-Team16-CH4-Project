@@ -7,6 +7,7 @@
 #include "Interfaces/POUIStackingInterface.h"
 #include "POMainMenuPlayerController.generated.h"
 
+class UPOExitGameWidget;
 class UPOBaseWidget;
 class UPOUIStackingComponent;
 class UPOHostServerWidget;
@@ -57,6 +58,9 @@ public:
 	UFUNCTION()
 	void OnHowToPlay();
 
+	UFUNCTION()
+	void OnExitGame();
+
 	FORCEINLINE virtual UPOUIStackingComponent* GetUIStackingComponent() const override { return UIStackingComponent; }
 	
 protected:
@@ -94,6 +98,12 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<UUserWidget> HowToPlayerWidget; // 도움말 위젯 인스턴스
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
+	TSubclassOf<UPOExitGameWidget> ExitGameWidgetClass; // 게임 종료 확인 위젯 클래스
+	
+	UPROPERTY()
+	TObjectPtr<UPOExitGameWidget> ExitGameWidget; // 게임 종료 확인 위젯 인스턴스
 	
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void ShowMainMenu();

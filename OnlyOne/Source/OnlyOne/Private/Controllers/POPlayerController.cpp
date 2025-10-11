@@ -17,6 +17,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "OnlyOne/OnlyOne.h"
+#include "UI/Common/POExitGameWidget.h"
+#include "UI/Common/POReturnLobbyWidget.h"
 #include "UI/InGameMenu/POInGameMenuWidget.h"
 #include "UI/PlayerStateList/POPlayerStateListWidget.h"
 #include "UI/SettingMenu/POSettingWidget.h"
@@ -334,12 +336,23 @@ void APOPlayerController::ShowSettingWidget()
 	}
 }
 
-void APOPlayerController::ShowQuitGameWidget()
-{
-}
-
 void APOPlayerController::ShowRetunToLobbyWidget()
 {
+	if (ReturnToLobbyWidgetClass)
+	{
+		if (!ReturnToLobbyWidgetInstance)
+		{
+			ReturnToLobbyWidgetInstance = CreateWidget<UPOReturnLobbyWidget>(this, ReturnToLobbyWidgetClass);
+			if (ReturnToLobbyWidgetInstance)
+			{
+				UIStackingComponent->PushWidget(ReturnToLobbyWidgetInstance);
+			}
+		}
+		else
+		{
+			UIStackingComponent->PushWidget(ReturnToLobbyWidgetInstance);
+		}
+	}
 }
 
 void APOPlayerController::ShowPrevTimerWidget()
@@ -366,6 +379,25 @@ void APOPlayerController::HidePrevTimerWidget()
 	if (PrevTimerWidgetInstance)
 	{
 		PrevTimerWidgetInstance->RemoveFromParent();
+	}
+}
+
+void APOPlayerController::ShowExitGameWidget()
+{
+	if (ExitGameWidgetClass)
+	{
+		if (!ExitGameWidget)
+		{
+			ExitGameWidget = CreateWidget<UPOExitGameWidget>(this, ExitGameWidgetClass);
+		}
+		if (ExitGameWidget)
+		{
+			UIStackingComponent->PushWidget(ExitGameWidget);
+		}
+	}
+	else
+	{
+		FGenericPlatformMisc::RequestExit(false);
 	}
 }
 
