@@ -107,11 +107,7 @@ void UPOMainMenuWidget::OnSettingsClicked(UPOCustomButton* ClickedButton)
 
 void UPOMainMenuWidget::OnQuitClicked(UPOCustomButton* ClickedButton)
 {
-	// 게임 종료
-	if (UWorld* World = GetWorld())
-	{
-		UKismetSystemLibrary::QuitGame(World, nullptr, EQuitPreference::Quit, false);
-	}
+	//TODO: 게임 종료 박스 생성
 }
 
 void UPOMainMenuWidget::OnHowToPlayClicked(UPOCustomButton* ClickedButton)
