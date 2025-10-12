@@ -20,6 +20,7 @@ class APOPlayerCharacter;
 
 DECLARE_MULTICAST_DELEGATE_ThreeParams(FPOOnSetPlayerStateEntry, const FString& /*Nickname*/, bool /*bIsAlive*/, int32 /*KillCount*/);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPOOnTimerChanged, int32, NewTimeSeconds);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPOOnSmokeCountChanged, int32, NewSmokeCount);
 
 USTRUCT()
 struct FPOPlayerStateEntry
@@ -102,6 +103,9 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Timer")
 	FPOOnTimerChanged OnPreTimerChanged;
 
+	UPROPERTY()
+	FPOOnSmokeCountChanged OnSmokeCountChanged;
+	
 	void OnChangeGamePhase(EPOStagePhase NewPhase);
 	
 	// 위젯 생성/표시/숨김

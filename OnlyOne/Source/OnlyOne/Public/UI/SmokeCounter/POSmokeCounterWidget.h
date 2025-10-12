@@ -12,15 +12,17 @@ UCLASS()
 class ONLYONE_API UPOSmokeCounterWidget : public UPOBaseWidget
 {
 	GENERATED_BODY()
-
 public:
+	virtual void NativeOnInitialized() override;
+	virtual void NativeDestruct() override;
+
+protected:
 	UFUNCTION(BlueprintCallable, Category="SmokeCounter")
 	void SetSmokeCount(int32 NewCount);
 
 	UFUNCTION(BlueprintCallable, Category="SmokeCounter")
 	void SetSmokeText(const FText& InText);
 
-protected:
 	UPROPERTY(BlueprintReadOnly, meta=(BindWidget))
 	TObjectPtr<UTextBlock> SmokeText; 
 };

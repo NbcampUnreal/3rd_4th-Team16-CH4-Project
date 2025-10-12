@@ -108,7 +108,11 @@ void APOPlayerController::BeginPlay()
 
 	SetInputMode(FInputModeGameOnly());
 	SetShowMouseCursor(false);
-	ShowHUDWidget();
+	// 로컬 컨트롤러에서만 HUD 위젯을 생성
+	if (IsLocalController())
+	{
+		ShowHUDWidget();
+	}
 
 	if (APOStageGameState* StageGS = GetWorld() ? GetWorld()->GetGameState<APOStageGameState>() : nullptr)
 	{
@@ -222,6 +226,10 @@ void APOPlayerController::OnChangeGamePhase(EPOStagePhase NewPhase)
 
 void APOPlayerController::EnsureListWidgetCreated()
 {
+	if (!IsLocalController())
+	{
+		return;
+	}
 	if (PlayerStateListWidget == nullptr)
 	{
 		if (!PlayerStateListWidgetClass)
@@ -270,6 +278,10 @@ void APOPlayerController::HideListWidget()
 
 void APOPlayerController::ShowHUDWidget()
 {
+	if (!IsLocalController())
+	{
+		return;
+	}
 	if (HUDWidgetClass && !HUDWidgetInstance)
 	{
 		HUDWidgetInstance = CreateWidget<UUserWidget>(this, HUDWidgetClass);
@@ -300,6 +312,10 @@ void APOPlayerController::ToggleListWidget()
 
 void APOPlayerController::ShowInGameMenuWidget()
 {
+	if (!IsLocalController())
+	{
+		return;
+	}
 	if (InGameMenuWidgetClass)
 	{
 		if (!InGameMenuWidgetInstance)
@@ -319,6 +335,10 @@ void APOPlayerController::ShowInGameMenuWidget()
 
 void APOPlayerController::ShowSettingWidget()
 {
+	if (!IsLocalController())
+	{
+		return;
+	}
 	if (SettingWidgetClass)
 	{
 		if (!SettingWidgetInstance)
@@ -338,6 +358,10 @@ void APOPlayerController::ShowSettingWidget()
 
 void APOPlayerController::ShowRetunToLobbyWidget()
 {
+	if (!IsLocalController())
+	{
+		return;
+	}
 	if (ReturnToLobbyWidgetClass)
 	{
 		if (!ReturnToLobbyWidgetInstance)
@@ -357,6 +381,10 @@ void APOPlayerController::ShowRetunToLobbyWidget()
 
 void APOPlayerController::ShowPrevTimerWidget()
 {
+	if (!IsLocalController())
+	{
+		return;
+	}
 	if (PrevTimerWidgetClass)
 	{
 		if (!PrevTimerWidgetInstance)
@@ -384,6 +412,10 @@ void APOPlayerController::HidePrevTimerWidget()
 
 void APOPlayerController::ShowExitGameWidget()
 {
+	if (!IsLocalController())
+	{
+		return;
+	}
 	if (ExitGameWidgetClass)
 	{
 		if (!ExitGameWidget)

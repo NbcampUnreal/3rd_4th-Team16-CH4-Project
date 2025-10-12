@@ -74,6 +74,10 @@ public:
 	DECLARE_MULTICAST_DELEGATE_OneParam(FPOOnWinnerDecided, APlayerState*);
 	FPOOnWinnerDecided OnWinnerDecided;
 
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPOnChangedAlivePlayerCount, FString&, Winner);
+	UPROPERTY()
+	FPOnChangedAlivePlayerCount OnChangedAlivePlayerCount;
+	
 	/* ===== protected: Unreal Lifecycle & RepNotify ===== */
 protected:
 	virtual void BeginPlay() override;
