@@ -254,7 +254,7 @@ void APOLobbyGameMode::OnCountdownFinished()
 	//static const FString TargetMapPath = TEXT("/Game/Levels/L_TestMainLevel");
 	// ListenServer 최초 open 시 이미 ?listen 사용했으므로 재여행에서는 불필요
 
-	static const FString TargetMapPath = TEXT("/Game/Levels/GameTestStageLevel");
+	static const FString TargetMapPath = TEXT("/Game/Levels/MainLevel");
 	
 	const FString ReturnLobbyPath = GetCurrentMapPackagePath(World);
 	
