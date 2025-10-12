@@ -23,6 +23,7 @@
 #include "UI/PlayerStateList/POPlayerStateListWidget.h"
 #include "UI/SettingMenu/POSettingWidget.h"
 #include "UI/Timer/POPrevTimerWidget.h"
+#include "UI/WinnerDecided/POWinnerDecidedWidget.h"
 
 class UEnhancedInputLocalPlayerSubsystem;
 
@@ -117,6 +118,7 @@ void APOPlayerController::BeginPlay()
 	if (APOStageGameState* StageGS = GetWorld() ? GetWorld()->GetGameState<APOStageGameState>() : nullptr)
 	{
 		StageGS->OnPhaseChanged.AddUObject(this, &ThisClass::OnChangeGamePhase);
+		StageGS->OnWinnerDecided.AddUObject(this, &ThisClass::OnDecideWinner);
 	}
 	
 	if (InputConfigDataAsset)
@@ -462,6 +464,31 @@ void APOPlayerController::HideSpectatorHelpWidget()
 	if (SpectatorHelpWidget)
 	{
 		SpectatorHelpWidget->RemoveFromParent();
+	}
+}
+
+void APOPlayerController::OnDecideWinner(APlayerState* WinnerPS)
+{
+	if (!IsLocalController())
+	{
+		return;
+	}
+	
+	if (WinnerWidgetClass)
+	{
+		if (!WinnerWidgetInstance)
+		{
+			WinnerWidgetInstance = CreateWidget<UPOWinnerDecidedWidget>(this, WinnerWidgetClass);
+			if (WinnerWidgetInstance)
+			{
+				WinnerWidgetInstance->SetTextBox(FText::FromString(WinnerPS ? WinnerPS->GetPlayerName() : TEXT("No Winner")));
+				UIStackingComponent->PushWidget(WinnerWidgetInstance);
+			}
+		}
+		else
+		{
+			UIStackingComponent->PushWidget(WinnerWidgetInstance);
+		}
 	}
 }
 

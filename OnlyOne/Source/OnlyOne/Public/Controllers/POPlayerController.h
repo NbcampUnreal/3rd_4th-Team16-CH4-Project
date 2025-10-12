@@ -7,6 +7,7 @@
 #include "Interfaces/POUIStackingInterface.h"
 #include "POPlayerController.generated.h"
 
+class UPOWinnerDecidedWidget;
 class UPOReturnLobbyWidget;
 class UPOExitGameWidget;
 enum class EPOStagePhase : uint8;
@@ -127,6 +128,9 @@ public:
 	void ShowSpectatorHelpWidget();
 	void HideSpectatorHelpWidget();
 
+	// 승자가 결졍되었을 때 호출되는 위젯
+	void OnDecideWinner(APlayerState* WinnerPS);
+	
 	void OnEscapeMenu();
 
 	virtual UPOUIStackingComponent* GetUIStackingComponent() const override;
@@ -175,15 +179,21 @@ protected:
 
 	// 게임 종료 확인 위젯
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
-	TSubclassOf<UPOExitGameWidget> ExitGameWidgetClass; // 게임 종료 확인 위젯 클래스
+	TSubclassOf<UPOExitGameWidget> ExitGameWidgetClass;
 	UPROPERTY()
-	TObjectPtr<UPOExitGameWidget> ExitGameWidget; // 게임 종료 확인 위젯 인스턴스
+	TObjectPtr<UPOExitGameWidget> ExitGameWidget;
 
 	// 메인 메뉴로 돌아가기 확인 위젯
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
-	TSubclassOf<UPOReturnLobbyWidget> ReturnToLobbyWidgetClass; // 메인 메뉴
+	TSubclassOf<UPOReturnLobbyWidget> ReturnToLobbyWidgetClass; 
 	UPROPERTY()
-	TObjectPtr<UPOReturnLobbyWidget> ReturnToLobbyWidgetInstance; // 메인 메뉴로 돌아
+	TObjectPtr<UPOReturnLobbyWidget> ReturnToLobbyWidgetInstance;
+
+	// 승자 결정 위젯
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
+	TSubclassOf<UPOWinnerDecidedWidget> WinnerWidgetClass;
+	UPROPERTY()
+	TObjectPtr<UPOWinnerDecidedWidget> WinnerWidgetInstance;
 
 private:
 	void OnPlayerStateUpdated(const FString& Nickname, bool bIsAlive, int32 KillCount);
