@@ -6,6 +6,8 @@
 #include "UI/Common/POBaseWidget.h"
 #include "POSmokeCounterWidget.generated.h"
 
+class UTextBlock;
+
 UCLASS()
 class ONLYONE_API UPOSmokeCounterWidget : public UPOBaseWidget
 {
@@ -20,5 +22,5 @@ public:
 
 protected:
 	UPROPERTY(BlueprintReadOnly, meta=(BindWidget))
-	TObjectPtr<class UTextBlock> SmokeText; 
+	TObjectPtr<UTextBlock> SmokeText; 
 };
