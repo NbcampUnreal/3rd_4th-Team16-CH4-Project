@@ -13,6 +13,7 @@
 #include "POGameplayTags.h"
 #include "EnhancedInputSubsystems.h"
 #include "Controllers/Components/POUIStackingComponent.h"
+#include "game/POLobbyPlayerState.h"
 #include "Game/POStageGameState.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
@@ -481,7 +482,17 @@ void APOPlayerController::OnDecideWinner(APlayerState* WinnerPS)
 			WinnerWidgetInstance = CreateWidget<UPOWinnerDecidedWidget>(this, WinnerWidgetClass);
 			if (WinnerWidgetInstance)
 			{
-				WinnerWidgetInstance->SetTextBox(FText::FromString(WinnerPS ? WinnerPS->GetPlayerName() : TEXT("No Winner")));
+				FString WinnerName = TEXT("No Winner");
+				if (const auto* LPS = Cast<APOLobbyPlayerState>(WinnerPS))
+				{
+					WinnerName = LPS->GetDisplayNickname();
+				}
+				else if (WinnerPS)
+				{
+					WinnerName = WinnerPS->GetPlayerName();
+				}
+
+				WinnerWidgetInstance->SetTextBox(FText::FromString(WinnerName));
 				UIStackingComponent->PushWidget(WinnerWidgetInstance);
 			}
 		}

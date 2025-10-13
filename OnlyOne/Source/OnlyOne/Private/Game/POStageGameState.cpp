@@ -4,6 +4,7 @@
 #include "Net/UnrealNetwork.h"
 #include "Engine/World.h"
 #include "TimerManager.h"
+#include "game/POLobbyPlayerState.h"
 #include "OnlyOne/OnlyOne.h"
 
 // enum → string (테스트 보조)
@@ -269,7 +270,19 @@ void APOStageGameState::OnRep_StageRemainingSeconds()
 
 void APOStageGameState::OnRep_WinnerPS()
 {
+	auto GetNicknameSafe = [](APlayerState* PS) -> FString
+	{
+		if (const APOLobbyPlayerState* LPS = Cast<APOLobbyPlayerState>(PS))
+		{
+			return LPS->GetDisplayNickname();
+		}
+		return PS ? PS->GetPlayerName() : TEXT("Unknown");
+	};
+
+	const FString WinnerName = GetNicknameSafe(WinnerPS);
+
 	LOG_NET(POLog, Warning, TEXT("[StageGS] OnRep_WinnerPS: %s"),
-		WinnerPS ? *WinnerPS->GetPlayerName() : TEXT("None"));
+		*WinnerName);
+
 	OnWinnerDecided.Broadcast(WinnerPS);
 }

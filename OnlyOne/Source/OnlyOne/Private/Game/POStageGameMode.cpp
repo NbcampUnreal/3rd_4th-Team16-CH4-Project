@@ -225,13 +225,13 @@ void APOStageGameMode::PostLogin(APlayerController* NewPlayer)
 			LOG_NET(POLog, Log, TEXT("[StageGM] PostLogin: Add Alive %s"), *PS->GetPlayerName());
 		}
 		
-		if (CanSpawnNow(NewPlayer)) // [ADDED]
+		if (CanSpawnNow(NewPlayer))
 		{
-			RestartPlayer(NewPlayer); // [CHANGED]
+			RestartPlayer(NewPlayer);
 		}
 		else
 		{
-			LOG_NET(POLog, Warning, TEXT("[StageGM] PostLogin: spawn blocked for %s"), *NewPlayer->GetName()); // [ADDED]
+			LOG_NET(POLog, Warning, TEXT("[StageGM] PostLogin: spawn blocked for %s"), *NewPlayer->GetName());
 		}
 	}
 }
@@ -524,17 +524,46 @@ void APOStageGameMode::TryDecideWinner()
 	int32 Count = 0;
 	APOLobbyPlayerState* LastAlive = nullptr;
 
-	for (const TWeakObjectPtr<APlayerState>& W : AlivePlayers)
+	if (AGameStateBase* GS = GameState)
 	{
-		if (APOLobbyPlayerState* PS = Cast<APOLobbyPlayerState>(W.Get()))
+		for (APlayerState* PSBase : GS->PlayerArray)
 		{
-			if (PS->IsAlive())
+			if (APOLobbyPlayerState* PS = Cast<APOLobbyPlayerState>(PSBase))
 			{
-				LastAlive = PS;
-				++Count;
+				if (PS->IsAlive())
+				{
+					LastAlive = PS;
+					++Count;
+				}
 			}
 		}
 	}
+	
+	if (Count > 0 && AlivePlayers.Num() != Count)
+	{
+		AlivePlayers.Reset();
+		if (AGameStateBase* GS2 = GameState)
+		{
+			for (APlayerState* PSBase : GS2->PlayerArray)
+			{
+				if (APOLobbyPlayerState* PS = Cast<APOLobbyPlayerState>(PSBase))
+				{
+					if (PS->IsAlive())
+					{
+						AlivePlayers.Add(PS);
+					}
+				}
+			}
+		}
+	}
+	
+	const auto Nick = [](APOLobbyPlayerState* P)->const TCHAR*
+	{
+		if (!P) return TEXT("None");
+		return !P->GetDisplayNickname().IsEmpty()
+			? *P->GetDisplayNickname()
+			: *P->GetPlayerName();
+	};
 
 	if (Count == 1)
 	{
