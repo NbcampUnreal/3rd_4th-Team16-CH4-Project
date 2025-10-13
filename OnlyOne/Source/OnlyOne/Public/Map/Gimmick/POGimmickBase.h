@@ -43,8 +43,6 @@ protected:
 
 	virtual void BeginPlay() override;
 	
-	virtual void Tick(float DeltaTime) override;
-	
 	UFUNCTION()
 	void OnBeginOverlap(UPrimitiveComponent* comp, AActor* other, UPrimitiveComponent* otherComp
 		, int32 BoxIndex, bool bFromSweep, const FHitResult& SweepResult);
