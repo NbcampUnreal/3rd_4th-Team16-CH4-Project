@@ -4,6 +4,7 @@
 #include "Net/UnrealNetwork.h"
 #include "Engine/World.h"
 #include "TimerManager.h"
+#include "game/POLobbyPlayerState.h"
 #include "OnlyOne/OnlyOne.h"
 
 // enum → string (테스트 보조)
@@ -304,14 +305,20 @@ void APOStageGameState::ServerPublishKillEvent(APlayerState* Killer, APlayerStat
 
 void APOStageGameState::OnRep_LastKillEvent()
 {
-	OnKillEvent.Broadcast(LastKillEvent.Killer, LastKillEvent.Victim);
+	auto GetNicknameSafe = [](APlayerState* PS) -> FString
+	{
+		if (const APOLobbyPlayerState* LPS = Cast<APOLobbyPlayerState>(PS))
+		{
+			return LPS->GetDisplayNickname();
+		}
+		return PS ? PS->GetPlayerName() : TEXT("Unknown");
+	};
 
-	LOG_NET(
-		POLog,
-		Log,
-		TEXT("[StageGS] OnRep_LastKillEvent: Killer=%s, Victim=%s, Serial=%d"),
-		LastKillEvent.Killer ? *LastKillEvent.Killer->GetPlayerName() : TEXT("None"),
-		LastKillEvent.Victim ? *LastKillEvent.Victim->GetPlayerName() : TEXT("None"),
-		LastKillEvent.Serial
-	);
+	const FString KillerName = GetNicknameSafe(LastKillEvent.Killer);
+	const FString VictimName = GetNicknameSafe(LastKillEvent.Victim);
+
+	OnKillEvent.Broadcast(KillerName, VictimName);
+
+	LOG_NET(POLog, Log, TEXT("[StageGS] OnRep_LastKillEvent: %s ▶ %s (Serial=%d)"),
+		*KillerName, *VictimName, LastKillEvent.Serial);
 }

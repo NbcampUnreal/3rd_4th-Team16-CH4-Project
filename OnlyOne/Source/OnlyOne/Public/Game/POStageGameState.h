@@ -101,7 +101,7 @@ public:
 	FPOnChangedAlivePlayerCount OnChangedAlivePlayerCount;
 
 	/** ===== Kill Event: UI 전달용 델리게이트 및 API ===== */
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FPOOnKillEvent, APlayerState*, Killer, APlayerState*, Victim);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FPOOnKillEvent, const FString&, KillerName, const FString&, VictimName);
 
 	/** UI가 구독할 델리게이트 (Killer/Victim 전달) */
 	UPROPERTY()
