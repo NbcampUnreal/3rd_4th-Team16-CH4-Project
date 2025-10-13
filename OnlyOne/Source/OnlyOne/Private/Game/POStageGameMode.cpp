@@ -485,9 +485,9 @@ void APOStageGameMode::NotifyCharacterDied(AController* VictimController, AContr
 		return;
 	}
 
-	// TODO: 피해 로그/킬 피드 연동 후 KillerPS AddKill 및 로그 출력 테스트 예정
 	APOLobbyPlayerState* VictimPS = ToLobbyPS(VictimController);
 	APOLobbyPlayerState* KillerPS = ToLobbyPS(KillerController);
+
 
 	if (KillerPS && KillerPS != VictimPS)
 	{
@@ -500,6 +500,14 @@ void APOStageGameMode::NotifyCharacterDied(AController* VictimController, AContr
 		VictimPS->SetAlive_ServerOnly(false);
 		AlivePlayers.Remove(VictimPS);
 		LOG_NET(POLog, Log, TEXT("[StageGM] Dead : %s, AliveNow=%d"), *VictimPS->GetPlayerName(), AlivePlayers.Num());
+	}
+	
+	if (APOStageGameState* GS = GetGameState<APOStageGameState>())
+	{
+		APlayerState* KillerForEvent = (KillerPS && KillerPS != VictimPS) ? static_cast<APlayerState*>(KillerPS) : nullptr;
+		APlayerState* VictimForEvent = static_cast<APlayerState*>(VictimPS);
+
+		GS->ServerPublishKillEvent(KillerForEvent, VictimForEvent);
 	}
 
 	CompactAlivePlayers();

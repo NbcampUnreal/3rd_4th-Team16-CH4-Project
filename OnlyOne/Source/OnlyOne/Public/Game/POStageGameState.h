@@ -17,6 +17,28 @@ enum class EPOStagePhase : uint8
 	GameEnd  UMETA(DisplayName="GameEnd")
 };
 
+/** ===== Kill Event Payload ===== */
+USTRUCT(BlueprintType)
+struct FPOKillEvent
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(BlueprintReadOnly)
+	APlayerState* Killer = nullptr;
+	
+	UPROPERTY(BlueprintReadOnly)
+	APlayerState* Victim = nullptr;
+	
+	UPROPERTY(BlueprintReadOnly)
+	int32 Serial = 0;
+
+	FPOKillEvent() {}
+	FPOKillEvent(APlayerState* InKiller, APlayerState* InVictim, int32 InSerial)
+		: Killer(InKiller), Victim(InVictim), Serial(InSerial)
+	{}
+};
+
 /**
  * 
  */
@@ -77,7 +99,17 @@ public:
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPOnChangedAlivePlayerCount, FString&, Winner);
 	UPROPERTY()
 	FPOnChangedAlivePlayerCount OnChangedAlivePlayerCount;
+
+	/** ===== Kill Event: UI 전달용 델리게이트 및 API ===== */
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FPOOnKillEvent, APlayerState*, Killer, APlayerState*, Victim);
+
+	/** UI가 구독할 델리게이트 (Killer/Victim 전달) */
+	UPROPERTY()
+	FPOOnKillEvent OnKillEvent;
 	
+	UFUNCTION(Category="PO|Event")
+	void ServerPublishKillEvent(APlayerState* Killer, APlayerState* Victim);
+
 	/* ===== protected: Unreal Lifecycle & RepNotify ===== */
 protected:
 	virtual void BeginPlay() override;
@@ -96,6 +128,10 @@ protected:
 	UFUNCTION()
 	void OnRep_WinnerPS();
 
+	/** 킬 이벤트 복제 알림 → 모든 클라에서 델리게이트 브로드캐스트 */
+	UFUNCTION()
+	void OnRep_LastKillEvent();
+
 	/* ===== protected: Replicated State ===== */
 protected:
 	UPROPERTY(ReplicatedUsing=OnRep_Phase)
@@ -110,6 +146,10 @@ protected:
 	UPROPERTY(ReplicatedUsing=OnRep_WinnerPS)
 	APlayerState* WinnerPS = nullptr;
 
+	/** 마지막 킬 이벤트 (구조체에 일련번호 포함) */
+	UPROPERTY(ReplicatedUsing=OnRep_LastKillEvent)
+	FPOKillEvent LastKillEvent;
+
 	/* ===== private: Timers & Internal Ticks ===== */
 private:
 	FTimerHandle PrepTimerHandle;
@@ -117,4 +157,6 @@ private:
 
 	void TickPrepCountdown();
 	void TickStageCountdown();
+	
+	int32 KillEventSerial = 0;
 };

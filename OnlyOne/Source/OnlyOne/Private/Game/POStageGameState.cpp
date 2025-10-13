@@ -23,6 +23,8 @@ APOStageGameState::APOStageGameState()
 {
 	Phase = EPOStagePhase::Prep;
 	PrepRemainingSeconds = 0;
+	
+	KillEventSerial = 0;
 
 	LOG_NET(
 		POLog,
@@ -54,6 +56,8 @@ void APOStageGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	DOREPLIFETIME(APOStageGameState, PrepRemainingSeconds);
 	DOREPLIFETIME(APOStageGameState, StageRemainingSeconds);
 	DOREPLIFETIME(APOStageGameState, WinnerPS);
+	DOREPLIFETIME(APOStageGameState, LastKillEvent);
+	
 }
 
 void APOStageGameState::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -272,4 +276,42 @@ void APOStageGameState::OnRep_WinnerPS()
 	LOG_NET(POLog, Warning, TEXT("[StageGS] OnRep_WinnerPS: %s"),
 		WinnerPS ? *WinnerPS->GetPlayerName() : TEXT("None"));
 	OnWinnerDecided.Broadcast(WinnerPS);
+}
+
+void APOStageGameState::ServerPublishKillEvent(APlayerState* Killer, APlayerState* Victim)
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+	
+	++KillEventSerial;
+	LastKillEvent.Killer = Killer;
+	LastKillEvent.Victim = Victim;
+	LastKillEvent.Serial = KillEventSerial;
+
+	LOG_NET(
+		POLog,
+		Log,
+		TEXT("[StageGS] PublishKillEvent: Killer=%s, Victim=%s, Serial=%d"),
+		Killer ? *Killer->GetPlayerName() : TEXT("None"),
+		Victim ? *Victim->GetPlayerName() : TEXT("None"),
+		LastKillEvent.Serial
+	);
+	
+	OnRep_LastKillEvent();
+}
+
+void APOStageGameState::OnRep_LastKillEvent()
+{
+	OnKillEvent.Broadcast(LastKillEvent.Killer, LastKillEvent.Victim);
+
+	LOG_NET(
+		POLog,
+		Log,
+		TEXT("[StageGS] OnRep_LastKillEvent: Killer=%s, Victim=%s, Serial=%d"),
+		LastKillEvent.Killer ? *LastKillEvent.Killer->GetPlayerName() : TEXT("None"),
+		LastKillEvent.Victim ? *LastKillEvent.Victim->GetPlayerName() : TEXT("None"),
+		LastKillEvent.Serial
+	);
 }
