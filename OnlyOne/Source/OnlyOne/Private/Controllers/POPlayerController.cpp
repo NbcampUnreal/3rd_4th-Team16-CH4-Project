@@ -113,6 +113,7 @@ void APOPlayerController::BeginPlay()
 	if (IsLocalController())
 	{
 		ShowHUDWidget();
+		ShowPrevTimerWidget();
 	}
 
 	if (APOStageGameState* StageGS = GetWorld() ? GetWorld()->GetGameState<APOStageGameState>() : nullptr)
@@ -216,11 +217,7 @@ void APOPlayerController::SpectatorPreviousTarget()
 
 void APOPlayerController::OnChangeGamePhase(EPOStagePhase NewPhase)
 {
-	if (NewPhase == EPOStagePhase::Prep)
-	{
-		ShowPrevTimerWidget();
-	}
-	else
+	if (NewPhase != EPOStagePhase::Prep)
 	{
 		HidePrevTimerWidget();
 	}
