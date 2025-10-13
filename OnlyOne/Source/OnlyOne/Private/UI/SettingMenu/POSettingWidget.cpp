@@ -3,10 +3,10 @@
 #include "Components/TextBlock.h"
 #include "Controllers/Components/POUIStackingComponent.h"
 #include "Controllers/Interfaces/POUIStackingInterface.h"
-#include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
 #include "UI/Common/POBaseWindow.h"
 #include "UI/MainMenu/POJoinServerWidget.h"
+#include "Game/POGameInstance.h"
 
 void UPOSettingWidget::NativeConstruct()
 {
@@ -16,6 +16,9 @@ void UPOSettingWidget::NativeConstruct()
     {
         WindowUI->OnCloseWindow.AddDynamic(this, &UPOSettingWidget::OnCloseWindow);
     }
+
+    // GI에서 저장된 사용자 설정을 먼저 로드하여 캐시 갱신
+    LoadUserSettings();
     
     // 초기 슬라이더 값 (0~100 범위를 0~1로 정규화)
     if (MouseSensitivitySlider)
@@ -94,13 +97,27 @@ void UPOSettingWidget::OnCloseWindow()
 
 void UPOSettingWidget::ApplyMouseSensitivity(float Normalized01)
 {
-    // TODO: 실제 마우스 감도 적용 로직 (예: PlayerController/Character에 값 전달)
+    // 실제 마우스 감도 적용 로직 (GI에 반영)
+    if (const UWorld* World = GetWorld())
+    {
+        if (UPOGameInstance* GI = Cast<UPOGameInstance>(World->GetGameInstance()))
+        {
+            GI->SetMouseSensitivity(MouseSensitivityValue); // 0~100 값 전달
+        }
+    }
     UE_LOG(LogTemp, Log, TEXT("Apply Mouse Sensitivity: %f (0-1) -> %f (0-100)"), Normalized01, MouseSensitivityValue);
 }
 
 void UPOSettingWidget::ApplyVolume(float Normalized01)
 {
-    // TODO: 사운드 믹스/사운드 클래스 연동. 임시로 로그만.
+    // 실제 볼륨 적용 로직 (GI에 반영)
+    if (const UWorld* World = GetWorld())
+    {
+        if (UPOGameInstance* GI = Cast<UPOGameInstance>(World->GetGameInstance()))
+        {
+            GI->SetMasterVolume(VolumeValue); // 0~100 값 전달
+        }
+    }
     UE_LOG(LogTemp, Log, TEXT("Apply Volume: %f (0-1) -> %f (0-100)"), Normalized01, VolumeValue);
 }
 
@@ -114,3 +131,14 @@ void UPOSettingWidget::UpdateValueText(UTextBlock* TextWidget, float Value01To10
     TextWidget->SetText(FText::AsNumber(DisplayInt));
 }
 
+void UPOSettingWidget::LoadUserSettings()
+{
+    if (const UWorld* World = GetWorld())
+    {
+        if (const UPOGameInstance* GI = Cast<UPOGameInstance>(World->GetGameInstance()))
+        {
+            MouseSensitivityValue = FMath::Clamp(GI->GetMouseSensitivity(), 0.f, 100.f);
+            VolumeValue = FMath::Clamp(GI->GetMasterVolume(), 0.f, 100.f);
+        }
+    }
+}

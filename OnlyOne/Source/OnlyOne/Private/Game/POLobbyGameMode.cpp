@@ -1,6 +1,8 @@
 ﻿// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "game/POLobbyGameMode.h"
+
+#include "Controllers/POServerLobbyPlayerController.h"
 #include "game/POLobbyGameState.h"
 #include "game/POLobbyPlayerState.h"
 #include "Engine/World.h"
@@ -165,6 +167,10 @@ void APOLobbyGameMode::CancelCountdown(const TCHAR* Reason)
 	{
 		LGS->SetAllReady(false);
 		LGS->SetCountdownRemaining(0);
+		if (APOServerLobbyPlayerController* PC = Cast<APOServerLobbyPlayerController>(GetWorld()->GetFirstPlayerController()))
+		{
+			PC->OnGameStartTimerChanged.Broadcast(-1);
+		}
 	}
 
 	LOG_NET(POLog, Warning, TEXT("[LobbyGM] Countdown cancelled: %s"), Reason ? Reason : TEXT("Unknown"));
@@ -188,6 +194,10 @@ void APOLobbyGameMode::TickCountdown()
 	if (CountdownRemaining > 0)
 	{
 		LOG_NET(POLog, Warning, TEXT("[LobbyGM] Countdown ticking: %d"), CountdownRemaining);
+		if (APOServerLobbyPlayerController* PC = Cast<APOServerLobbyPlayerController>(GetWorld()->GetFirstPlayerController()))
+		{
+			PC->OnGameStartTimerChanged.Broadcast(CountdownRemaining);
+		}
 		return;
 	}
 
@@ -244,7 +254,7 @@ void APOLobbyGameMode::OnCountdownFinished()
 	//static const FString TargetMapPath = TEXT("/Game/Levels/L_TestMainLevel");
 	// ListenServer 최초 open 시 이미 ?listen 사용했으므로 재여행에서는 불필요
 
-	static const FString TargetMapPath = TEXT("/Game/Levels/GameTestStageLevel");
+	static const FString TargetMapPath = TEXT("/Game/Levels/MainLevel");
 	
 	const FString ReturnLobbyPath = GetCurrentMapPackagePath(World);
 	
