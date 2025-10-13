@@ -7,12 +7,22 @@
 #include "Interfaces/POUIStackingInterface.h"
 #include "POPlayerController.generated.h"
 
+class UPOWinnerDecidedWidget;
+class UPOReturnLobbyWidget;
+class UPOExitGameWidget;
+enum class EPOStagePhase : uint8;
+class UPOPrevTimerWidget;
+class UPOSettingWidget;
+class UPOInGameMenuWidget;
 class UPOUIStackingComponent;
 class UPOPlayerStateListWidget;
 class UPODataAsset_InputConfig;
 class APOPlayerCharacter;
 
 DECLARE_MULTICAST_DELEGATE_ThreeParams(FPOOnSetPlayerStateEntry, const FString& /*Nickname*/, bool /*bIsAlive*/, int32 /*KillCount*/);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPOOnTimerChanged, int32, NewTimeSeconds);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPOOnSmokeCountChanged, int32, NewSmokeCount);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPOOnChangedAlivePlayer, int32, NewAlivePlayerCount);
 
 USTRUCT()
 struct FPOPlayerStateEntry
@@ -87,10 +97,21 @@ private:
 private:
 	bool bIsListVisible = false;
 
-	/* UI 섹션 */
 public:
 	// NOTE: 외부에서 Broadcast하여 리스트를 갱신할 수 있는 델리게이트
 	FPOOnSetPlayerStateEntry OnSetPlayerStateEntry;
+
+	// Timer 변경을 알리는 델리게이트 (BP에서 바인드 가능)
+	UPROPERTY(BlueprintAssignable, Category = "Timer")
+	FPOOnTimerChanged OnPreTimerChanged;
+
+	UPROPERTY()
+	FPOOnSmokeCountChanged OnSmokeCountChanged;
+
+	UPROPERTY()
+	FPOOnChangedAlivePlayer OnChangedAlivePlayer;
+	
+	void OnChangeGamePhase(EPOStagePhase NewPhase);
 	
 	// 위젯 생성/표시/숨김
 	void EnsureListWidgetCreated();
@@ -99,6 +120,22 @@ public:
 	void ShowHUDWidget();
 	void HideHUDWidget();
 	void ToggleListWidget();
+	void ShowInGameMenuWidget();
+	void ShowSettingWidget();
+	void ShowQuitGameWidget();
+	void ShowRetunToLobbyWidget();
+	void ShowPrevTimerWidget();
+	void HidePrevTimerWidget();
+	void ShowExitGameWidget();
+
+	// 사망 시 표시되는 스펙테이터 도움말 위젯
+	void ShowSpectatorHelpWidget();
+	void HideSpectatorHelpWidget();
+
+	// 승자가 결졍되었을 때 호출되는 위젯
+	void OnDecideWinner(APlayerState* WinnerPS);
+	
+	void OnEscapeMenu();
 
 	virtual UPOUIStackingComponent* GetUIStackingComponent() const override;
 
@@ -109,19 +146,60 @@ protected:
 	// Player State List Widget
 	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<UPOPlayerStateListWidget> PlayerStateListWidgetClass;
-
-	UPROPERTY(Transient)
+	UPROPERTY()
 	TObjectPtr<UPOPlayerStateListWidget> PlayerStateListWidget;
-
+	
 	TQueue<FPOPlayerStateEntry> PlayerStateQueue;
 
 	//HUD Widget
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="UI")
 	TSubclassOf<UUserWidget> HUDWidgetClass;
-
 	UPROPERTY()
 	TObjectPtr<UUserWidget> HUDWidgetInstance;
+
+	// InGame Menu Widget
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="UI")
+	TSubclassOf<UPOInGameMenuWidget> InGameMenuWidgetClass;
+	UPROPERTY()
+	TObjectPtr<UPOInGameMenuWidget> InGameMenuWidgetInstance;
+
+	// Setting Widget
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="UI")
+	TSubclassOf<UPOSettingWidget> SettingWidgetClass;
+	UPROPERTY()
+	TObjectPtr<UPOSettingWidget> SettingWidgetInstance;
+
+	// Prev Timer Widget
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="UI")
+	TSubclassOf<UPOPrevTimerWidget> PrevTimerWidgetClass;
+	UPROPERTY()
+	TObjectPtr<UPOPrevTimerWidget> PrevTimerWidgetInstance;
+
+	// Spectator Help Widget (WBP 할당 필요)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="UI")
+	TSubclassOf<UUserWidget> SpectatorHelpWidgetClass;
+	UPROPERTY()
+	TObjectPtr<UUserWidget> SpectatorHelpWidget;
+
+	// 게임 종료 확인 위젯
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
+	TSubclassOf<UPOExitGameWidget> ExitGameWidgetClass;
+	UPROPERTY()
+	TObjectPtr<UPOExitGameWidget> ExitGameWidget;
+
+	// 메인 메뉴로 돌아가기 확인 위젯
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
+	TSubclassOf<UPOReturnLobbyWidget> ReturnToLobbyWidgetClass; 
+	UPROPERTY()
+	TObjectPtr<UPOReturnLobbyWidget> ReturnToLobbyWidgetInstance;
+
+	// 승자 결정 위젯
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
+	TSubclassOf<UPOWinnerDecidedWidget> WinnerWidgetClass;
+	UPROPERTY()
+	TObjectPtr<UPOWinnerDecidedWidget> WinnerWidgetInstance;
 
 private:
 	void OnPlayerStateUpdated(const FString& Nickname, bool bIsAlive, int32 KillCount);
 };
+

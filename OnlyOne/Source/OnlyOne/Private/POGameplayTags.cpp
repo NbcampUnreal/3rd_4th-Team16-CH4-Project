@@ -18,6 +18,7 @@ namespace POGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_ListWidget, "InputTag.ListWidget");
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_ListWidget_Show, "InputTag.ListWidget.Show")
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_ListWidget_Hide, "InputTag.ListWidget.Hide")
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_EscapeMenu, "InputTag.EscapeMenu")
 
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Attack, "InputTag.Attack")
 
