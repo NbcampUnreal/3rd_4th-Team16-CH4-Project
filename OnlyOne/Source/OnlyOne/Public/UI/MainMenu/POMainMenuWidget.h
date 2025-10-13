@@ -32,6 +32,9 @@ protected:
     
     UPROPERTY(meta = (BindWidget))
     TObjectPtr<UPOCustomButton> QuitButton;
+    
+    UPROPERTY(meta = (BindWidget))
+    TObjectPtr<UPOCustomButton> HowToPlayButton;
 
 private:
     UFUNCTION()
@@ -45,4 +48,7 @@ private:
     
     UFUNCTION()
     void OnQuitClicked(UPOCustomButton* ClickedButton);
+
+    UFUNCTION()
+    void OnHowToPlayClicked(UPOCustomButton* ClickedButton);
 };

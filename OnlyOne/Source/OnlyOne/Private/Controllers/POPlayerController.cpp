@@ -13,15 +13,24 @@
 #include "POGameplayTags.h"
 #include "EnhancedInputSubsystems.h"
 #include "Controllers/Components/POUIStackingComponent.h"
+#include "Game/POStageGameState.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
+#include "OnlyOne/OnlyOne.h"
+#include "UI/Common/POExitGameWidget.h"
+#include "UI/Common/POReturnLobbyWidget.h"
+#include "UI/InGameMenu/POInGameMenuWidget.h"
 #include "UI/PlayerStateList/POPlayerStateListWidget.h"
+#include "UI/SettingMenu/POSettingWidget.h"
+#include "UI/Timer/POPrevTimerWidget.h"
+#include "UI/WinnerDecided/POWinnerDecidedWidget.h"
 
 class UEnhancedInputLocalPlayerSubsystem;
 
 APOPlayerController::APOPlayerController()
 {
 	PlayerUIComponent = CreateDefaultSubobject<UPlayerUIComponent>(TEXT("Player UI Component"));
+	
 	UIStackingComponent = CreateDefaultSubobject<UPOUIStackingComponent>(TEXT("UI Stacking Component"));
 	OnSetPlayerStateEntry.AddUObject(this, &ThisClass::OnPlayerStateUpdated);
 }
@@ -66,6 +75,9 @@ void APOPlayerController::OnPossess(APawn* InPawn)
 			POCharacterBase->SetGenericTeamId(TeamID);
 		}
 	}
+
+	// 새로 소유(리스폰 등)되면 스펙테이터 도움말은 숨긴다
+	HideSpectatorHelpWidget();
 }
 
 ETeamAttitude::Type APOPlayerController::GetTeamAttitudeTowards(const AActor& Other) const
@@ -87,6 +99,7 @@ void APOPlayerController::SetupInputComponent()
 		POInputComponent->BindNativeInputAction(InputConfigDataAsset, POGameplayTags::InputTag_Spectator_Next, ETriggerEvent::Completed, this, &ThisClass::SpectatorNextTarget);
 		POInputComponent->BindNativeInputAction(InputConfigDataAsset, POGameplayTags::InputTag_Spectator_Previous, ETriggerEvent::Completed, this, &ThisClass::SpectatorPreviousTarget);
 		POInputComponent->BindNativeInputAction(InputConfigDataAsset, POGameplayTags::InputTag_ListWidget, ETriggerEvent::Triggered, this, &ThisClass::ToggleListWidget);
+		POInputComponent->BindNativeInputAction(InputConfigDataAsset, POGameplayTags::InputTag_EscapeMenu, ETriggerEvent::Triggered, this, &ThisClass::OnEscapeMenu);
 	}
 }
 
@@ -96,8 +109,17 @@ void APOPlayerController::BeginPlay()
 
 	SetInputMode(FInputModeGameOnly());
 	SetShowMouseCursor(false);
-	ShowHUDWidget();
+	// 로컬 컨트롤러에서만 HUD 위젯을 생성
+	if (IsLocalController())
+	{
+		ShowHUDWidget();
+	}
 
+	if (APOStageGameState* StageGS = GetWorld() ? GetWorld()->GetGameState<APOStageGameState>() : nullptr)
+	{
+		StageGS->OnPhaseChanged.AddUObject(this, &ThisClass::OnChangeGamePhase);
+		StageGS->OnWinnerDecided.AddUObject(this, &ThisClass::OnDecideWinner);
+	}
 	
 	if (InputConfigDataAsset)
 	{
@@ -115,6 +137,9 @@ void APOPlayerController::StartSpectating(const APawn* DeadCharacter)
 
 	PlayerState->SetIsSpectator(true);
 	ChangeState(NAME_Spectating);
+
+	// 관전 정보 UI 표시
+	ShowSpectatorHelpWidget();
 
 	// 관전 대상 초기화 (죽을 때 한 번만)
 	BuildSpectatorTargets();
@@ -189,8 +214,24 @@ void APOPlayerController::SpectatorPreviousTarget()
 	CycleSpectator(-1);
 }
 
+void APOPlayerController::OnChangeGamePhase(EPOStagePhase NewPhase)
+{
+	if (NewPhase == EPOStagePhase::Prep)
+	{
+		ShowPrevTimerWidget();
+	}
+	else
+	{
+		HidePrevTimerWidget();
+	}
+}
+
 void APOPlayerController::EnsureListWidgetCreated()
 {
+	if (!IsLocalController())
+	{
+		return;
+	}
 	if (PlayerStateListWidget == nullptr)
 	{
 		if (!PlayerStateListWidgetClass)
@@ -239,7 +280,10 @@ void APOPlayerController::HideListWidget()
 
 void APOPlayerController::ShowHUDWidget()
 {
-	//TODO: UI Stacking 수정 후 리팩토링 필요
+	if (!IsLocalController())
+	{
+		return;
+	}
 	if (HUDWidgetClass && !HUDWidgetInstance)
 	{
 		HUDWidgetInstance = CreateWidget<UUserWidget>(this, HUDWidgetClass);
@@ -266,6 +310,198 @@ void APOPlayerController::ToggleListWidget()
 	}
 
 	bIsListVisible = !bIsListVisible;
+}
+
+void APOPlayerController::ShowInGameMenuWidget()
+{
+	if (!IsLocalController())
+	{
+		return;
+	}
+	if (InGameMenuWidgetClass)
+	{
+		if (!InGameMenuWidgetInstance)
+		{
+			InGameMenuWidgetInstance = CreateWidget<UPOInGameMenuWidget>(this, InGameMenuWidgetClass);
+			if (InGameMenuWidgetInstance)
+			{
+				UIStackingComponent->PushWidget(InGameMenuWidgetInstance);
+			}
+		}
+		else
+		{
+			UIStackingComponent->PushWidget(InGameMenuWidgetInstance);
+		}
+	}
+}
+
+void APOPlayerController::ShowSettingWidget()
+{
+	if (!IsLocalController())
+	{
+		return;
+	}
+	if (SettingWidgetClass)
+	{
+		if (!SettingWidgetInstance)
+		{
+			SettingWidgetInstance = CreateWidget<UPOSettingWidget>(this, SettingWidgetClass);
+			if (SettingWidgetInstance)
+			{
+				UIStackingComponent->PushWidget(SettingWidgetInstance);
+			}
+		}
+		else
+		{
+			UIStackingComponent->PushWidget(SettingWidgetInstance);
+		}
+	}
+}
+
+void APOPlayerController::ShowRetunToLobbyWidget()
+{
+	if (!IsLocalController())
+	{
+		return;
+	}
+	if (ReturnToLobbyWidgetClass)
+	{
+		if (!ReturnToLobbyWidgetInstance)
+		{
+			ReturnToLobbyWidgetInstance = CreateWidget<UPOReturnLobbyWidget>(this, ReturnToLobbyWidgetClass);
+			if (ReturnToLobbyWidgetInstance)
+			{
+				UIStackingComponent->PushWidget(ReturnToLobbyWidgetInstance);
+			}
+		}
+		else
+		{
+			UIStackingComponent->PushWidget(ReturnToLobbyWidgetInstance);
+		}
+	}
+}
+
+void APOPlayerController::ShowPrevTimerWidget()
+{
+	if (!IsLocalController())
+	{
+		return;
+	}
+	if (PrevTimerWidgetClass)
+	{
+		if (!PrevTimerWidgetInstance)
+		{
+			PrevTimerWidgetInstance = CreateWidget<UPOPrevTimerWidget>(this, PrevTimerWidgetClass);
+			if (PrevTimerWidgetInstance)
+			{
+				PrevTimerWidgetInstance->AddToViewport();
+			}
+		}
+		else
+		{
+			PrevTimerWidgetInstance->AddToViewport();
+		}
+	}
+}
+
+void APOPlayerController::HidePrevTimerWidget()
+{
+	if (PrevTimerWidgetInstance)
+	{
+		PrevTimerWidgetInstance->RemoveFromParent();
+	}
+}
+
+void APOPlayerController::ShowExitGameWidget()
+{
+	if (!IsLocalController())
+	{
+		return;
+	}
+	if (ExitGameWidgetClass)
+	{
+		if (!ExitGameWidget)
+		{
+			ExitGameWidget = CreateWidget<UPOExitGameWidget>(this, ExitGameWidgetClass);
+		}
+		if (ExitGameWidget)
+		{
+			UIStackingComponent->PushWidget(ExitGameWidget);
+		}
+	}
+	else
+	{
+		FGenericPlatformMisc::RequestExit(false);
+	}
+}
+
+// 스펙테이터 도움말 위젯 표시/숨김
+void APOPlayerController::ShowSpectatorHelpWidget()
+{
+	if (!IsLocalController())
+	{
+		return;
+	}
+	if (SpectatorHelpWidgetClass)
+	{
+		if (!SpectatorHelpWidget)
+		{
+			SpectatorHelpWidget = CreateWidget<UUserWidget>(this, SpectatorHelpWidgetClass);
+		}
+		if (SpectatorHelpWidget && !SpectatorHelpWidget->IsInViewport())
+		{
+			SpectatorHelpWidget->AddToViewport();
+		}
+	}
+}
+
+void APOPlayerController::HideSpectatorHelpWidget()
+{
+	if (!IsLocalController())
+	{
+		return;
+	}
+	if (SpectatorHelpWidget)
+	{
+		SpectatorHelpWidget->RemoveFromParent();
+	}
+}
+
+void APOPlayerController::OnDecideWinner(APlayerState* WinnerPS)
+{
+	if (!IsLocalController())
+	{
+		return;
+	}
+	
+	if (WinnerWidgetClass)
+	{
+		if (!WinnerWidgetInstance)
+		{
+			WinnerWidgetInstance = CreateWidget<UPOWinnerDecidedWidget>(this, WinnerWidgetClass);
+			if (WinnerWidgetInstance)
+			{
+				WinnerWidgetInstance->SetTextBox(FText::FromString(WinnerPS ? WinnerPS->GetPlayerName() : TEXT("No Winner")));
+				UIStackingComponent->PushWidget(WinnerWidgetInstance);
+			}
+		}
+		else
+		{
+			UIStackingComponent->PushWidget(WinnerWidgetInstance);
+		}
+	}
+}
+
+void APOPlayerController::OnEscapeMenu()
+{
+	if (UIStackingComponent->GetStackSize() <= 1)
+	{
+		ShowInGameMenuWidget();
+	}
+	else
+	{
+		UIStackingComponent->PopWidget();
+	}
 }
 
 UPOUIStackingComponent* APOPlayerController::GetUIStackingComponent() const

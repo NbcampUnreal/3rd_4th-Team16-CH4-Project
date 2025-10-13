@@ -18,6 +18,7 @@
 #include "POGameplayTags.h"
 #include "Components/Interact/POInteractManagerComponent.h"
 #include "InputCoreTypes.h"
+#include "Game/POGameInstance.h"
 
 APOPlayerCharacter::APOPlayerCharacter()
 {
@@ -211,17 +212,28 @@ void APOPlayerCharacter::Input_Move(const FInputActionValue& InputActionValue)
 
 void APOPlayerCharacter::Input_Look(const FInputActionValue& InputActionValue)
 {
-	const FVector2D LookAxisVector = InputActionValue.Get<FVector2D>();
+    const FVector2D LookAxisVector = InputActionValue.Get<FVector2D>();
 
-	if (LookAxisVector.X != 0.f)
-	{
-		AddControllerYawInput(LookAxisVector.X);
-	}
+    // GameInstance의 마우스 감도(0~100)를 50 기준 1.0배로 스케일링 (0~2.0배)
+    float Scale = 1.f;
+    if (const UWorld* World = GetWorld())
+    {
+        if (const UPOGameInstance* GI = Cast<UPOGameInstance>(World->GetGameInstance()))
+        {
+            const float Sens01To100 = FMath::Clamp(GI->GetMouseSensitivity(), 0.f, 100.f);
+            Scale = FMath::Clamp(Sens01To100 / 50.f, 0.f, 2.f);
+        }
+    }
 
-	if (LookAxisVector.Y != 0.f)
-	{
-		AddControllerPitchInput(LookAxisVector.Y);
-	}
+    if (LookAxisVector.X != 0.f)
+    {
+        AddControllerYawInput(LookAxisVector.X * Scale);
+    }
+
+    if (LookAxisVector.Y != 0.f)
+    {
+        AddControllerPitchInput(LookAxisVector.Y * Scale);
+    }
 }
 
 void APOPlayerCharacter::Input_Walk(const FInputActionValue& InputActionValue)
