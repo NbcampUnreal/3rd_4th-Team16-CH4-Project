@@ -22,6 +22,7 @@ class APOPlayerCharacter;
 DECLARE_MULTICAST_DELEGATE_ThreeParams(FPOOnSetPlayerStateEntry, const FString& /*Nickname*/, bool /*bIsAlive*/, int32 /*KillCount*/);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPOOnTimerChanged, int32, NewTimeSeconds);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPOOnSmokeCountChanged, int32, NewSmokeCount);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPOOnChangedAlivePlayer, int32, NewAlivePlayerCount);
 
 USTRUCT()
 struct FPOPlayerStateEntry
@@ -106,6 +107,9 @@ public:
 
 	UPROPERTY()
 	FPOOnSmokeCountChanged OnSmokeCountChanged;
+
+	UPROPERTY()
+	FPOOnChangedAlivePlayer OnChangedAlivePlayer;
 	
 	void OnChangeGamePhase(EPOStagePhase NewPhase);
 	
