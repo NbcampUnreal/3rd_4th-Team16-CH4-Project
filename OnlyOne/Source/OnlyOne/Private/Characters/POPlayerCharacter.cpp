@@ -257,7 +257,6 @@ void APOPlayerCharacter::Input_Interaction(const FInputActionValue& InputActionV
 	if (InteractManagerComponent)
 	{
 		InteractManagerComponent->TryInteract();
-		Debug::Print(TEXT("Input_Interaction"), FColor::Green);
 	}
 }
 
