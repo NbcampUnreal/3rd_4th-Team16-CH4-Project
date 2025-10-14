@@ -393,6 +393,7 @@ void APOStageGameMode::NotifyCharacterDied(AController* VictimController, AContr
 	APOLobbyPlayerState* VictimPS = ToLobbyPS(VictimController);
 	APOLobbyPlayerState* KillerPS = ToLobbyPS(KillerController);
 
+
 	if (KillerPS && KillerPS != VictimPS)
 	{
 		KillerPS->AddKill_ServerOnly(1);
@@ -404,6 +405,14 @@ void APOStageGameMode::NotifyCharacterDied(AController* VictimController, AContr
 		VictimPS->SetAlive_ServerOnly(false);
 		AlivePlayers.Remove(VictimPS);
 		LOG_NET(POLog, Log, TEXT("[StageGM] Dead : %s, AliveNow=%d"), *VictimPS->GetPlayerName(), AlivePlayers.Num());
+	}
+	
+	if (APOStageGameState* GS = GetGameState<APOStageGameState>())
+	{
+		APlayerState* KillerForEvent = (KillerPS && KillerPS != VictimPS) ? static_cast<APlayerState*>(KillerPS) : nullptr;
+		APlayerState* VictimForEvent = static_cast<APlayerState*>(VictimPS);
+
+		GS->ServerPublishKillEvent(KillerForEvent, VictimForEvent);
 	}
 
 	CompactAlivePlayers();
