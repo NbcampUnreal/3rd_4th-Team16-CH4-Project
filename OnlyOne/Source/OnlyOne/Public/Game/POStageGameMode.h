@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -20,7 +20,7 @@ class ONLYONE_API APOStageGameMode : public APOGameMode
 public:
 	APOStageGameMode();
 
-	/* Spawn/Phase Config */
+	/* ===== Spawn / Phase Config ===== */
 	UPROPERTY(EditDefaultsOnly, Category="PO|Spawn|Player")
 	TSubclassOf<APawn> PlayerPawnClass;
 
@@ -38,21 +38,21 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category="PO|Phase", meta=(ClampMin="0", ClampMax="3600"))
 	int32 StageSeconds;
-	
+
 	UPROPERTY(EditDefaultsOnly, Category="PO|Flow", meta=(ClampMin="0", ClampMax="60"))
 	int32 GameEndReturnSeconds = 5;
-	
+
 	UPROPERTY(EditDefaultsOnly, Category="PO|Flow")
 	FString LobbyMapURL = TEXT("/Game/Maps/Lobby?listen");
-	
+
 	UFUNCTION(BlueprintCallable, Category="PO|Rules")
 	void NotifyCharacterDied(AController* VictimController, AController* KillerController);
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category="PO|Flow")
 	void EndGameForGimmick(APlayerState* WinnerPS);
-	
-	/* ===== protected: Unreal Lifecycle ===== */
+
 protected:
+	/* ===== Unreal Lifecycle ===== */
 	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
 	virtual void PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage) override;
 	virtual void BeginPlay() override;
@@ -63,16 +63,11 @@ protected:
 	virtual UClass* GetDefaultPawnClassForController_Implementation(AController* InController) override;
 	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
 	virtual void RestartPlayerAtPlayerStart(AController* NewPlayer, AActor* StartSpot) override;
-	
 
-	// [ADDED] 스폰 경로 차단용 오버라이드들
-	virtual void HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer) override; // [ADDED]
-	virtual void RestartPlayer(AController* NewPlayer) override;                                  // [ADDED]
-	virtual bool PlayerCanRestart_Implementation(APlayerController* Player) override; 
-
-	/* ===== protected: Game Rules & Flow ===== */
 protected:
+	/* ===== Game Rules & Flow ===== */
 	TSet<TWeakObjectPtr<APlayerState>> AlivePlayers;
+
 	void CachePlayerStarts();
 	void SpawnAIsOnStage();
 	void HandlePhaseChanged(EPOStagePhase NewPhase);
@@ -84,13 +79,11 @@ protected:
 	void TryDecideWinner();
 	void NotifySpecialVictory(APlayerState* WinnerPS);
 	void WipeAllAIsOnStage();
-	bool ShouldEnterSpectatorOnJoin() const;
-	void EnterSpectatorForMidJoin(APlayerController* PC);
 	void StartReturnToLobbyTimer();
-	void DoReturnToLobby();  
+	void DoReturnToLobby();
 
-	/* ===== private: Internal State ===== */
 private:
+	/* ===== Internal State ===== */
 	TArray<TWeakObjectPtr<AActor>> CachedPlayerStarts;
 	TSet<TWeakObjectPtr<AActor>>   UsedPlayerStarts;
 
@@ -104,8 +97,7 @@ private:
 	APOLobbyPlayerState* ToLobbyPS(AController* C) const;
 	APOLobbyPlayerState* ToLobbyPS(AActor* A) const;
 
-	bool CanSpawnNow(const AController* C) const; // [ADDED]
 public:
-	UPROPERTY(EditDefaultsOnly, Category="PO|Stage", meta=(ClampMin="2", ClampMax="16", UIMin="2", UIMax="16")) // [ADDED]
+	UPROPERTY(EditDefaultsOnly, Category="PO|Stage", meta=(ClampMin="2", ClampMax="16", UIMin="2", UIMax="16"))
 	int32 MaxPlayersInStage = 8;
 };
