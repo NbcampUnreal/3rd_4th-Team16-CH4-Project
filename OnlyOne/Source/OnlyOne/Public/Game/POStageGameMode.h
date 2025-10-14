@@ -10,7 +10,7 @@
 class APOLobbyPlayerState;
 
 /**
- * 
+ * Stage GameMode
  */
 UCLASS()
 class ONLYONE_API APOStageGameMode : public APOGameMode
@@ -39,12 +39,18 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="PO|Phase", meta=(ClampMin="0", ClampMax="3600"))
 	int32 StageSeconds;
 
+	/* ===== Match Rules ===== */
+	UPROPERTY(EditDefaultsOnly, Category="PO|Rules", meta=(ClampMin="2", ClampMax="16"))
+	int32 MinPlayersToStart = 2;
+
+	/* ===== Flow ===== */
 	UPROPERTY(EditDefaultsOnly, Category="PO|Flow", meta=(ClampMin="0", ClampMax="60"))
 	int32 GameEndReturnSeconds = 5;
 
 	UPROPERTY(EditDefaultsOnly, Category="PO|Flow")
 	FString LobbyMapURL = TEXT("/Game/Maps/Lobby?listen");
 
+	/* ===== API ===== */
 	UFUNCTION(BlueprintCallable, Category="PO|Rules")
 	void NotifyCharacterDied(AController* VictimController, AController* KillerController);
 
@@ -59,7 +65,7 @@ protected:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 	virtual void Logout(AController* Exiting) override;
-	virtual void HandleSeamlessTravelPlayer(AController*& Controller) override; 
+	virtual void HandleSeamlessTravelPlayer(AController*& Controller) override;
 
 	virtual UClass* GetDefaultPawnClassForController_Implementation(AController* InController) override;
 	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
@@ -91,12 +97,18 @@ private:
 	bool bDidSubscribePhase = false;
 	bool bGameEndStarted = false;
 	bool bAIWipedAtRoundEnd = false;
+	
+	bool bActivatedWithEnoughPlayers = false;
 
 	FTimerHandle ReturnToLobbyTimerHandle;
 
 	bool IsSpawnPointFree(AActor* SpawnPoint) const;
 	APOLobbyPlayerState* ToLobbyPS(AController* C) const;
 	APOLobbyPlayerState* ToLobbyPS(AActor* A) const;
+
+	/* ===== Helpers ===== */
+	int32 CountAliveHumans() const;
+	int32 CountConnectedHumans() const;
 
 public:
 	UPROPERTY(EditDefaultsOnly, Category="PO|Stage", meta=(ClampMin="2", ClampMax="16", UIMin="2", UIMax="16"))

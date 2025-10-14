@@ -17,6 +17,7 @@
 #include "Engine/EngineTypes.h"
 #include "CollisionQueryParams.h"
 #include "HAL/CriticalSection.h"
+#include "GenericTeamAgentInterface.h"
 #include "OnlyOne/OnlyOne.h"
 
 APOStageGameMode::APOStageGameMode()
@@ -81,6 +82,7 @@ void APOStageGameMode::BeginPlay()
 	AlivePlayers.Reset();
 	UsedPlayerStarts.Reset();
 	ResetAllPlayerStatesForMatchStart();
+	bActivatedWithEnoughPlayers = false; // 라운드 시작 시 플래그 리셋
 	CachePlayerStarts();
 	SpawnAIsOnStage();
 
@@ -201,9 +203,24 @@ void APOStageGameMode::PostLogin(APlayerController* NewPlayer)
 		{
 			AlivePlayers.Add(TWeakObjectPtr<APlayerState>(PS));
 			PS->SetAlive_ServerOnly(true);
+
+			LOG_NET(POLog, Log, TEXT("[StageGM] PostLogin: Add Alive %s, AliveNow=%d"),
+				*PS->GetPlayerName(), AlivePlayers.Num());
 		}
-		
+
 		RestartPlayer(NewPlayer);
+		
+		if (const APOStageGameState* GS = GetGameState<APOStageGameState>())
+		{
+			if (GS->GetPhase() == EPOStagePhase::Active)
+			{
+				if (CountAliveHumans() >= MinPlayersToStart)
+				{
+					bActivatedWithEnoughPlayers = true;
+					LOG_NET(POLog, Warning, TEXT("[StageGM] Now enough players during Active. Winner decisions enabled."));
+				}
+			}
+		}
 	}
 }
 
@@ -235,10 +252,20 @@ void APOStageGameMode::HandleSeamlessTravelPlayer(AController*& Controller)
 
 	if (Controller)
 	{
-		// 컨트롤러가 팀 인터페이스를 지원하는지 확인
+		if (APOLobbyPlayerState* PS = ToLobbyPS(Controller))
+		{
+			if (!AlivePlayers.Contains(PS))
+			{
+				AlivePlayers.Add(PS);
+			}
+			if (!PS->IsAlive())
+			{
+				PS->SetAlive_ServerOnly(true);
+			}
+		}
+		
 		if (IGenericTeamAgentInterface* TeamAgent = Cast<IGenericTeamAgentInterface>(Controller))
 		{
-			// 부모 클래스(POGameMode)의 함수를 호출하여 고유 ID를 받아옴
 			const FGenericTeamId NewTeamID = GetTeamIdForPlayer(Cast<APlayerController>(Controller));
 			TeamAgent->SetGenericTeamId(NewTeamID);
 			LOG_NET(POLog, Warning, TEXT("[StageGM] 원활한 이동 플레이어에게 Team ID %d 할당: %s"), NewTeamID.GetId(), *Controller->GetName());
@@ -391,7 +418,6 @@ void APOStageGameMode::NotifyCharacterDied(AController* VictimController, AContr
 	APOLobbyPlayerState* VictimPS = ToLobbyPS(VictimController);
 	APOLobbyPlayerState* KillerPS = ToLobbyPS(KillerController);
 
-
 	if (VictimPS && KillerPS && KillerPS != VictimPS)
 	{
 		KillerPS->AddKill_ServerOnly(1);
@@ -402,7 +428,7 @@ void APOStageGameMode::NotifyCharacterDied(AController* VictimController, AContr
 	{
 		return;
 	}
-	
+
 	if (VictimPS->IsAlive())
 	{
 		VictimPS->SetAlive_ServerOnly(false);
@@ -427,6 +453,11 @@ void APOStageGameMode::CompactAlivePlayers()
 
 void APOStageGameMode::TryDecideWinner()
 {
+	if (!bActivatedWithEnoughPlayers)
+	{
+		return;
+	}
+
 	if (const APOStageGameState* GS = GetGameState<APOStageGameState>())
 	{
 		const EPOStagePhase P = GS->GetPhase();
@@ -441,7 +472,7 @@ void APOStageGameMode::TryDecideWinner()
 	int32 Count = 0;
 	APOLobbyPlayerState* LastAlive = nullptr;
 
-	for (const TWeakObjectPtr<APlayerState>& W : AlivePlayers) // ★ APlayerState로 순회
+	for (const TWeakObjectPtr<APlayerState>& W : AlivePlayers) // APlayerState로 순회
 	{
 		if (APlayerState* Base = W.Get())
 		{
@@ -514,6 +545,16 @@ void APOStageGameMode::HandlePhaseChanged(EPOStagePhase NewPhase)
 	{
 		if (APOStageGameState* GS = GetGameState<APOStageGameState>())
 		{
+			const int32 Alive = CountAliveHumans();
+			if (Alive < MinPlayersToStart)
+			{
+				LOG_NET(POLog, Warning, TEXT("[StageGM] Not enough players (%d/%d). Staying in Prep."), Alive, MinPlayersToStart);
+				GS->ServerSetPhase(EPOStagePhase::Prep);
+				GS->ServerStartPrepCountdown(PrepSeconds);
+				return;
+			}
+
+			bActivatedWithEnoughPlayers = true;
 			GS->ServerStartStageCountdown(StageSeconds);
 		}
 	}
@@ -719,4 +760,39 @@ void APOStageGameMode::EndGameForGimmick(APlayerState* WinnerPS)
 		return;
 	}
 	NotifySpecialVictory(WinnerPS);
+}
+
+int32 APOStageGameMode::CountAliveHumans() const
+{
+	int32 Alive = 0;
+	for (const TWeakObjectPtr<APlayerState>& W : AlivePlayers)
+	{
+		if (const APlayerState* Base = W.Get())
+		{
+			if (const APOLobbyPlayerState* PS = Cast<APOLobbyPlayerState>(Base))
+			{
+				if (PS->IsAlive())
+				{
+					++Alive;
+				}
+			}
+		}
+	}
+	return Alive;
+}
+
+int32 APOStageGameMode::CountConnectedHumans() const
+{
+	int32 Connected = 0;
+	if (const AGameStateBase* GS = GameState)
+	{
+		for (const APlayerState* PSBase : GS->PlayerArray)
+		{
+			if (PSBase && !PSBase->IsOnlyASpectator())
+			{
+				++Connected;
+			}
+		}
+	}
+	return Connected;
 }
