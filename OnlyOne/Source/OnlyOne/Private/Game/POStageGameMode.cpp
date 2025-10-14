@@ -204,6 +204,14 @@ void APOStageGameMode::PostLogin(APlayerController* NewPlayer)
 			LOG_NET(POLog, Log, TEXT("[StageGM] PostLogin: Add Alive %s"), *PS->GetPlayerName());
 		}
 
+		// 게임 중간에 접속한 새 플레이어에게도 TeamID를 할당합니다.
+		if (IGenericTeamAgentInterface* TeamAgent = Cast<IGenericTeamAgentInterface>(NewPlayer))
+		{
+			FGenericTeamId NewTeamID = GetTeamIdForPlayer(NewPlayer);
+			TeamAgent->SetGenericTeamId(NewTeamID);
+			LOG_NET(POLog, Warning, TEXT("[StageGM] 새로 접속한 플레이어에게 Team ID %d 할당: %s"), NewTeamID.GetId(), *NewPlayer->GetName());
+		}
+
 		// 중간 입장은 PreLogin에서 이미 차단되므로 바로 스폰 시도
 		RestartPlayer(NewPlayer);
 	}
@@ -229,6 +237,23 @@ void APOStageGameMode::Logout(AController* Exiting)
 	}
 
 	Super::Logout(Exiting);
+}
+
+void APOStageGameMode::HandleSeamlessTravelPlayer(AController*& Controller)
+{
+	Super::HandleSeamlessTravelPlayer(Controller);
+
+	if (Controller)
+	{
+		// 컨트롤러가 팀 인터페이스를 지원하는지 확인
+		if (IGenericTeamAgentInterface* TeamAgent = Cast<IGenericTeamAgentInterface>(Controller))
+		{
+			// 부모 클래스(POGameMode)의 함수를 호출하여 고유 ID를 받아옴
+			const FGenericTeamId NewTeamID = GetTeamIdForPlayer(Cast<APlayerController>(Controller));
+			TeamAgent->SetGenericTeamId(NewTeamID);
+			LOG_NET(POLog, Warning, TEXT("[StageGM] 원활한 이동 플레이어에게 Team ID %d 할당: %s"), NewTeamID.GetId(), *Controller->GetName());
+		}
+	}
 }
 
 UClass* APOStageGameMode::GetDefaultPawnClassForController_Implementation(AController* InController)
