@@ -5,17 +5,33 @@
 
 #include "Components/ScrollBox.h"
 #include "UI/KillFeed/POKillFeedElementWidget.h"
+#include "Game/POStageGameState.h"
 
 void UPOKillFeedWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	// TODO: 위젯 초기화 코드 작성
+	
+	// APOStageGameState의 OnKillEvent에 바인딩
+	if (UWorld* World = GetWorld())
+	{
+		if (APOStageGameState* StageGameState = World->GetGameState<APOStageGameState>())
+		{
+			BoundGameState = StageGameState;
+			StageGameState->OnKillEvent.AddDynamic(this, &UPOKillFeedWidget::AddKillFeedEntry);
+		}
+	}
 }
 
 void UPOKillFeedWidget::NativeDestruct()
 {
+	// 바인딩 해제
+	if (BoundGameState)
+	{
+		BoundGameState->OnKillEvent.RemoveDynamic(this, &UPOKillFeedWidget::AddKillFeedEntry);
+		BoundGameState = nullptr;
+	}
+	
 	Super::NativeDestruct();
-	// TODO: 위젯 해제 코드 작성
 }
 
 void UPOKillFeedWidget::AddKillFeedEntry(const FString& KillerName, const FString& VictimName)
