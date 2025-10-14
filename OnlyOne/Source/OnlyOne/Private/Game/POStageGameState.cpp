@@ -24,6 +24,8 @@ APOStageGameState::APOStageGameState()
 {
 	Phase = EPOStagePhase::Prep;
 	PrepRemainingSeconds = 0;
+	
+	KillEventSerial = 0;
 
 	LOG_NET(
 		POLog,
@@ -55,6 +57,8 @@ void APOStageGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	DOREPLIFETIME(APOStageGameState, PrepRemainingSeconds);
 	DOREPLIFETIME(APOStageGameState, StageRemainingSeconds);
 	DOREPLIFETIME(APOStageGameState, WinnerPS);
+	DOREPLIFETIME(APOStageGameState, LastKillEvent);
+	
 }
 
 void APOStageGameState::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -285,4 +289,48 @@ void APOStageGameState::OnRep_WinnerPS()
 		*WinnerName);
 
 	OnWinnerDecided.Broadcast(WinnerPS);
+}
+
+void APOStageGameState::ServerPublishKillEvent(APlayerState* Killer, APlayerState* Victim)
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+	
+	++KillEventSerial;
+	LastKillEvent.Killer = Killer;
+	LastKillEvent.Victim = Victim;
+	LastKillEvent.Serial = KillEventSerial;
+
+	LOG_NET(
+		POLog,
+		Log,
+		TEXT("[StageGS] PublishKillEvent: Killer=%s, Victim=%s, Serial=%d"),
+		Killer ? *Killer->GetPlayerName() : TEXT("None"),
+		Victim ? *Victim->GetPlayerName() : TEXT("None"),
+		LastKillEvent.Serial
+	);
+	
+	OnRep_LastKillEvent();
+}
+
+void APOStageGameState::OnRep_LastKillEvent()
+{
+	auto GetNicknameSafe = [](APlayerState* PS) -> FString
+	{
+		if (const APOLobbyPlayerState* LPS = Cast<APOLobbyPlayerState>(PS))
+		{
+			return LPS->GetDisplayNickname();
+		}
+		return PS ? PS->GetPlayerName() : TEXT("Unknown");
+	};
+
+	const FString KillerName = GetNicknameSafe(LastKillEvent.Killer);
+	const FString VictimName = GetNicknameSafe(LastKillEvent.Victim);
+
+	OnKillEvent.Broadcast(KillerName, VictimName);
+
+	LOG_NET(POLog, Log, TEXT("[StageGS] OnRep_LastKillEvent: %s ▶ %s (Serial=%d)"),
+		*KillerName, *VictimName, LastKillEvent.Serial);
 }

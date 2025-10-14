@@ -6,6 +6,7 @@
 #include "GameplayEffectExtension.h"
 #include "POGameplayTags.h"
 #include "AbilitySystemBlueprintLibrary.h"
+#include "Controllers/POPlayerController.h"
 #include "game/POStageGameMode.h"
 #include "GameAbilitySystem/POAbilitySystemComponent.h"
 
@@ -127,7 +128,15 @@ void UPOAttributeSet::OnRep_DamageTaken(const FGameplayAttributeData& OldValue)
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UPOAttributeSet, DamageTaken, OldValue);
 }
 
-	void UPOAttributeSet::OnRep_SmokeGrenadeCount(const FGameplayAttributeData& OldValue)
-	{
+void UPOAttributeSet::OnRep_SmokeGrenadeCount(const FGameplayAttributeData& OldValue)
+{
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UPOAttributeSet, SmokeGrenadeCount, OldValue);
+	
+	if (const AActor* OwningActor = GetOwningAbilitySystemComponent()->GetAvatarActor())
+	{
+		if (const APOPlayerController* PlayerController = Cast<APOPlayerController>(OwningActor->GetInstigatorController()))
+		{
+			PlayerController->OnSmokeCountChanged.Broadcast(GetSmokeGrenadeCount());
+		}
 	}
+}

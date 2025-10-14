@@ -30,10 +30,6 @@ APOStageGameMode::APOStageGameMode()
 	GameStateClass = APOStageGameState::StaticClass();
 
 	bUseSeamlessTravel = true;
-
-	// [ADDED] 자동 스폰 억제: 매치 시작 전에는 전원 관전자 + 딜레이드 스타트
-	bStartPlayersAsSpectators = true; // [ADDED]
-	bDelayedStart = true;             // [ADDED]
 }
 
 APOLobbyPlayerState* APOStageGameMode::ToLobbyPS(AController* C) const
@@ -56,11 +52,11 @@ void APOStageGameMode::InitGame(const FString& MapName, const FString& Options, 
 	if (!ReturnURL.IsEmpty())
 	{
 		LobbyMapURL = ReturnURL;
-		LOG_NET(POLog, Warning, TEXT("[StageGM] InitGame: LobbyMapURL set from Return option: %s"), *LobbyMapURL); // [ADD]
+		LOG_NET(POLog, Warning, TEXT("[StageGM] InitGame: LobbyMapURL set from Return option: %s"), *LobbyMapURL);
 	}
 	else
 	{
-		LOG_NET(POLog, Warning, TEXT("[StageGM] InitGame: No Return option. Using default LobbyMapURL=%s"), *LobbyMapURL); // [ADD]
+		LOG_NET(POLog, Warning, TEXT("[StageGM] InitGame: No Return option. Using default LobbyMapURL=%s"), *LobbyMapURL);
 	}
 
 	if (GameSession)
@@ -155,19 +151,6 @@ void APOStageGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	Super::EndPlay(EndPlayReason);
 }
 
-void APOStageGameMode::HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer) // [ADDED]
-{
-	if (!NewPlayer) return;
-
-	if (!CanSpawnNow(NewPlayer))
-	{
-		LOG_NET(POLog, Warning, TEXT("[StageGM] HandleStartingNewPlayer: blocked for %s"), *NewPlayer->GetName());
-		return; // [ADDED] Super 호출 금지 → 자동 스폰 경로 차단
-	}
-
-	Super::HandleStartingNewPlayer_Implementation(NewPlayer); // [ADDED]
-}
-
 void APOStageGameMode::PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)
 {
 	Super::PreLogin(Options, Address, UniqueId, ErrorMessage);
@@ -180,10 +163,11 @@ void APOStageGameMode::PreLogin(const FString& Options, const FString& Address, 
 	if (GS)
 	{
 		const EPOStagePhase Phase = GS->GetPhase();
-		
+
+		// Prep에서만 인원 제한 체크
 		if (Phase == EPOStagePhase::Prep)
 		{
-			const int32 MaxPlayers = GameSession ? GameSession->MaxPlayers : MaxPlayersInStage;
+			const int32 MaxPlayers = (GameSession && GameSession->MaxPlayers > 0) ? GameSession->MaxPlayers : MaxPlayersInStage;
 			const int32 Current    = GetNumPlayers() + NumTravellingPlayers;
 
 			if (Current >= MaxPlayers)
@@ -192,7 +176,8 @@ void APOStageGameMode::PreLogin(const FString& Options, const FString& Address, 
 				return;
 			}
 		}
-		
+
+		// Active/RoundEnd/GameEnd 중간 입장 차단
 		const bool bBlockMidJoin =
 			(Phase == EPOStagePhase::Active)   ||
 			(Phase == EPOStagePhase::RoundEnd) ||
@@ -210,12 +195,6 @@ void APOStageGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
 
-	// TODO: 중간 입장 시 관전 분기 연결 후 실제 관전 전환 테스트 예정
-	if (ShouldEnterSpectatorOnJoin())
-	{
-		EnterSpectatorForMidJoin(NewPlayer);
-		return;
-	}
 	if (NewPlayer)
 	{
 		if (APOLobbyPlayerState* PS = ToLobbyPS(NewPlayer))
@@ -224,15 +203,9 @@ void APOStageGameMode::PostLogin(APlayerController* NewPlayer)
 			PS->SetAlive_ServerOnly(true);
 			LOG_NET(POLog, Log, TEXT("[StageGM] PostLogin: Add Alive %s"), *PS->GetPlayerName());
 		}
-		
-		if (CanSpawnNow(NewPlayer))
-		{
-			RestartPlayer(NewPlayer);
-		}
-		else
-		{
-			LOG_NET(POLog, Warning, TEXT("[StageGM] PostLogin: spawn blocked for %s"), *NewPlayer->GetName());
-		}
+
+		// 중간 입장은 PreLogin에서 이미 차단되므로 바로 스폰 시도
+		RestartPlayer(NewPlayer);
 	}
 }
 
@@ -258,14 +231,25 @@ void APOStageGameMode::Logout(AController* Exiting)
 	Super::Logout(Exiting);
 }
 
+void APOStageGameMode::HandleSeamlessTravelPlayer(AController*& Controller)
+{
+	Super::HandleSeamlessTravelPlayer(Controller);
+
+	if (Controller)
+	{
+		// 컨트롤러가 팀 인터페이스를 지원하는지 확인
+		if (IGenericTeamAgentInterface* TeamAgent = Cast<IGenericTeamAgentInterface>(Controller))
+		{
+			// 부모 클래스(POGameMode)의 함수를 호출하여 고유 ID를 받아옴
+			const FGenericTeamId NewTeamID = GetTeamIdForPlayer(Cast<APlayerController>(Controller));
+			TeamAgent->SetGenericTeamId(NewTeamID);
+			LOG_NET(POLog, Warning, TEXT("[StageGM] 원활한 이동 플레이어에게 Team ID %d 할당: %s"), NewTeamID.GetId(), *Controller->GetName());
+		}
+	}
+}
+
 UClass* APOStageGameMode::GetDefaultPawnClassForController_Implementation(AController* InController)
 {
-	// [CHANGED] 최후 안전망: 관전자면 어떤 경로로도 PawnClass 제공하지 않음
-	if (InController && InController->PlayerState && InController->PlayerState->IsSpectator())
-	{
-		return nullptr; // [ADDED]
-	}
-	
 	return PlayerPawnClass
 		? *PlayerPawnClass
 		: Super::GetDefaultPawnClassForController_Implementation(InController);
@@ -321,6 +305,16 @@ AActor* APOStageGameMode::ChoosePlayerStart_Implementation(AController* Player)
 	return Super::ChoosePlayerStart_Implementation(Player);
 }
 
+void APOStageGameMode::RestartPlayerAtPlayerStart(AController* NewPlayer, AActor* StartSpot)
+{
+	Super::RestartPlayerAtPlayerStart(NewPlayer, StartSpot);
+
+	if (NewPlayer && NewPlayer->GetPawn() && StartSpot)
+	{
+		UsedPlayerStarts.Add(StartSpot);
+	}
+}
+
 bool APOStageGameMode::IsSpawnPointFree(AActor* Start) const
 {
 	if (!Start || !GetWorld())
@@ -345,95 +339,6 @@ bool APOStageGameMode::IsSpawnPointFree(AActor* Start) const
 
 	return !bAnyHit;
 }
-
-bool APOStageGameMode::ShouldEnterSpectatorOnJoin() const
-{
-	const APOStageGameState* GS = GetGameState<APOStageGameState>();
-	if (!GS)
-	{
-		return false;
-	}
-
-	// TODO: 중간 입장 관전 전환 기준(Phase) 확정 후 실제 진입 플로우 테스트 예정
-	const EPOStagePhase P = GS->GetPhase();
-	return (P == EPOStagePhase::Active || P == EPOStagePhase::RoundEnd || P == EPOStagePhase::GameEnd); // ★ Step6
-}
-
-void APOStageGameMode::EnterSpectatorForMidJoin(APlayerController* PC)
-{
-	if (!HasAuthority() || !PC)
-	{
-		return;
-	}
-
-	// TODO: PC가 관전 UI/입력(Q/E 전환 등)과 정상 연동되는지 후속 테스트 예정
-	if (APOLobbyPlayerState* PS = ToLobbyPS(PC))
-	{
-		PS->SetAlive_ServerOnly(false);
-	}
-	
-	if (APOPlayerController* PO = Cast<APOPlayerController>(PC))
-	{
-		PO->StartSpectating(nullptr);
-	}
-	
-	LOG_NET(POLog, Warning, TEXT("[StageGM] Mid-join as Spectator: %s"), *PC->GetName());
-}
-
-void APOStageGameMode::RestartPlayerAtPlayerStart(AController* NewPlayer, AActor* StartSpot)
-{
-	Super::RestartPlayerAtPlayerStart(NewPlayer, StartSpot);
-
-	if (NewPlayer && NewPlayer->GetPawn() && StartSpot)
-	{
-		UsedPlayerStarts.Add(StartSpot);
-	}
-}
-
-// [ADDED] 최종 가드: 관전자/금지 페이즈에서는 리스폰 불가
-void APOStageGameMode::RestartPlayer(AController* NewPlayer) // [ADDED]
-{
-	if (!NewPlayer) return;
-
-	if (!CanSpawnNow(NewPlayer))
-	{
-		LOG_NET(POLog, Warning, TEXT("[StageGM] RestartPlayer: blocked for %s"), *NewPlayer->GetName());
-		return; // [ADDED]
-	}
-
-	Super::RestartPlayer(NewPlayer);
-}
-
-// [ADDED] UI에서 재시작 요청 등 엔진이 물어볼 때도 동일 정책 적용
-bool APOStageGameMode::PlayerCanRestart_Implementation(APlayerController* Player) // [ADDED]
-{
-	return CanSpawnNow(Player); // [ADDED]
-}
-
-// [ADDED] 스폰 허용 여부(관전자 여부 + 페이즈)를 일원화
-bool APOStageGameMode::CanSpawnNow(const AController* C) const // [ADDED]
-{
-	if (!C || !C->PlayerState) return false;
-
-	// 관전자는 스폰 불가
-	if (C->PlayerState->IsSpectator())
-	{
-		return false;
-	}
-
-	// 페이즈 확인 (활성 라운드 외에는 스폰 금지)
-	if (const APOStageGameState* GS = GetGameState<APOStageGameState>())
-	{
-		const EPOStagePhase P = GS->GetPhase();
-		if (P == EPOStagePhase::RoundEnd || P == EPOStagePhase::GameEnd)
-		{
-			return false;
-		}
-	}
-
-	return true;
-}
-
 
 void APOStageGameMode::CachePlayerStarts()
 {
@@ -485,9 +390,9 @@ void APOStageGameMode::NotifyCharacterDied(AController* VictimController, AContr
 		return;
 	}
 
-	// TODO: 피해 로그/킬 피드 연동 후 KillerPS AddKill 및 로그 출력 테스트 예정
 	APOLobbyPlayerState* VictimPS = ToLobbyPS(VictimController);
 	APOLobbyPlayerState* KillerPS = ToLobbyPS(KillerController);
+
 
 	if (KillerPS && KillerPS != VictimPS)
 	{
@@ -501,11 +406,18 @@ void APOStageGameMode::NotifyCharacterDied(AController* VictimController, AContr
 		AlivePlayers.Remove(VictimPS);
 		LOG_NET(POLog, Log, TEXT("[StageGM] Dead : %s, AliveNow=%d"), *VictimPS->GetPlayerName(), AlivePlayers.Num());
 	}
+	
+	if (APOStageGameState* GS = GetGameState<APOStageGameState>())
+	{
+		APlayerState* KillerForEvent = (KillerPS && KillerPS != VictimPS) ? static_cast<APlayerState*>(KillerPS) : nullptr;
+		APlayerState* VictimForEvent = static_cast<APlayerState*>(VictimPS);
+
+		GS->ServerPublishKillEvent(KillerForEvent, VictimForEvent);
+	}
 
 	CompactAlivePlayers();
 	TryDecideWinner();
 }
-
 
 void APOStageGameMode::CompactAlivePlayers()
 {
@@ -520,50 +432,20 @@ void APOStageGameMode::CompactAlivePlayers()
 
 void APOStageGameMode::TryDecideWinner()
 {
-	// TODO: 킬/사망/생존 집합/승자 확정까지 통합 시나리오 테스트 예정
 	int32 Count = 0;
 	APOLobbyPlayerState* LastAlive = nullptr;
 
-	if (AGameStateBase* GS = GameState)
+	for (const TWeakObjectPtr<APlayerState>& W : AlivePlayers)
 	{
-		for (APlayerState* PSBase : GS->PlayerArray)
+		if (APOLobbyPlayerState* PS = Cast<APOLobbyPlayerState>(W.Get()))
 		{
-			if (APOLobbyPlayerState* PS = Cast<APOLobbyPlayerState>(PSBase))
+			if (PS->IsAlive())
 			{
-				if (PS->IsAlive())
-				{
-					LastAlive = PS;
-					++Count;
-				}
+				LastAlive = PS;
+				++Count;
 			}
 		}
 	}
-	
-	if (Count > 0 && AlivePlayers.Num() != Count)
-	{
-		AlivePlayers.Reset();
-		if (AGameStateBase* GS2 = GameState)
-		{
-			for (APlayerState* PSBase : GS2->PlayerArray)
-			{
-				if (APOLobbyPlayerState* PS = Cast<APOLobbyPlayerState>(PSBase))
-				{
-					if (PS->IsAlive())
-					{
-						AlivePlayers.Add(PS);
-					}
-				}
-			}
-		}
-	}
-	
-	const auto Nick = [](APOLobbyPlayerState* P)->const TCHAR*
-	{
-		if (!P) return TEXT("None");
-		return !P->GetDisplayNickname().IsEmpty()
-			? *P->GetDisplayNickname()
-			: *P->GetPlayerName();
-	};
 
 	if (Count == 1)
 	{
@@ -583,13 +465,13 @@ void APOStageGameMode::NotifySpecialVictory(APlayerState* WinnerPS)
 	{
 		return;
 	}
-	
+
 	if (bGameEndStarted)
 	{
 		LOG_NET(POLog, Log, TEXT("[StageGM] NotifySpecialVictory: Already in GameEnd."));
 		return;
 	}
-	
+
 	if (WinnerPS && GameState && !GameState->PlayerArray.Contains(WinnerPS))
 	{
 		LOG_NET(POLog, Warning, TEXT("[StageGM] NotifySpecialVictory: Winner not in PlayerArray. Ignored."));
@@ -602,7 +484,7 @@ void APOStageGameMode::NotifySpecialVictory(APlayerState* WinnerPS)
 		TEXT("[StageGM] SpecialVictory triggered: Winner=%s"),
 		WinnerPS ? *WinnerPS->GetPlayerName() : TEXT("None")
 	);
-	
+
 	BeginGameEndPhase(WinnerPS);
 }
 
@@ -635,7 +517,7 @@ void APOStageGameMode::HandleStageTimeExpired()
 	{
 		return;
 	}
-	
+
 	LOG_NET(POLog, Warning, TEXT("[StageGM] HandleStageTimeExpired: Stage time expired signal received."));
 	BeginRoundEndPhase();
 }
@@ -657,7 +539,7 @@ void APOStageGameMode::ResetAllPlayerStatesForMatchStart()
 			}
 		}
 	}
-	
+
 	if (APOStageGameState* POGS = GetGameState<APOStageGameState>())
 	{
 		POGS->ServerClearWinner();
@@ -673,7 +555,7 @@ void APOStageGameMode::BeginRoundEndPhase()
 	{
 		return;
 	}
-		
+
 	if (APOStageGameState* GS = GetGameState<APOStageGameState>())
 	{
 		GS->ServerSetPhase(EPOStagePhase::RoundEnd);
@@ -695,12 +577,12 @@ void APOStageGameMode::WipeAllAIsOnStage()
 	bAIWipedAtRoundEnd = true;
 
 	int32 Removed = 0;
-	
+
 	for (TActorIterator<AAIController> It(GetWorld()); It; ++It)
 	{
 		AAIController* AIC = *It;
 		if (!AIC) { continue; }
-		
+
 		if (AIC->IsPlayerController())
 		{
 			continue;
@@ -712,18 +594,18 @@ void APOStageGameMode::WipeAllAIsOnStage()
 			AIC->Destroy();
 			continue;
 		}
-		
+
 		if (AIClass && !Pawn->IsA(AIClass))
 		{
 			continue;
 		}
-		
+
 		if (AIC->BrainComponent)
 		{
 			AIC->BrainComponent->StopLogic(TEXT("RoundEnd"));
 		}
 		AIC->StopMovement();
-		
+
 		AIC->UnPossess();
 		Pawn->Destroy();
 		AIC->Destroy();
@@ -797,26 +679,25 @@ void APOStageGameMode::DoReturnToLobby()
 	{
 		W->GetTimerManager().ClearTimer(ReturnToLobbyTimerHandle);
 	}
-	
+
 	FString URL = LobbyMapURL;
 	if (URL.IsEmpty())
 	{
 		URL = TEXT("/Game/All/Game/Levels/L_ServerLobby");
 	}
-	
+
 	if (GetNetMode() == NM_ListenServer && !URL.Contains(TEXT("?")))
 	{
 		URL += TEXT("?listen");
 	}
 
-
-		LOG_NET(
+	LOG_NET(
 		POLog,
 		Warning,
 		TEXT("[StageGM] DoReturnToLobby: NOW traveling to lobby -> %s"),
 		*URL
 	);
-	
+
 	if (UWorld* W = GetWorld())
 	{
 		W->ServerTravel(URL, false);
@@ -829,5 +710,5 @@ void APOStageGameMode::EndGameForGimmick(APlayerState* WinnerPS)
 	{
 		return;
 	}
-	BeginGameEndPhase(WinnerPS);
+	NotifySpecialVictory(WinnerPS);
 }

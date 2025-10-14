@@ -9,6 +9,7 @@
 class UPOKillFeedElementWidget;
 class UScrollBox;
 class UTextBlock;
+class APOStageGameState;
 /**
  * 
  */
@@ -22,6 +23,7 @@ public:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
 
+	UFUNCTION()
 	void AddKillFeedEntry(const FString& KillerName, const FString& VictimName);
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PlayerStateList")
@@ -38,4 +40,8 @@ protected:
 private:
 	/*테스트 용 코드 */
 	FTimerHandle TestAddKillFeedEntry;
+
+	/** 바인딩된 GameState 참조 (언바인딩에 사용) */
+	UPROPERTY()
+	TObjectPtr<APOStageGameState> BoundGameState;
 };
