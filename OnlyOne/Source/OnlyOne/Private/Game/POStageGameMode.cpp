@@ -199,12 +199,10 @@ void APOStageGameMode::PostLogin(APlayerController* NewPlayer)
 	{
 		if (APOLobbyPlayerState* PS = ToLobbyPS(NewPlayer))
 		{
-			AlivePlayers.Add(PS);
+			AlivePlayers.Add(TWeakObjectPtr<APlayerState>(PS));
 			PS->SetAlive_ServerOnly(true);
-			LOG_NET(POLog, Log, TEXT("[StageGM] PostLogin: Add Alive %s"), *PS->GetPlayerName());
 		}
-
-		// 중간 입장은 PreLogin에서 이미 차단되므로 바로 스폰 시도
+		
 		RestartPlayer(NewPlayer);
 	}
 }
@@ -394,25 +392,22 @@ void APOStageGameMode::NotifyCharacterDied(AController* VictimController, AContr
 	APOLobbyPlayerState* KillerPS = ToLobbyPS(KillerController);
 
 
-	if (KillerPS && KillerPS != VictimPS)
+	if (VictimPS && KillerPS && KillerPS != VictimPS)
 	{
 		KillerPS->AddKill_ServerOnly(1);
 		LOG_NET(POLog, Log, TEXT("[StageGM] Kill++ : %s"), *KillerPS->GetPlayerName());
 	}
 
-	if (VictimPS)
+	if (!VictimPS)
+	{
+		return;
+	}
+	
+	if (VictimPS->IsAlive())
 	{
 		VictimPS->SetAlive_ServerOnly(false);
 		AlivePlayers.Remove(VictimPS);
 		LOG_NET(POLog, Log, TEXT("[StageGM] Dead : %s, AliveNow=%d"), *VictimPS->GetPlayerName(), AlivePlayers.Num());
-	}
-	
-	if (APOStageGameState* GS = GetGameState<APOStageGameState>())
-	{
-		APlayerState* KillerForEvent = (KillerPS && KillerPS != VictimPS) ? static_cast<APlayerState*>(KillerPS) : nullptr;
-		APlayerState* VictimForEvent = static_cast<APlayerState*>(VictimPS);
-
-		GS->ServerPublishKillEvent(KillerForEvent, VictimForEvent);
 	}
 
 	CompactAlivePlayers();
@@ -432,29 +427,42 @@ void APOStageGameMode::CompactAlivePlayers()
 
 void APOStageGameMode::TryDecideWinner()
 {
+	if (const APOStageGameState* GS = GetGameState<APOStageGameState>())
+	{
+		const EPOStagePhase P = GS->GetPhase();
+		if (P != EPOStagePhase::Active && P != EPOStagePhase::RoundEnd)
+		{
+			return;
+		}
+	}
+
+	CompactAlivePlayers();
+
 	int32 Count = 0;
 	APOLobbyPlayerState* LastAlive = nullptr;
 
-	for (const TWeakObjectPtr<APlayerState>& W : AlivePlayers)
+	for (const TWeakObjectPtr<APlayerState>& W : AlivePlayers) // ★ APlayerState로 순회
 	{
-		if (APOLobbyPlayerState* PS = Cast<APOLobbyPlayerState>(W.Get()))
+		if (APlayerState* Base = W.Get())
 		{
-			if (PS->IsAlive())
+			if (APOLobbyPlayerState* PS = Cast<APOLobbyPlayerState>(Base))
 			{
-				LastAlive = PS;
-				++Count;
+				if (PS->IsAlive())
+				{
+					LastAlive = PS;
+					++Count;
+					if (Count > 1) break;
+				}
 			}
 		}
 	}
 
 	if (Count == 1)
 	{
-		LOG_NET(POLog, Warning, TEXT("[StageGM] TryDecideWinner: Winner=%s"), *LastAlive->GetPlayerName());
 		BeginGameEndPhase(LastAlive);
 	}
 	else if (Count == 0)
 	{
-		LOG_NET(POLog, Warning, TEXT("[StageGM] TryDecideWinner: No survivors → draw"));
 		BeginGameEndPhase(nullptr);
 	}
 }
