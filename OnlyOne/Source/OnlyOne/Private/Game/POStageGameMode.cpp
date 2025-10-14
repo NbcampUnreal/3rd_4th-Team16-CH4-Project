@@ -204,14 +204,6 @@ void APOStageGameMode::PostLogin(APlayerController* NewPlayer)
 			LOG_NET(POLog, Log, TEXT("[StageGM] PostLogin: Add Alive %s"), *PS->GetPlayerName());
 		}
 
-		// 게임 중간에 접속한 새 플레이어에게도 TeamID를 할당합니다.
-		if (IGenericTeamAgentInterface* TeamAgent = Cast<IGenericTeamAgentInterface>(NewPlayer))
-		{
-			FGenericTeamId NewTeamID = GetTeamIdForPlayer(NewPlayer);
-			TeamAgent->SetGenericTeamId(NewTeamID);
-			LOG_NET(POLog, Warning, TEXT("[StageGM] 새로 접속한 플레이어에게 Team ID %d 할당: %s"), NewTeamID.GetId(), *NewPlayer->GetName());
-		}
-
 		// 중간 입장은 PreLogin에서 이미 차단되므로 바로 스폰 시도
 		RestartPlayer(NewPlayer);
 	}
