@@ -37,16 +37,6 @@ void APOGimmickBase::BeginPlay()
     Super::BeginPlay();
     BoxCollision->OnComponentBeginOverlap.AddDynamic(this, &APOGimmickBase::OnBeginOverlap);
 }
-void APOGimmickBase::Tick(float DeltaTime)
-{
-    Super::Tick(DeltaTime);
-
-    if (GetNetMode()==NM_DedicatedServer || HasAuthority())
-    {
-        return;
-    }
-    DrawDebugSphere(GetWorld(), GetActorLocation(), NetCullDistance/2.f, 16, FColor::Green, false, 0.f);
-}
 
 
 
