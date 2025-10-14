@@ -5,18 +5,32 @@
 
 #include "Components/TextBlock.h"
 
+#define ENSURE_VALID_WIDGET(ptr) \
+if (!(ptr) || !(ptr)->IsValidLowLevelFast() || !IsValid(ptr)) { \
+UE_LOG(LogTemp, Verbose, TEXT("POOneTextWidget: target invalid, skip")); \
+return; \
+}
+
 void UPOOneTextWidget::SetTextBox(int32 NewCount)
 {
-	if (MainText)
+	if (!IsValid(this))
 	{
-		MainText->SetText(FText::AsNumber(NewCount));
+		return;
 	}
+
+	ENSURE_VALID_WIDGET(MainText);
+	MainText->SetText(FText::AsNumber(NewCount));
 }
 
 void UPOOneTextWidget::SetTextBox(const FText& InText)
 {
-	if (MainText)
+	if (!IsValid(this))
 	{
-		MainText->SetText(InText);
+		return;
 	}
+
+	ENSURE_VALID_WIDGET(MainText);
+	MainText->SetText(InText);
 }
+
+#undef ENSURE_VALID_WIDGET

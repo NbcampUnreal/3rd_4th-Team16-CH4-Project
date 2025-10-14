@@ -18,4 +18,11 @@ class ONLYONE_API UPOPlayerCounterWidget : public UPOOneTextWidget
 public:
 	virtual void NativeOnInitialized() override;
 	virtual void NativeDestruct() override;
+
+private:
+	FTimerHandle AliveUiTickHandle;
+	int32 LastShownAlive = INT32_MIN;
+
+	UFUNCTION()
+	void TickAliveUi(); 
 };

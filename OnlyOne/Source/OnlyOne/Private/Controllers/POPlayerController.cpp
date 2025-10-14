@@ -1,5 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
-
+﻿// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "Controllers/POPlayerController.h"
 
@@ -77,7 +76,6 @@ void APOPlayerController::OnPossess(APawn* InPawn)
 		}
 	}
 
-	// 새로 소유(리스폰 등)되면 스펙테이터 도움말은 숨긴다
 	HideSpectatorHelpWidget();
 }
 
@@ -115,6 +113,15 @@ void APOPlayerController::BeginPlay()
 	{
 		ShowHUDWidget();
 		ShowPrevTimerWidget();
+		
+		GetWorldTimerManager().SetTimer(
+			AlivePollHandle,
+			this,
+			&ThisClass::PollAliveCount,
+			0.15f,
+			true,
+			0.15f
+		);
 	}
 
 	if (APOStageGameState* StageGS = GetWorld() ? GetWorld()->GetGameState<APOStageGameState>() : nullptr)
@@ -531,5 +538,64 @@ void APOPlayerController::OnPlayerStateUpdated(const FString& Nickname, bool bIs
 	else
 	{
 		PlayerStateQueue.Enqueue(Entry);
+	}
+}
+
+/* ===== StageGameState 생존자 수 델리게이트 중계 ===== */
+
+void APOPlayerController::RebindStageGSDelegates()
+{
+	// 이전 바인딩 해제
+	if (CachedStageGS.IsValid())
+	{
+		CachedStageGS->OnAliveCountChangedBP.RemoveDynamic(this, &ThisClass::HandleAliveCountChanged_FromGS);
+	}
+
+	// 현재 GameState 획득 & 바인딩
+	APOStageGameState* GS = GetWorld() ? GetWorld()->GetGameState<APOStageGameState>() : nullptr;
+	CachedStageGS = GS;
+
+	if (GS)
+	{
+		GS->OnAliveCountChangedBP.AddDynamic(this, &ThisClass::HandleAliveCountChanged_FromGS);
+	}
+}
+
+void APOPlayerController::HandleAliveCountChanged_FromGS(int32 NewCount)
+{
+	// PC 델리게이트로 재브로드캐스트 → UI 위젯은 PC에만 바인딩하면 됨
+	OnChangedAlivePlayer.Broadcast(NewCount);
+}
+
+void APOPlayerController::PollAliveCount()
+{
+	if (!IsLocalController())
+	{
+		return;
+	}
+
+	const APOStageGameState* GS = GetWorld() ? GetWorld()->GetGameState<APOStageGameState>() : nullptr;
+	if (!GS)
+	{
+		return;
+	}
+
+	const int32 Current = GS->AlivePlayerCount;
+	if (LastAliveCount != Current)
+	{
+		LastAliveCount = Current;
+		
+		FTimerHandle Tmp;
+		GetWorldTimerManager().SetTimer(
+			Tmp,
+			FTimerDelegate::CreateWeakLambda(this, [this, Current]()
+			{
+				if (IsValid(this) && IsLocalController())
+				{
+					OnChangedAlivePlayer.Broadcast(Current);
+				}
+			}),
+			0.0f, false
+		);
 	}
 }

@@ -20,6 +20,35 @@
 #include "GenericTeamAgentInterface.h"
 #include "OnlyOne/OnlyOne.h"
 
+/* === Local helpers: Alive count 계산 & GameState 동기화 === */
+namespace
+{
+	static int32 ComputeAliveCount(const TSet<TWeakObjectPtr<APlayerState>>& AlivePlayers)
+	{
+		int32 Alive = 0;
+		for (const TWeakObjectPtr<APlayerState>& W : AlivePlayers)
+		{
+			const APlayerState* Base = W.Get();
+			const APOLobbyPlayerState* PS = Base ? Cast<APOLobbyPlayerState>(Base) : nullptr;
+			if (PS && PS->IsAlive())
+			{
+				++Alive;
+			}
+		}
+		return Alive;
+	}
+
+	static void SyncAliveCountToGameState(UWorld* World, const TSet<TWeakObjectPtr<APlayerState>>& AlivePlayers)
+	{
+		if (!World) return;
+		APOStageGameState* GS = World->GetGameState<APOStageGameState>();
+		if (!GS) return;
+
+		const int32 NewAlive = ComputeAliveCount(AlivePlayers);
+		GS->ServerSetAlivePlayerCount(NewAlive);
+	}
+}
+
 APOStageGameMode::APOStageGameMode()
 {
 	NumAIsToSpawn = 8;
@@ -98,6 +127,9 @@ void APOStageGameMode::BeginPlay()
 		}
 		LOG_NET(POLog, Warning, TEXT("[StageGM] AlivePlayers initialized: %d"), AlivePlayers.Num());
 	}
+
+	// ★ 초기 생존자 수 동기화
+	SyncAliveCountToGameState(GetWorld(), AlivePlayers);
 
 	if (APOStageGameState* GS = GetGameState<APOStageGameState>())
 	{
@@ -209,7 +241,10 @@ void APOStageGameMode::PostLogin(APlayerController* NewPlayer)
 		}
 
 		RestartPlayer(NewPlayer);
-		
+
+		// ★ 생존자 수 동기화
+		SyncAliveCountToGameState(GetWorld(), AlivePlayers);
+
 		if (const APOStageGameState* GS = GetGameState<APOStageGameState>())
 		{
 			if (GS->GetPhase() == EPOStagePhase::Active)
@@ -239,6 +274,10 @@ void APOStageGameMode::Logout(AController* Exiting)
 				*PS->GetPlayerName(), bRemoved ? TEXT("true") : TEXT("false"));
 
 			CompactAlivePlayers();
+
+			// ★ 생존자 수 동기화
+			SyncAliveCountToGameState(GetWorld(), AlivePlayers);
+
 			TryDecideWinner();
 		}
 	}
@@ -263,7 +302,10 @@ void APOStageGameMode::HandleSeamlessTravelPlayer(AController*& Controller)
 				PS->SetAlive_ServerOnly(true);
 			}
 		}
-		
+
+		// ★ 생존자 수 동기화
+		SyncAliveCountToGameState(GetWorld(), AlivePlayers);
+
 		if (IGenericTeamAgentInterface* TeamAgent = Cast<IGenericTeamAgentInterface>(Controller))
 		{
 			const FGenericTeamId NewTeamID = GetTeamIdForPlayer(Cast<APlayerController>(Controller));
@@ -437,6 +479,10 @@ void APOStageGameMode::NotifyCharacterDied(AController* VictimController, AContr
 	}
 
 	CompactAlivePlayers();
+
+	// 생존자 수 동기화
+	SyncAliveCountToGameState(GetWorld(), AlivePlayers);
+
 	TryDecideWinner();
 }
 
@@ -556,6 +602,9 @@ void APOStageGameMode::HandlePhaseChanged(EPOStagePhase NewPhase)
 
 			bActivatedWithEnoughPlayers = true;
 			GS->ServerStartStageCountdown(StageSeconds);
+
+			// Active 진입 시점에도 한 번 동기화
+			SyncAliveCountToGameState(GetWorld(), AlivePlayers);
 		}
 	}
 }
@@ -596,6 +645,9 @@ void APOStageGameMode::ResetAllPlayerStatesForMatchStart()
 
 	bAIWipedAtRoundEnd = false;
 	bGameEndStarted    = false;
+
+	// 매치 리셋 후에도 동기화
+	SyncAliveCountToGameState(GetWorld(), AlivePlayers);
 }
 
 void APOStageGameMode::BeginRoundEndPhase()
