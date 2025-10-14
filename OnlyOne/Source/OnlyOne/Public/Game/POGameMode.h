@@ -17,7 +17,7 @@ class ONLYONE_API APOGameMode : public AGameMode
 public:
 	virtual APlayerController* SpawnPlayerController(ENetRole InRemoteRole, const FString& Options) override;
 
-private:
+protected:
 	FGenericTeamId GetTeamIdForPlayer(APlayerController* PlayerController);
 
 	int32 PlayerCount = 0;

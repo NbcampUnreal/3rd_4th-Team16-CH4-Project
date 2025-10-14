@@ -231,6 +231,23 @@ void APOStageGameMode::Logout(AController* Exiting)
 	Super::Logout(Exiting);
 }
 
+void APOStageGameMode::HandleSeamlessTravelPlayer(AController*& Controller)
+{
+	Super::HandleSeamlessTravelPlayer(Controller);
+
+	if (Controller)
+	{
+		// 컨트롤러가 팀 인터페이스를 지원하는지 확인
+		if (IGenericTeamAgentInterface* TeamAgent = Cast<IGenericTeamAgentInterface>(Controller))
+		{
+			// 부모 클래스(POGameMode)의 함수를 호출하여 고유 ID를 받아옴
+			const FGenericTeamId NewTeamID = GetTeamIdForPlayer(Cast<APlayerController>(Controller));
+			TeamAgent->SetGenericTeamId(NewTeamID);
+			LOG_NET(POLog, Warning, TEXT("[StageGM] 원활한 이동 플레이어에게 Team ID %d 할당: %s"), NewTeamID.GetId(), *Controller->GetName());
+		}
+	}
+}
+
 UClass* APOStageGameMode::GetDefaultPawnClassForController_Implementation(AController* InController)
 {
 	return PlayerPawnClass
