@@ -10,6 +10,9 @@
 
 class UBoxComponent;
 class UAudioComponent;
+class UPrimitiveComponent;
+class UHierarchicalInstancedStaticMeshComponent;
+class UInstancedStaticMeshComponent;
 UCLASS()
 class ONLYONE_API APOGimmickBase : public AActor
 {
@@ -29,7 +32,7 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UStaticMeshComponent> StaticMesh;
 
-	#pragma endregion 
+#pragma endregion 
 
 #pragma region config
 	
@@ -40,8 +43,8 @@ protected:
 	bool bDestroyed = true;
 
 #pragma endregion
-
 	virtual void BeginPlay() override;
+	
 	
 	UFUNCTION()
 	void OnBeginOverlap(UPrimitiveComponent* comp, AActor* other, UPrimitiveComponent* otherComp
@@ -67,8 +70,8 @@ protected:
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	UPROPERTY(VisibleAnywhere,BlueprintReadWrite,category="Network")
-	float NetCullDistance;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Network", meta=(ClampMin="0.0"))
+	float NetCullDistance = 750.f;
 
 #pragma endregion
 

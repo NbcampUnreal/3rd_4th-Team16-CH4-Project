@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 public class OnlyOneClientTarget : TargetRules
 {
-	public OnlyOneClientTarget(TargetInfo Target) : base(Target)
+	public OnlyOneClientTarget( TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Client;
 		DefaultBuildSettings = BuildSettingsVersion.V5;
