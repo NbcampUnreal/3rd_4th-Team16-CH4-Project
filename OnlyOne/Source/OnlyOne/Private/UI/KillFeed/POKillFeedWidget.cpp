@@ -18,6 +18,7 @@ void UPOKillFeedWidget::NativeConstruct()
 		{
 			BoundGameState = StageGameState;
 			StageGameState->OnKillEvent.AddDynamic(this, &UPOKillFeedWidget::AddKillFeedEntry);
+			UE_LOG(LogTemp, Log, TEXT("KillFeedWidget: Bound to OnKillEvent"));
 		}
 	}
 }
