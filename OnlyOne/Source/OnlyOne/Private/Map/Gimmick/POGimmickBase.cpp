@@ -1,19 +1,17 @@
 #include "Map/Gimmick/POGimmickBase.h"
 
 #include "AbilitySystemComponent.h"
-#include "AbilitySystemInterface.h"          
-#include "GameplayEffectTypes.h"
+#include "AbilitySystemInterface.h"
 #include "Components/AudioComponent.h"
 #include "Components/BoxComponent.h"
-#include "Components/StaticMeshComponent.h"  
-#include "Compression/lz4.h"
-#include "GameFramework/Pawn.h"              
+#include "Components/StaticMeshComponent.h"
+#include "GameFramework/Pawn.h"
+#include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
 
-
-APOGimmickBase::APOGimmickBase() :
- NetCullDistance(750.f)
+APOGimmickBase::APOGimmickBase() 
 {
-    PrimaryActorTick.bCanEverTick = true;
+    PrimaryActorTick.bCanEverTick = false;
     bReplicates = true; 
 
     Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
@@ -28,17 +26,29 @@ APOGimmickBase::APOGimmickBase() :
 
     StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
     StaticMesh->SetupAttachment(Root);
-
-    SetNetCullDistanceSquared(NetCullDistance * NetCullDistance);
+    
+    
 }
+
 
 void APOGimmickBase::BeginPlay()
 {
     Super::BeginPlay();
     BoxCollision->OnComponentBeginOverlap.AddDynamic(this, &APOGimmickBase::OnBeginOverlap);
+
+    if (HasAuthority())
+    {
+        const float R = NetCullDistance;                 
+        SetNetCullDistanceSquared(FMath::Square(R));
+    }
+
+    // 2) 호스트/클라 공통: 렌더 컷을 같은 값으로
+    if (StaticMesh)
+    {
+        StaticMesh->bNeverDistanceCull = false;
+        StaticMesh->SetCullDistance(NetCullDistance);    
+    }
 }
-
-
 
 // Only for player controlled pawn
 bool APOGimmickBase::CanActivate_Implementation(AActor* Target) const
