@@ -23,7 +23,7 @@ APODoor::APODoor()
 	InteractWidgetComponent->SetupAttachment(RootComponent);
 	InteractWidgetComponent->SetRelativeLocation(FVector(0.0f, 0.0f, InteractionUIOffsetZ)); // 아이템 위쪽에 표시
 	InteractWidgetComponent->SetWidgetSpace(EWidgetSpace::Screen); // 3D 공간에 표시
-	InteractWidgetComponent->SetDrawSize(FVector2D(200.0f, 100.0f)); // UI 크기 설정
+	InteractWidgetComponent->SetDrawSize(FVector2D(1200.0f, 100.0f)); // UI 크기 설정
 	InteractWidgetComponent->SetVisibility(false); // 기본적으로 숨김
 }
 
@@ -97,6 +97,7 @@ void APODoor::ShowInteractionUI()
 			InteractWidgetComponent->SetWidgetClass(InteractWidgetClass);
 		}
 		
+		InteractWidgetComponent->SetDrawSize(FVector2D(400.0f, 100.0f)); // UI 크기 설정
 		InteractWidgetComponent->SetVisibility(true);
 		UE_LOG(LogTemp, Log, TEXT("Interaction UI shown for %s"), *GetName());
 	}
