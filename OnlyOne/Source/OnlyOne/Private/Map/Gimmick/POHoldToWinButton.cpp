@@ -27,6 +27,13 @@ APOHoldToWinButton::APOHoldToWinButton()
 	InteractableComp = CreateDefaultSubobject<UPOInteractableComponent>("InteractableComp");
 	InteractableComp->SetupAttachment(Root);
 	
+	// InteractWidgetComponent 생성 및 설정
+	InteractWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("InteractionUIComponent"));
+	InteractWidgetComponent->SetupAttachment(RootComponent);
+	InteractWidgetComponent->SetRelativeLocation(FVector(0.0f, 0.0f, InteractionUIOffsetZ)); // 아이템 위쪽에 표시
+	InteractWidgetComponent->SetWidgetSpace(EWidgetSpace::Screen); // 3D 공간에 표시
+	InteractWidgetComponent->SetDrawSize(FVector2D(350.0f, 100.0f)); // UI 크기 설정
+	InteractWidgetComponent->SetVisibility(false); // 기본적으로 숨김
 }
 
 
@@ -232,6 +239,7 @@ void APOHoldToWinButton::ShowInteractionUI()
 			InteractWidgetComponent->SetWidgetClass(InteractWidgetClass);
 		}
 		
+		InteractWidgetComponent->SetDrawSize(FVector2D(350.0f, 100.0f)); // UI 크기 설정
 		InteractWidgetComponent->SetVisibility(true);
 		UE_LOG(LogTemp, Log, TEXT("Interaction UI shown for %s"), *GetName());
 	}
