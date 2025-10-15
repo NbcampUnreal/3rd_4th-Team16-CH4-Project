@@ -477,7 +477,15 @@ void APOStageGameMode::NotifyCharacterDied(AController* VictimController, AContr
 		AlivePlayers.Remove(VictimPS);
 		LOG_NET(POLog, Log, TEXT("[StageGM] Dead : %s, AliveNow=%d"), *VictimPS->GetPlayerName(), AlivePlayers.Num());
 	}
+	
+	if (APOStageGameState* GS = GetGameState<APOStageGameState>())
+	{
+		APlayerState* KillerForEvent = (KillerPS && KillerPS != VictimPS) ? static_cast<APlayerState*>(KillerPS) : nullptr;
+		APlayerState* VictimForEvent = static_cast<APlayerState*>(VictimPS);
 
+		GS->ServerPublishKillEvent(KillerForEvent, VictimForEvent);
+	}
+	
 	CompactAlivePlayers();
 
 	// 생존자 수 동기화
