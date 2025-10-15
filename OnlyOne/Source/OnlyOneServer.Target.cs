@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 public class OnlyOneServerTarget : TargetRules
 {
-	public OnlyOneServerTarget(TargetInfo Target) : base(Target)
+	public OnlyOneServerTarget( TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Server;
 		DefaultBuildSettings = BuildSettingsVersion.V5;
