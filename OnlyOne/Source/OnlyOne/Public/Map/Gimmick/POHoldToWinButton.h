@@ -100,6 +100,17 @@ public:
 	virtual bool IsInteractable() const override;
 	virtual void ShowInteractionUI() override;
 	virtual void HideInteractionUI()override;
+	
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	TSubclassOf<UUserWidget> InteractWidgetClass;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
+	TObjectPtr<UWidgetComponent> InteractWidgetComponent;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	float InteractionUIOffsetZ = 50.0f;
+	
 #pragma endregion 
 	
 };

@@ -224,10 +224,30 @@ bool APOHoldToWinButton::IsInteractable() const
 
 void APOHoldToWinButton::ShowInteractionUI()
 {
+	if (InteractWidgetComponent && InteractWidgetClass)
+	{
+		// 위젯 클래스가 설정되어 있으면 위젯 생성
+		if (!InteractWidgetComponent->GetWidget())
+		{
+			InteractWidgetComponent->SetWidgetClass(InteractWidgetClass);
+		}
+		
+		InteractWidgetComponent->SetVisibility(true);
+		UE_LOG(LogTemp, Log, TEXT("Interaction UI shown for %s"), *GetName());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("InteractionUIComponent or InteractionUIWidgetClass is null for %s"), *GetName());
+	}
 }
 
 void APOHoldToWinButton::HideInteractionUI()
 {
+	if (InteractWidgetComponent)
+	{
+		InteractWidgetComponent->SetVisibility(false);
+		UE_LOG(LogTemp, Log, TEXT("Interaction UI hidden for %s"), *GetName());
+	}
 }
 
 void APOHoldToWinButton::ServerStartHold_Implementation(APawn* InPawn)
