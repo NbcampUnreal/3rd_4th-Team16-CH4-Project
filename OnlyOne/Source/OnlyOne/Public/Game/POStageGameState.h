@@ -7,7 +7,6 @@
 #include "GameFramework/PlayerState.h"
 #include "POStageGameState.generated.h"
 
-
 UENUM(BlueprintType)
 enum class EPOStagePhase : uint8
 {
@@ -26,10 +25,10 @@ struct FPOKillEvent
 public:
 	UPROPERTY(BlueprintReadOnly)
 	APlayerState* Killer = nullptr;
-	
+
 	UPROPERTY(BlueprintReadOnly)
 	APlayerState* Victim = nullptr;
-	
+
 	UPROPERTY(BlueprintReadOnly)
 	int32 Serial = 0;
 
@@ -39,8 +38,19 @@ public:
 	{}
 };
 
+DECLARE_MULTICAST_DELEGATE_OneParam(FPOOnPhaseChanged, EPOStagePhase);
+DECLARE_MULTICAST_DELEGATE_OneParam(FPOOnPrepTimeUpdated, int32);
+DECLARE_MULTICAST_DELEGATE_OneParam(FPOOnStageTimeUpdated, int32);
+DECLARE_MULTICAST_DELEGATE(FPOOnStageTimeExpired);
+DECLARE_MULTICAST_DELEGATE_OneParam(FPOOnWinnerDecided, APlayerState*);
+
+/** C++용(비동적) 생존자 수 변경 델리게이트 */
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnAliveCountChanged, int32 /*NewAliveCount*/);
+/** BP용(동적) 생존자 수 변경 델리게이트 */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAliveCountChangedBP, int32, NewAliveCount);
+
 /**
- * 
+ * Stage GameState
  */
 UCLASS()
 class ONLYONE_API APOStageGameState : public AGameState
@@ -50,12 +60,12 @@ class ONLYONE_API APOStageGameState : public AGameState
 public:
 	APOStageGameState();
 
-	/* Phase */
+	/* ===== Phase ===== */
 	UFUNCTION(BlueprintPure, Category="PO|Phase")
 	EPOStagePhase GetPhase() const { return Phase; }
 
 	UFUNCTION(Server, Reliable, Category="PO|Phase")
-	void ServerSetPhase(EPOStagePhase NewPhase); 
+	void ServerSetPhase(EPOStagePhase NewPhase);
 
 	UFUNCTION(BlueprintPure, Category="PO|Phase")
 	int32 GetPrepRemainingSeconds() const { return PrepRemainingSeconds; }
@@ -63,55 +73,57 @@ public:
 	UFUNCTION(Category="PO|Phase")
 	void ServerStartPrepCountdown(int32 InSeconds);
 
-	/* Stage Time */
+	/* ===== Stage Time ===== */
 	UFUNCTION(BlueprintPure, Category="PO|StageTime")
 	int32 GetStageRemainingSeconds() const { return StageRemainingSeconds; }
 
 	UFUNCTION(Category="PO|StageTime")
 	void ServerStartStageCountdown(int32 InSeconds);
 
-	/* Winner */
+	/* ===== Winner ===== */
 	UFUNCTION(BlueprintPure, Category="PO|Result")
 	APlayerState* GetWinnerPlayerState() const { return WinnerPS; }
 
 	UFUNCTION(Server, Reliable, Category="PO|Result")
 	void ServerSetWinner(APlayerState* InWinner);
-	
+
 	UFUNCTION(Server, Reliable, Category="PO|Result")
-	void ServerClearWinner(); 
+	void ServerClearWinner();
 
-	/* Delegates */
-	DECLARE_MULTICAST_DELEGATE_OneParam(FPOOnPhaseChanged, EPOStagePhase);
+	/* ===== Delegates ===== */
 	FPOOnPhaseChanged OnPhaseChanged;
-
-	DECLARE_MULTICAST_DELEGATE_OneParam(FPOOnPrepTimeUpdated, int32);
 	FPOOnPrepTimeUpdated OnPrepTimeUpdated;
-
-	DECLARE_MULTICAST_DELEGATE_OneParam(FPOOnStageTimeUpdated, int32);
 	FPOOnStageTimeUpdated OnStageTimeUpdated;
-
-	DECLARE_MULTICAST_DELEGATE(FPOOnStageTimeExpired);
 	FPOOnStageTimeExpired OnStageTimeExpired;
-	
-	DECLARE_MULTICAST_DELEGATE_OneParam(FPOOnWinnerDecided, APlayerState*);
 	FPOOnWinnerDecided OnWinnerDecided;
 
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPOnChangedAlivePlayerCount, FString&, Winner);
-	UPROPERTY()
-	FPOnChangedAlivePlayerCount OnChangedAlivePlayerCount;
+	/** (이전 정의 정리) 생존자 수 변경: BP에서 바인딩할 수 있도록 동적 델리게이트 제공 */
+	UPROPERTY(BlueprintAssignable, Category="PO|Alive")
+	FOnAliveCountChangedBP OnAliveCountChangedBP;
+
+	/** C++에서 바인딩할 수 있는 비동적 델리게이트 */
+	FOnAliveCountChanged OnAliveCountChanged;
+
+	/** 서버 전용: 생존자 수 설정(RepNotify 트리거) */
+	UFUNCTION(Server, Reliable, Category="PO|Alive")
+	void ServerSetAlivePlayerCount(int32 NewCount);
+
+	/** 현재 생존자 수(RepNotify) */
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_AlivePlayerCount, Category="PO|Alive")
+	int32 AlivePlayerCount = 0;
 
 	/** ===== Kill Event: UI 전달용 델리게이트 및 API ===== */
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FPOOnKillEvent, const FString&, KillerName, const FString&, VictimName);
 
 	/** UI가 구독할 델리게이트 (Killer/Victim 전달) */
-	UPROPERTY()
+	UPROPERTY(BlueprintAssignable, Category="PO|Kill")
 	FPOOnKillEvent OnKillEvent;
-	
+
 	UFUNCTION(Category="PO|Event")
 	void ServerPublishKillEvent(APlayerState* Killer, APlayerState* Victim);
 
-	/* ===== protected: Unreal Lifecycle & RepNotify ===== */
 protected:
+	/* ===== Unreal Lifecycle & RepNotify ===== */
 	virtual void BeginPlay() override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
@@ -132,8 +144,12 @@ protected:
 	UFUNCTION()
 	void OnRep_LastKillEvent();
 
-	/* ===== protected: Replicated State ===== */
+	/** AlivePlayerCount 복제 알림 → 클라에서 생존자 수 델리게이트 브로드캐스트 */
+	UFUNCTION()
+	void OnRep_AlivePlayerCount();
+
 protected:
+	/* ===== Replicated State ===== */
 	UPROPERTY(ReplicatedUsing=OnRep_Phase)
 	EPOStagePhase Phase;
 
@@ -150,13 +166,13 @@ protected:
 	UPROPERTY(ReplicatedUsing=OnRep_LastKillEvent)
 	FPOKillEvent LastKillEvent;
 
-	/* ===== private: Timers & Internal Ticks ===== */
 private:
+	/* ===== Timers & Internal Ticks ===== */
 	FTimerHandle PrepTimerHandle;
 	FTimerHandle StageTimerHandle;
 
 	void TickPrepCountdown();
 	void TickStageCountdown();
-	
+
 	int32 KillEventSerial = 0;
 };
