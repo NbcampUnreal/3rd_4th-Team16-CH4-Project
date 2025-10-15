@@ -24,7 +24,6 @@ APOStageGameState::APOStageGameState()
 {
 	Phase = EPOStagePhase::Prep;
 	PrepRemainingSeconds = 0;
-	
 	KillEventSerial = 0;
 
 	LOG_NET(
@@ -39,15 +38,15 @@ APOStageGameState::APOStageGameState()
 void APOStageGameState::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	if (!HasAuthority())
 	{
 		OnRep_Phase();
 		OnRep_PrepRemainingSeconds();
 		OnRep_StageRemainingSeconds();
+		OnRep_AlivePlayerCount();
 	}
 }
-
 
 void APOStageGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -58,7 +57,7 @@ void APOStageGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	DOREPLIFETIME(APOStageGameState, StageRemainingSeconds);
 	DOREPLIFETIME(APOStageGameState, WinnerPS);
 	DOREPLIFETIME(APOStageGameState, LastKillEvent);
-	
+	DOREPLIFETIME(APOStageGameState, AlivePlayerCount);
 }
 
 void APOStageGameState::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -97,7 +96,10 @@ void APOStageGameState::ServerSetWinner_Implementation(APlayerState* InWinner)
 
 void APOStageGameState::ServerClearWinner_Implementation()
 {
-	if (!HasAuthority()) return;
+	if (!HasAuthority())
+	{
+		return;
+	}
 	WinnerPS = nullptr;
 	OnRep_WinnerPS();
 }
@@ -274,8 +276,19 @@ void APOStageGameState::OnRep_StageRemainingSeconds()
 
 void APOStageGameState::OnRep_WinnerPS()
 {
-	LOG_NET(POLog, Warning, TEXT("[StageGS] OnRep_WinnerPS: %s"),
-		WinnerPS ? *WinnerPS->GetPlayerName() : TEXT("None"));
+	auto GetNicknameSafe = [](APlayerState* PS) -> FString
+	{
+		if (const APOLobbyPlayerState* LPS = Cast<APOLobbyPlayerState>(PS))
+		{
+			return LPS->GetDisplayNickname();
+		}
+		return PS ? PS->GetPlayerName() : TEXT("Unknown");
+	};
+
+	const FString WinnerName = GetNicknameSafe(WinnerPS);
+
+	LOG_NET(POLog, Warning, TEXT("[StageGS] OnRep_WinnerPS: %s"), *WinnerName);
+
 	OnWinnerDecided.Broadcast(WinnerPS);
 }
 
@@ -285,7 +298,7 @@ void APOStageGameState::ServerPublishKillEvent(APlayerState* Killer, APlayerStat
 	{
 		return;
 	}
-	
+
 	++KillEventSerial;
 	LastKillEvent.Killer = Killer;
 	LastKillEvent.Victim = Victim;
@@ -299,7 +312,7 @@ void APOStageGameState::ServerPublishKillEvent(APlayerState* Killer, APlayerStat
 		Victim ? *Victim->GetPlayerName() : TEXT("None"),
 		LastKillEvent.Serial
 	);
-	
+
 	OnRep_LastKillEvent();
 }
 
@@ -321,4 +334,34 @@ void APOStageGameState::OnRep_LastKillEvent()
 
 	LOG_NET(POLog, Log, TEXT("[StageGS] OnRep_LastKillEvent: %s ▶ %s (Serial=%d)"),
 		*KillerName, *VictimName, LastKillEvent.Serial);
+}
+
+void APOStageGameState::ServerSetAlivePlayerCount_Implementation(int32 NewCount)
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	if (NewCount < 0)
+	{
+		NewCount = 0;
+	}
+
+	if (AlivePlayerCount != NewCount)
+	{
+		AlivePlayerCount = NewCount;
+		
+		OnAliveCountChanged.Broadcast(AlivePlayerCount);
+		UE_LOG(LogTemp, Verbose, TEXT("[StageGS] ServerSetAlivePlayerCount -> %d"), AlivePlayerCount);
+	}
+}
+
+void APOStageGameState::OnRep_AlivePlayerCount()
+{
+	// 클라이언트에서 UI로 전달
+	OnAliveCountChanged.Broadcast(AlivePlayerCount);
+	OnAliveCountChangedBP.Broadcast(AlivePlayerCount);
+
+	UE_LOG(LogTemp, Verbose, TEXT("[StageGS] OnRep_AlivePlayerCount -> %d"), AlivePlayerCount);
 }

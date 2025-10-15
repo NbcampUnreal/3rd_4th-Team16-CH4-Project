@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -7,6 +7,7 @@
 #include "Interfaces/POUIStackingInterface.h"
 #include "POPlayerController.generated.h"
 
+class APOStageGameState;
 class UPOWinnerDecidedWidget;
 class UPOReturnLobbyWidget;
 class UPOExitGameWidget;
@@ -22,6 +23,7 @@ class APOPlayerCharacter;
 DECLARE_MULTICAST_DELEGATE_ThreeParams(FPOOnSetPlayerStateEntry, const FString& /*Nickname*/, bool /*bIsAlive*/, int32 /*KillCount*/);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPOOnTimerChanged, int32, NewTimeSeconds);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPOOnSmokeCountChanged, int32, NewSmokeCount);
+/** UI(위젯)에서 구독하는 생존자 수 델리게이트(동적) */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPOOnChangedAlivePlayer, int32, NewAlivePlayerCount);
 
 USTRUCT()
@@ -61,7 +63,7 @@ public:
 #pragma region Spectator
 	void StartSpectating(const APawn* DeadCharacter);
 	void SpectatorNextTarget();
-	void SpectatorPreviousTarget(); 
+	void SpectatorPreviousTarget();
 #pragma endregion
 	
 private:
@@ -74,7 +76,6 @@ private:
 
 	UPROPERTY(Replicated)
 	FGenericTeamId TeamID;
-  
 #pragma endregion
 
 #pragma region Spectator Internals
@@ -90,7 +91,7 @@ private:
 	int32 CurrentSpectatorIndex = 0;
 
 	void BuildSpectatorTargets();
-	void CycleSpectator(int32 Direction); // 순환 로직을 처리할 공통 함수 추가
+	void CycleSpectator(int32 Direction);
 #pragma endregion
 
 	/* UI 섹션 */
@@ -98,16 +99,17 @@ private:
 	bool bIsListVisible = false;
 
 public:
-	// NOTE: 외부에서 Broadcast하여 리스트를 갱신할 수 있는 델리게이트
+	/** 외부에서 Broadcast하여 리스트를 갱신할 수 있는 델리게이트 */
 	FPOOnSetPlayerStateEntry OnSetPlayerStateEntry;
 
-	// Timer 변경을 알리는 델리게이트 (BP에서 바인드 가능)
+	/** Timer 변경 델리게이트 (BP 바인드 가능) */
 	UPROPERTY(BlueprintAssignable, Category = "Timer")
 	FPOOnTimerChanged OnPreTimerChanged;
 
 	UPROPERTY()
 	FPOOnSmokeCountChanged OnSmokeCountChanged;
 
+	/** 위젯이 구독하는 생존자 수 델리게이트(동적) */
 	UPROPERTY()
 	FPOOnChangedAlivePlayer OnChangedAlivePlayer;
 	
@@ -132,7 +134,7 @@ public:
 	void ShowSpectatorHelpWidget();
 	void HideSpectatorHelpWidget();
 
-	// 승자가 결졍되었을 때 호출되는 위젯
+	// 승자가 결정되었을 때 호출되는 위젯
 	void OnDecideWinner(APlayerState* WinnerPS);
 	
 	void OnEscapeMenu();
@@ -201,5 +203,24 @@ protected:
 
 private:
 	void OnPlayerStateUpdated(const FString& Nickname, bool bIsAlive, int32 KillCount);
-};
 
+	/* ===== StageGameState 생존자 수 델리게이트 중계 ===== */
+	/** GS 델리게이트 재바인딩(교체/여행 대비) */
+	void RebindStageGSDelegates();
+
+	/** GS → PC 중계 핸들러 */
+	UFUNCTION()
+	void HandleAliveCountChanged_FromGS(int32 NewCount);
+
+	/** 중복 바인딩 방지용 캐시 */
+	TWeakObjectPtr<APOStageGameState> CachedStageGS;
+
+	
+private:
+	// ===== AliveCount 폴링 =====
+	FTimerHandle AlivePollHandle;
+	int32 LastAliveCount = TNumericLimits<int32>::Min();
+
+	UFUNCTION()
+	void PollAliveCount();
+};
