@@ -109,6 +109,12 @@ void APOPlayerCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 
+	// 어빌리티가 이미 초기화되었다면, 아무것도 하지 않고 함수를 종료
+	if (bAbilitiesInitialized)
+	{
+		return;
+	}
+
 	if (!CharacterStartUpData.IsNull())
 	{
 		if (UPODataAsset_StartupDataBase* LoadedData = CharacterStartUpData.LoadSynchronous())
@@ -116,8 +122,11 @@ void APOPlayerCharacter::PossessedBy(AController* NewController)
 			constexpr int32 AbilityApplyLevel = 1;
 
 			LoadedData->GiveToAbilitySystemComponent(POAbilitySystemComponent, AbilityApplyLevel);
+
+			bAbilitiesInitialized = true;
 		}
 	}
+	
 	if (POAbilitySystemComponent && !bSlowTagBind)
 	{
 		// 슬로우 태그 add/remove시 속도 재계산

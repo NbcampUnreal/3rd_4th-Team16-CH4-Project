@@ -56,6 +56,9 @@ protected:
 	UFUNCTION()
 	void OnRep_IsDead();
 
+	// 어빌리티가 이미 초기화되었는지 확인하기 위한 플래그
+	bool bAbilitiesInitialized = false;
+
 private:
 	void ServerSideInit();
 	void ClientSideInit();
