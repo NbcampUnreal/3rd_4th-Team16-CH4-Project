@@ -1,6 +1,8 @@
 ﻿// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "game/POLobbyGameMode.h"
+
+#include "Controllers/POServerLobbyPlayerController.h"
 #include "game/POLobbyGameState.h"
 #include "game/POLobbyPlayerState.h"
 #include "Engine/World.h"
@@ -8,6 +10,9 @@
 #include "GameFramework/GameSession.h"
 #include "GameFramework/GameStateBase.h"
 #include "OnlyOne/OnlyOne.h"
+
+#include "UObject/Package.h"
+#include "Kismet/GameplayStatics.h"
 
 APOLobbyGameMode::APOLobbyGameMode()
 {
@@ -162,6 +167,10 @@ void APOLobbyGameMode::CancelCountdown(const TCHAR* Reason)
 	{
 		LGS->SetAllReady(false);
 		LGS->SetCountdownRemaining(0);
+		if (APOServerLobbyPlayerController* PC = Cast<APOServerLobbyPlayerController>(GetWorld()->GetFirstPlayerController()))
+		{
+			PC->OnGameStartTimerChanged.Broadcast(-1);
+		}
 	}
 
 	LOG_NET(POLog, Warning, TEXT("[LobbyGM] Countdown cancelled: %s"), Reason ? Reason : TEXT("Unknown"));
@@ -185,6 +194,10 @@ void APOLobbyGameMode::TickCountdown()
 	if (CountdownRemaining > 0)
 	{
 		LOG_NET(POLog, Warning, TEXT("[LobbyGM] Countdown ticking: %d"), CountdownRemaining);
+		if (APOServerLobbyPlayerController* PC = Cast<APOServerLobbyPlayerController>(GetWorld()->GetFirstPlayerController()))
+		{
+			PC->OnGameStartTimerChanged.Broadcast(CountdownRemaining);
+		}
 		return;
 	}
 
@@ -192,6 +205,18 @@ void APOLobbyGameMode::TickCountdown()
 	bCountdownRunning = false;
 
 	OnCountdownFinished();
+}
+
+static FString GetCurrentMapPackagePath(UWorld* World)
+{
+	if (!World) return FString();
+
+	if (UPackage* Pkg = World->GetOutermost())
+	{
+		return Pkg->GetName(); // 예: "/Game/All/Game/Levels/L_ServerLobby"
+	}
+	
+	return UGameplayStatics::GetCurrentLevelName(World, /*bRemovePrefix=*/true);
 }
 
 void APOLobbyGameMode::OnCountdownFinished()
@@ -225,10 +250,16 @@ void APOLobbyGameMode::OnCountdownFinished()
 		World->GetTimerManager().SetTimer(DelayedTravelHandle, this, &APOLobbyGameMode::OnCountdownFinished, 0.25f, false);
 		return;
 	}
-
-	static const FString TargetMapPath = TEXT("/Game/Levels/L_TestMainLevel");
+	// 기존
+	//static const FString TargetMapPath = TEXT("/Game/Levels/L_TestMainLevel");
 	// ListenServer 최초 open 시 이미 ?listen 사용했으므로 재여행에서는 불필요
-	const FString TravelURL = TargetMapPath; 
+
+	static const FString TargetMapPath = TEXT("/Game/Levels/MainLevel");
+	
+	const FString ReturnLobbyPath = GetCurrentMapPackagePath(World);
+	
+	const FString TravelURL = FString::Printf(TEXT("%s?Return=%s"), *TargetMapPath, *ReturnLobbyPath);
+
 
 	LOG_NET(POLog, Warning, TEXT("[LobbyGM] Travelling to %s (Players=%d)"), *TravelURL, GetNumPlayers());
 

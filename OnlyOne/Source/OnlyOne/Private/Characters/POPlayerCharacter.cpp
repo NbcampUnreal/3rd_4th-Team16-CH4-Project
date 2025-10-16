@@ -2,6 +2,8 @@
 
 
 #include "Characters/POPlayerCharacter.h"
+
+#include "DebugHelper.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Components/Input/POInputComponent.h"
@@ -14,6 +16,9 @@
 #include "EnhancedInputSubsystems.h"
 #include "POFunctionLibrary.h"
 #include "POGameplayTags.h"
+#include "Components/Interact/POInteractManagerComponent.h"
+#include "InputCoreTypes.h"
+#include "Game/POGameInstance.h"
 
 APOPlayerCharacter::APOPlayerCharacter()
 {
@@ -44,6 +49,9 @@ APOPlayerCharacter::APOPlayerCharacter()
 	AttackHitCollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("Attack Hit Collision Box"));
 	AttackHitCollisionBox->SetupAttachment(GetMesh());
 
+	// Interact Component 세팅
+	InteractManagerComponent = CreateDefaultSubobject<UPOInteractManagerComponent>(TEXT("Interact Manager Component"));
+	
 	GetMesh()->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
 }
 
@@ -74,6 +82,7 @@ void APOPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	POInputComponent->BindNativeInputAction(InputConfigDataAsset, POGameplayTags::InputTag_Jump, ETriggerEvent::Triggered, this, &ThisClass::Jump);
 	POInputComponent->BindNativeInputAction(InputConfigDataAsset, POGameplayTags::InputTag_Walk, ETriggerEvent::Triggered, this, &ThisClass::Input_Walk);
 	POInputComponent->BindNativeInputAction(InputConfigDataAsset, POGameplayTags::InputTag_Sprint, ETriggerEvent::Triggered, this, &ThisClass::Input_Sprint);
+	POInputComponent->BindNativeInputAction(InputConfigDataAsset, POGameplayTags::InputTag_Interaction, ETriggerEvent::Triggered, this, &ThisClass::Input_Interaction);
 	
 	POInputComponent->BindAbilityInputAction(InputConfigDataAsset, this, &ThisClass::Input_AbilityInputPressed, &ThisClass::Input_AbilityInputReleased);
 }
@@ -100,6 +109,12 @@ void APOPlayerCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 
+	// 어빌리티가 이미 초기화되었다면, 아무것도 하지 않고 함수를 종료
+	if (bAbilitiesInitialized)
+	{
+		return;
+	}
+
 	if (!CharacterStartUpData.IsNull())
 	{
 		if (UPODataAsset_StartupDataBase* LoadedData = CharacterStartUpData.LoadSynchronous())
@@ -107,8 +122,50 @@ void APOPlayerCharacter::PossessedBy(AController* NewController)
 			constexpr int32 AbilityApplyLevel = 1;
 
 			LoadedData->GiveToAbilitySystemComponent(POAbilitySystemComponent, AbilityApplyLevel);
+
+			bAbilitiesInitialized = true;
 		}
 	}
+	
+	if (POAbilitySystemComponent && !bSlowTagBind)
+	{
+		// 슬로우 태그 add/remove시 속도 재계산
+		SlowTagDelegate =
+			POAbilitySystemComponent
+			->RegisterGameplayTagEvent(POGameplayTags::Shared_Status_Slow,EGameplayTagEventType::NewOrRemoved)
+			.AddUObject(this, &ThisClass::OnSlowTagChanged);
+
+		bSlowTagBind = true;
+	}
+
+	// 최초 계산
+	UpdateMovementSpeed();
+}
+
+void APOPlayerCharacter::UnPossessed()
+{
+	UnbindSlowTagDelegate();   //UnPossessed되면 바인드 해제 
+	Super::UnPossessed();
+}
+
+void APOPlayerCharacter::UnbindSlowTagDelegate()
+{
+	if (POAbilitySystemComponent && SlowTagDelegate.IsValid())
+	{
+		POAbilitySystemComponent->UnregisterGameplayTagEvent(
+			SlowTagDelegate,
+			POGameplayTags::Shared_Status_Slow,
+			EGameplayTagEventType::NewOrRemoved);
+
+		SlowTagDelegate.Reset();
+	}
+
+	bSlowTagBind = false;
+}
+
+void APOPlayerCharacter::TryInteract(AActor* TargetActor)
+{
+	// TODO: 상호작용 시 캐릭터에 애니메이션 재생이 필요하면 추가
 }
 
 void APOPlayerCharacter::Server_SetWalking_Implementation(bool bNewIsWalking)
@@ -164,17 +221,28 @@ void APOPlayerCharacter::Input_Move(const FInputActionValue& InputActionValue)
 
 void APOPlayerCharacter::Input_Look(const FInputActionValue& InputActionValue)
 {
-	const FVector2D LookAxisVector = InputActionValue.Get<FVector2D>();
+    const FVector2D LookAxisVector = InputActionValue.Get<FVector2D>();
 
-	if (LookAxisVector.X != 0.f)
-	{
-		AddControllerYawInput(LookAxisVector.X);
-	}
+    // GameInstance의 마우스 감도(0~100)를 50 기준 1.0배로 스케일링 (0~2.0배)
+    float Scale = 1.f;
+    if (const UWorld* World = GetWorld())
+    {
+        if (const UPOGameInstance* GI = Cast<UPOGameInstance>(World->GetGameInstance()))
+        {
+            const float Sens01To100 = FMath::Clamp(GI->GetMouseSensitivity(), 0.f, 100.f);
+            Scale = FMath::Clamp(Sens01To100 / 50.f, 0.f, 2.f);
+        }
+    }
 
-	if (LookAxisVector.Y != 0.f)
-	{
-		AddControllerPitchInput(LookAxisVector.Y);
-	}
+    if (LookAxisVector.X != 0.f)
+    {
+        AddControllerYawInput(LookAxisVector.X * Scale);
+    }
+
+    if (LookAxisVector.Y != 0.f)
+    {
+        AddControllerPitchInput(LookAxisVector.Y * Scale);
+    }
 }
 
 void APOPlayerCharacter::Input_Walk(const FInputActionValue& InputActionValue)
@@ -190,6 +258,14 @@ void APOPlayerCharacter::Input_Sprint(const FInputActionValue& InputActionValue)
 	if (IsInputPressed(InputActionValue))
 	{
 		Server_SetSprinting(!bIsSprinting);
+	}
+}
+
+void APOPlayerCharacter::Input_Interaction(const FInputActionValue& InputActionValue)
+{
+	if (InteractManagerComponent)
+	{
+		InteractManagerComponent->TryInteract();
 	}
 }
 
@@ -214,6 +290,11 @@ bool APOPlayerCharacter::IsInputPressed(const FInputActionValue& InputActionValu
 	return InputActionValue.Get<bool>();
 }
 
+void APOPlayerCharacter::OnSlowTagChanged(const FGameplayTag Tag, int32 NewCount)
+{
+	UpdateMovementSpeed();
+}
+
 void APOPlayerCharacter::OnAttackHitBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (!HasAuthority() || !OtherActor)
@@ -235,6 +316,7 @@ void APOPlayerCharacter::OnAttackHitBoxOverlap(UPrimitiveComponent* OverlappedCo
 		}
 	}
 }
+
 
 void APOPlayerCharacter::PostInitializeComponents()
 {
@@ -260,16 +342,68 @@ void APOPlayerCharacter::SetMovementSpeed(const float NewMaxWalkSpeed)
 
 void APOPlayerCharacter::UpdateMovementSpeed()
 {
+	float Speed;
+
 	if (bIsSprinting)
 	{
-		SetMovementSpeed(SprintSpeed);
+		Speed = SprintSpeed;
 	}
 	else if (bIsWalking)
 	{
-		SetMovementSpeed(WalkSpeed);
+		Speed = WalkSpeed;
 	}
 	else
 	{
-		SetMovementSpeed(RunSpeed);
+		Speed = RunSpeed;
 	}
+
+	if (POAbilitySystemComponent &&
+		POAbilitySystemComponent->HasMatchingGameplayTag(POGameplayTags::Shared_Status_Slow))
+	{
+		Speed *= SlowMultiplier;  // 슬로우 적용
+	}
+
+	SetMovementSpeed(Speed);
+}
+
+void APOPlayerCharacter::Input_TestInteract()
+{
+	if (InteractManagerComponent)
+	{
+		InteractManagerComponent->TryInteract();
+		UE_LOG(LogTemp, Log, TEXT("E Key Pressed - TryInteract called") );
+	}
+}
+
+void APOPlayerCharacter::PlayMontageWithCallback(UAnimMontage* MontageToPlay, const FTimerDelegate& OnMontageEnded)
+{
+	if (MontageToPlay)
+	{
+		if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
+		{
+			// 지정된 몽타주를 재생하고, 재생된 몽타주의 길이(초)를 반환
+			const float MontageLength = AnimInstance->Montage_Play(MontageToPlay);
+			if (MontageLength > 0.f && OnMontageEnded.IsBound())
+			{
+				// 타이머 핸들을 생성 (타이머 매니저가 관리하는 고유 ID 역할)
+				FTimerHandle MontageTimer;
+
+				// 1. 월드의 타이머 매니저를 통해 MontageLength(재생 시간) 후에
+				// 2. OnMontageEnded 델리게이트를 호출하도록 타이머를 설정
+				// 3. 마지막 false → 반복 실행하지 않고 1회만 실행
+				GetWorld()->GetTimerManager().SetTimer(MontageTimer, OnMontageEnded, MontageLength, false);
+			}
+		}
+	}
+}
+
+void APOPlayerCharacter::Multicast_PlayMontage_Implementation(UAnimMontage* Montage)
+{
+	// 로컬 플레이어가 직접 조종하는 캐릭터가 아니라면, 즉시 재생
+	if (GetLocalRole() == ROLE_Authority && IsLocallyControlled())
+	{
+		return;
+	}
+
+	PlayMontageWithCallback(Montage, FTimerDelegate());
 }

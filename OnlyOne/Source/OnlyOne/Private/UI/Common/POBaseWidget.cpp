@@ -6,6 +6,7 @@
 void UPOBaseWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+	SetIsFocusable(true);
 }
 
 void UPOBaseWidget::NativeDestruct()

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BehaviorTree.h"
+#include "Game/POStageGameState.h"
 #include "Characters/POCharacterBase.h"
 #include "PONPCCharacter.generated.h"
 
@@ -16,6 +17,17 @@ class ONLYONE_API APONPCCharacter : public APOCharacterBase
 
 public:
 	APONPCCharacter();
+
+protected:
+	virtual void BeginPlay() override;
+
+	virtual void PossessedBy(AController* NewController) override;
+
+#pragma region Bindings
+
+	void HandleGamePhaseChanged(EPOStagePhase NewPhase);
+
+#pragma endregion
 
 #pragma region BehaviorTree
 
@@ -39,6 +51,14 @@ public:
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UNpcCombatComponent> NpcCombatComponent;
+
+#pragma endregion
+
+#pragma region RPC
+
+public:
+	UFUNCTION(NetMulticast, Reliable)
+	void SetCapsuleCollisionNoCollision_Multicast();
 
 #pragma endregion
 };

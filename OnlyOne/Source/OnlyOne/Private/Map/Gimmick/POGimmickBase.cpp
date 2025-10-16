@@ -1,18 +1,17 @@
 #include "Map/Gimmick/POGimmickBase.h"
 
 #include "AbilitySystemComponent.h"
-#include "AbilitySystemInterface.h"          
-#include "GameplayEffectTypes.h"
+#include "AbilitySystemInterface.h"
 #include "Components/AudioComponent.h"
 #include "Components/BoxComponent.h"
-#include "Compression/lz4.h"
-#include "GameFramework/Pawn.h"              
+#include "Components/StaticMeshComponent.h"
+#include "GameFramework/Pawn.h"
+#include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
 
-
-APOGimmickBase::APOGimmickBase() :
- NetCullDistance(750.f)
+APOGimmickBase::APOGimmickBase() 
 {
-    PrimaryActorTick.bCanEverTick = true;
+    PrimaryActorTick.bCanEverTick = false;
     bReplicates = true; 
 
     Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
@@ -25,26 +24,31 @@ APOGimmickBase::APOGimmickBase() :
     BoxCollision->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
     BoxCollision->SetGenerateOverlapEvents(true);
 
-    SetNetCullDistanceSquared(NetCullDistance * NetCullDistance);
+    StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
+    StaticMesh->SetupAttachment(Root);
+    
+    
 }
+
 
 void APOGimmickBase::BeginPlay()
 {
     Super::BeginPlay();
     BoxCollision->OnComponentBeginOverlap.AddDynamic(this, &APOGimmickBase::OnBeginOverlap);
-}
-void APOGimmickBase::Tick(float DeltaTime)
-{
-    Super::Tick(DeltaTime);
 
-    if (GetNetMode()==NM_DedicatedServer || HasAuthority())
+    if (HasAuthority())
     {
-        return;
+        const float R = NetCullDistance;                 
+        SetNetCullDistanceSquared(FMath::Square(R));
     }
-    DrawDebugSphere(GetWorld(), GetActorLocation(), NetCullDistance/2.f, 16, FColor::Green, false, 0.f);
+
+    // 2) Ìò∏Ïä§Ìä∏/ÌÅ¥Îùº Í≥µÌÜµ: Î†åÎçî Ïª∑ÏùÑ Í∞ôÏùÄ Í∞íÏúºÎ°ú
+    if (StaticMesh)
+    {
+        StaticMesh->bNeverDistanceCull = false;
+        StaticMesh->SetCullDistance(NetCullDistance);    
+    }
 }
-
-
 
 // Only for player controlled pawn
 bool APOGimmickBase::CanActivate_Implementation(AActor* Target) const
@@ -91,7 +95,7 @@ void APOGimmickBase::ActivateGimmick_Implementation(AActor* Target)
 {
 }
 
-//GASø¨∞·¡° 
+
 UAbilitySystemComponent* APOGimmickBase::GetASC(AActor* Actor)
 {
     if (!Actor)
@@ -113,7 +117,7 @@ void APOGimmickBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
     DOREPLIFETIME(APOGimmickBase, bConsumed);
 }
 
-//Gimmickπﬂµø ¿Ã»ƒ √≥∏Æ
+
 void APOGimmickBase::OnGimmickComplete_Implementation(AActor* Target)
 {
     if (!HasAuthority())

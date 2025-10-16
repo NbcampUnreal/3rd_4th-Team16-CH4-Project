@@ -15,6 +15,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlayerReady);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPlayerReadyStateChanged, const FJoinServerData&, PlayerData, bool, bIsReady);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerJoinLobby, const FJoinServerData&, NewPlayer);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerLeaveLobby, const FJoinServerData&, LeftPlayer);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPOServerLobbyOnTimerChanged, int32, NewTimeSeconds);
 
 
 UCLASS()
@@ -34,6 +35,10 @@ public:
 
 	UPROPERTY()
 	FOnPlayerLeaveLobby OnPlayerLeaveLobby;
+
+	// 로비 컨텍스트에서 사용할 타이머 델리게이트 (BP에서 바인드 가능)
+	UPROPERTY(BlueprintAssignable, Category = "Timer")
+	FPOServerLobbyOnTimerChanged OnGameStartTimerChanged;
 
 protected:
 	virtual void BeginPlay() override;

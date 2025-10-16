@@ -38,6 +38,12 @@ void UPOMainMenuWidget::NativeConstruct()
 		QuitButton->SetButtonText(FText::FromString("Quit"));
 		QuitButton->OnCustomButtonClicked.AddDynamic(this, &UPOMainMenuWidget::OnQuitClicked);
 	}
+
+	if (HowToPlayButton)
+	{
+		HowToPlayButton->SetButtonText(FText::FromString("How To Play"));
+		HowToPlayButton->OnCustomButtonClicked.AddDynamic(this, &UPOMainMenuWidget::OnHowToPlayClicked);
+	}
 }
 
 void UPOMainMenuWidget::NativeDestruct()
@@ -60,6 +66,11 @@ void UPOMainMenuWidget::NativeDestruct()
 	if (QuitButton)
 	{
 		QuitButton->OnCustomButtonClicked.RemoveDynamic(this, &UPOMainMenuWidget::OnQuitClicked);
+	}
+
+	if (HowToPlayButton)
+	{
+		HowToPlayButton->OnCustomButtonClicked.RemoveDynamic(this, &UPOMainMenuWidget::OnHowToPlayClicked);
 	}
 	
 	Super::NativeDestruct();
@@ -87,15 +98,25 @@ void UPOMainMenuWidget::OnJoinServerClicked(UPOCustomButton* ClickedButton)
 
 void UPOMainMenuWidget::OnSettingsClicked(UPOCustomButton* ClickedButton)
 {
-	// TODO: 설정 화면 열기 로직 구현
 	UE_LOG(LogTemp, Warning, TEXT("Settings Clicked"));
+	if (APOMainMenuPlayerController* PC = Cast<APOMainMenuPlayerController>(GetOwningPlayer()))
+	{
+		PC->ShowSettings();
+	}
 }
 
 void UPOMainMenuWidget::OnQuitClicked(UPOCustomButton* ClickedButton)
 {
-	// 게임 종료
-	if (UWorld* World = GetWorld())
+	if (APOMainMenuPlayerController* PC = Cast<APOMainMenuPlayerController>(GetOwningPlayer()))
 	{
-		UKismetSystemLibrary::QuitGame(World, nullptr, EQuitPreference::Quit, false);
+		PC->OnExitGame();
+	}
+}
+
+void UPOMainMenuWidget::OnHowToPlayClicked(UPOCustomButton* ClickedButton)
+{
+	if (APOMainMenuPlayerController* PC = Cast<APOMainMenuPlayerController>(GetOwningPlayer()))
+	{
+		PC->OnHowToPlay();
 	}
 }

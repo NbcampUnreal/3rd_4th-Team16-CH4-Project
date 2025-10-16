@@ -7,10 +7,13 @@
 #include "Interfaces/POUIStackingInterface.h"
 #include "POMainMenuPlayerController.generated.h"
 
-class UPOUIStackingComonent;
+class UPOExitGameWidget;
+class UPOBaseWidget;
+class UPOUIStackingComponent;
 class UPOHostServerWidget;
 class UPOJoinServerWidget;
 class UPOMainMenuWidget;
+class UPOSettingWidget; // 추가
 
 /**
  * 
@@ -42,6 +45,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	bool HideLastUI();
+
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	void ShowSettings(); // 설정 위젯 표시 함수 추가
 	
 	UFUNCTION()
 	void OnJoinServer(FJoinServerData& JoinServerData);
@@ -49,13 +55,19 @@ public:
 	UFUNCTION()
 	void OnHostServer(FJoinServerData& HostServerData);
 
-	FORCEINLINE virtual UPOUIStackingComonent* GetUIStackingComponent() const override { return UIStackingComponent; }
+	UFUNCTION()
+	void OnHowToPlay();
+
+	UFUNCTION()
+	void OnExitGame();
+
+	FORCEINLINE virtual UPOUIStackingComponent* GetUIStackingComponent() const override { return UIStackingComponent; }
 	
 protected:
 	virtual void BeginPlay() override;
 
 	UPROPERTY()
-	TObjectPtr<UPOUIStackingComonent> UIStackingComponent;
+	TObjectPtr<UPOUIStackingComponent> UIStackingComponent;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
 	TSubclassOf<UPOMainMenuWidget> MainMenuWidgetClass;
@@ -74,6 +86,24 @@ protected:
 	
 	UPROPERTY()
 	TObjectPtr<UPOHostServerWidget> HostServerWidget;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
+	TSubclassOf<UPOSettingWidget> SettingWidgetClass; // 설정 위젯 클래스
+
+	UPROPERTY()
+	TObjectPtr<UPOSettingWidget> SettingWidget; // 설정 위젯 인스턴스
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
+	TSubclassOf<UUserWidget> HowToPlayWidgetClass; // 도움말 위젯 클래스
+
+	UPROPERTY()
+	TObjectPtr<UUserWidget> HowToPlayerWidget; // 도움말 위젯 인스턴스
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
+	TSubclassOf<UPOExitGameWidget> ExitGameWidgetClass; // 게임 종료 확인 위젯 클래스
+	
+	UPROPERTY()
+	TObjectPtr<UPOExitGameWidget> ExitGameWidget; // 게임 종료 확인 위젯 인스턴스
 	
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void ShowMainMenu();

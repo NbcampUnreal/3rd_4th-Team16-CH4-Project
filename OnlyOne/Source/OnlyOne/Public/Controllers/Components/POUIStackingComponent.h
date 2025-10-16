@@ -4,28 +4,33 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "POUIStackingComonent.generated.h"
+#include "POUIStackingComponent.generated.h"
 
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class ONLYONE_API UPOUIStackingComonent : public UActorComponent
+class ONLYONE_API UPOUIStackingComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:
-	UPOUIStackingComonent();
+	UPOUIStackingComponent();
 	
 	void PushWidget(UUserWidget* Widget);
 	void PopWidget();
 	void PopToWidget(UUserWidget* Widget);
+	void SetDefaultWidget(UUserWidget* Widget, bool bInputModeUIOnly = true);
 	void ClearStack();
 	
 	FORCEINLINE UUserWidget* GetTopWidget() const { return UIStack.Num() > 0 ? UIStack.Last() : nullptr; }
 	FORCEINLINE bool IsEmpty() const { return UIStack.IsEmpty(); }
+	FORCEINLINE int32 GetStackSize() const { return UIStack.Num(); }
 
 protected:
 	virtual void BeginPlay() override;
 	
 	UPROPERTY()
 	TArray<TObjectPtr<UUserWidget>> UIStack;
+
+private:
+	bool bIsInputModeUIOnly;
 };

@@ -4,14 +4,16 @@
 #include "UI/MainMenu/POMainMenuWidget.h"
 #include "Components/Widget.h"
 #include "Blueprint/UserWidget.h"
-#include "Controllers/Components/POUIStackingComonent.h"
+#include "Controllers/Components/POUIStackingComponent.h"
 #include "Engine/Engine.h"
 #include "Framework/Application/SlateApplication.h"
 #include "OnlyOne/OnlyOne.h"
 #include "UI/MainMenu/POJoinServerWidget.h"
 #include "Game/POGameInstance.h"
 #include "Kismet/GameplayStatics.h"
+#include "UI/Common/POExitGameWidget.h"
 #include "UI/MainMenu/POHostServerWidget.h"
+#include "UI/SettingMenu/POSettingWidget.h" // 추가
 
 APOMainMenuPlayerController::APOMainMenuPlayerController()
 {
@@ -19,7 +21,7 @@ APOMainMenuPlayerController::APOMainMenuPlayerController()
 	bEnableClickEvents = true;
 	bEnableMouseOverEvents = true;
 
-	UIStackingComponent = CreateDefaultSubobject<UPOUIStackingComonent>(TEXT("UI Stacking Component"));
+	UIStackingComponent = CreateDefaultSubobject<UPOUIStackingComponent>(TEXT("UI Stacking Component"));
 }
 
 void APOMainMenuPlayerController::BeginPlay()
@@ -43,7 +45,7 @@ void APOMainMenuPlayerController::ShowMainMenu()
 
 		if (MainMenuWidget)
 		{
-			UIStackingComponent->PushWidget(MainMenuWidget);
+			UIStackingComponent->SetDefaultWidget(MainMenuWidget);
 		}
 	}
 }
@@ -84,6 +86,21 @@ void APOMainMenuPlayerController::ShowHostServer()
 		if (HostServerWidget)
 		{
 			UIStackingComponent->PushWidget(HostServerWidget);
+		}
+	}
+}
+
+void APOMainMenuPlayerController::ShowSettings()
+{
+	if (SettingWidgetClass)
+	{
+		if (!SettingWidget)
+		{
+			SettingWidget = CreateWidget<UPOSettingWidget>(this, SettingWidgetClass);
+		}
+		if (SettingWidget)
+		{
+			UIStackingComponent->PushWidget(SettingWidget);
 		}
 	}
 }
@@ -142,5 +159,39 @@ void APOMainMenuPlayerController::OnHostServer(FJoinServerData& HostServerData)
 	if (UWorld* World = GetWorld())
 	{
 		UGameplayStatics::OpenLevel(World, TEXT("L_ServerLobby"), true, TEXT("listen"));
+	}
+}
+
+void APOMainMenuPlayerController::OnHowToPlay()
+{
+	if (HowToPlayWidgetClass)
+	{
+		if (!HowToPlayerWidget)
+		{
+			HowToPlayerWidget = CreateWidget<UUserWidget>(this, HowToPlayWidgetClass);
+		}
+		if (HowToPlayerWidget)
+		{
+			UIStackingComponent->PushWidget(HowToPlayerWidget);
+		}
+	}
+}
+
+void APOMainMenuPlayerController::OnExitGame()
+{
+	if (ExitGameWidgetClass)
+	{
+		if (!ExitGameWidget)
+		{
+			ExitGameWidget = CreateWidget<UPOExitGameWidget>(this, ExitGameWidgetClass);
+		}
+		if (ExitGameWidget)
+		{
+			UIStackingComponent->PushWidget(ExitGameWidget);
+		}
+	}
+	else
+	{
+		FGenericPlatformMisc::RequestExit(false);
 	}
 }

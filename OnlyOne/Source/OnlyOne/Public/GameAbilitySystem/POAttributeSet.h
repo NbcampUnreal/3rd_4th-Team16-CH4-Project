@@ -28,6 +28,7 @@ public:
 	ATTRIBUTE_ACCESSORS(UPOAttributeSet, MaxHealth);
 	ATTRIBUTE_ACCESSORS(UPOAttributeSet, BaseDamage);
 	ATTRIBUTE_ACCESSORS(UPOAttributeSet, DamageTaken);
+	ATTRIBUTE_ACCESSORS(UPOAttributeSet, SmokeGrenadeCount);
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) override;
@@ -44,6 +45,10 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Attribute | Player Combat", ReplicatedUsing = OnRep_DamageTaken)
 	FGameplayAttributeData DamageTaken;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Attribute | Items", ReplicatedUsing = OnRep_SmokeGrenadeCount)
+	FGameplayAttributeData SmokeGrenadeCount;
+
 	
 	UFUNCTION()
 	void OnRep_CurrentHealth(const FGameplayAttributeData& OldValue);
@@ -56,4 +61,7 @@ public:
 
 	UFUNCTION()
 	void OnRep_DamageTaken(const FGameplayAttributeData& OldValue);
+
+	UFUNCTION()
+	void OnRep_SmokeGrenadeCount(const FGameplayAttributeData& OldValue);
 };
