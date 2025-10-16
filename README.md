@@ -223,3 +223,7 @@ OnlyOne/
 └── Private/
 └── ... (Public 폴더와 유사한 구조)
 ```
+
+## 패키징 중 발생한 문제
+패키징 중 발생한 문제에 대해서는 해당 블로그에서 확인해 보실 수 있습니다.
+https://velog.io/@dev_sensational/Project-OnlyOne-Milestone-1-%EB%B9%8C%EB%93%9C-%EB%B0%8F-%EB%AC%B8%EC%A0%9C-%ED%95%B4%EA%B2%B0
